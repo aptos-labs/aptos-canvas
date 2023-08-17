@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Token, Canvas, Color } from "../../canvas/generated/types";
-import { Box, Button, Center, useDisclosure, useToast } from "@chakra-ui/react";
+import { Box, Button, useDisclosure, useToast } from "@chakra-ui/react";
 import { getModuleId, useGlobalState } from "../../GlobalState";
 import { useParams } from "react-router-dom";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -10,6 +10,7 @@ import { CanvasPopover } from "./CanvasPopover";
 import ZoomButtons from "./ZoomButtons";
 import { hexToRgb } from "./helpers";
 import DrawingCanvas from "./DrawingCanvas";
+import { StyledCanvasBox } from "./StyledCanvasBox";
 
 const PIXEL_SIZE = 0.98; // the width of each pixel in the canvas
 const MARGIN_COLOR = "white";
@@ -473,11 +474,11 @@ export const MyCanvas = ({
   const offsets = getOffsets()!;
 
   return (
-    <Center>
+    <StyledCanvasBox>
       <Box
-        borderWidth="1px"
-        w="95vw"
-        h={`${canvasVh}vh`}
+        flex={1}
+        bg="white"
+        borderRadius={12}
         ref={parentRef}
         position="relative"
       >
@@ -547,6 +548,6 @@ export const MyCanvas = ({
           onChangeColorPicker={onChangeColorPicker}
         />
       </Box>
-    </Center>
+    </StyledCanvasBox>
   );
 };
