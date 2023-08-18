@@ -8,6 +8,8 @@ import {
 } from "@chakra-ui/react";
 import DrawModeToggleButton from "./DrawModeToggleButton";
 import PaintInfo from "./PaintInfo";
+import { ColorModeSwitcher } from "../ColorModeSwitcher";
+import Palette from "./Palette";
 
 export const SIDEBAR_WIDTH = 80;
 
@@ -36,14 +38,17 @@ export default function SideBar() {
       alignItems="center"
       paddingY={4} // Padding for top and bottom spacing
     >
-      <VStack spacing={4}>
-        <Button colorScheme="gray">1</Button>
-        <Button colorScheme="gray">2</Button>
+      <VStack>
+        <Box marginBottom={2}>
+          <DrawModeToggleButton />
+        </Box>
         <Divider />
         <PaintInfo />
+        <Divider />
+        <Palette />
       </VStack>
       <Spacer />
-      <DrawModeToggleButton />
+      <ColorModeSwitcher />
     </Box>
   );
 }

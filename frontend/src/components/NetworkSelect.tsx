@@ -6,6 +6,13 @@ import { useSearchParams } from "react-router-dom";
 import { useGetChainId } from "../api/hooks/useGetNetworkChainIds";
 import { toTitleCase } from "../utils";
 
+function capitalizeFirstLetter(str: string) {
+  if (!str || typeof str !== "string") {
+    return "";
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function NetworkAndChainIdCached({
   networkName,
   chainId,
@@ -70,7 +77,7 @@ export default function NetworkSelect() {
     }
     options.push(
       <option key={networkName} value={networkName}>
-        {item}
+        {capitalizeFirstLetter(networkName)}
       </option>,
     );
   }
@@ -78,10 +85,11 @@ export default function NetworkSelect() {
   return (
     <Box>
       <Select
-        id="network-select"
+        size="sm"
         value={state.network_name}
         onChange={handleChange}
-        variant="outlined"
+        variant="unstyled"
+        color="#666666"
       >
         <option disabled value="">
           Network
