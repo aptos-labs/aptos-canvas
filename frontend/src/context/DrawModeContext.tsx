@@ -16,12 +16,12 @@ const DrawModeContext = createContext<DrawModeContextType | undefined>(
 export const BRUSH_COLORS = [
   "#000000",
   "#FFFFFF",
-  "#FF0000",
-  "#00FF00",
-  "#0000FF",
-  "#FFFF00",
-  "#FF00FF",
-  "#00FFFF",
+  "#009EFD",
+  "#00C503",
+  "#FFC600",
+  "#FF7D00",
+  "#FA006A",
+  "#C400C7",
 ];
 
 export const BRUSH_SIZE = { min: 1, max: 8, default: 1 };
