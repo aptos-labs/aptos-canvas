@@ -1,5 +1,9 @@
 import { VStack, Box, Button } from "@chakra-ui/react";
-import { BRUSH_COLORS, useDrawMode } from "../../context/DrawModeContext";
+import {
+  BRUSH_COLORS,
+  Color,
+  useDrawMode,
+} from "../../context/DrawModeContext";
 
 function IconPalette() {
   return (
@@ -47,6 +51,16 @@ function ColorCircle({
   );
 }
 
+function getHexColorFromRGBColor(color: Color) {
+  const componentToHex = (component: number) => {
+    const hex = component.toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  };
+
+  return `#${componentToHex(color.r)}${componentToHex(color.g)}${componentToHex(
+    color.b,
+  )}`;
+}
 export default function Palette() {
   const { brushColor, setBrushColor } = useDrawMode();
 
@@ -66,11 +80,14 @@ export default function Palette() {
       >
         <IconPalette />
       </Button>
-      {BRUSH_COLORS.map((color) => (
+      {BRUSH_COLORS.map((color, idx) => (
         <ColorCircle
-          key={color}
-          color={color}
-          isSelected={color === brushColor}
+          key={idx}
+          color={getHexColorFromRGBColor(color)}
+          isSelected={
+            getHexColorFromRGBColor(color) ===
+            getHexColorFromRGBColor(brushColor)
+          }
           onClick={() => setBrushColor(color)}
         />
       ))}
