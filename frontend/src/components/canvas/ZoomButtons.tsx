@@ -1,4 +1,5 @@
-import { Button, VStack } from "@chakra-ui/react";
+import { AddIcon, MinusIcon, RepeatIcon } from "@chakra-ui/icons";
+import { IconButton, VStack } from "@chakra-ui/react";
 
 export default function ZoomButtons({
   zoomIn,
@@ -12,19 +13,33 @@ export default function ZoomButtons({
   return (
     <div style={{ position: "absolute", bottom: 20, right: 20 }}>
       <VStack spacing={3}>
-        <Button colorScheme="cyan" title="Zoom in" onClick={() => zoomIn()}>
-          +
-        </Button>
-        <Button colorScheme="cyan" title="Zoom out" onClick={() => zoomOut()}>
-          -
-        </Button>
-        <Button
-          colorScheme="cyan"
-          title="Reset"
+        <IconButton
+          isRound={true}
+          variant="solid"
+          aria-label="Done"
+          size="sm"
+          fontSize="10px"
+          icon={<AddIcon />}
+          onClick={() => zoomIn()}
+        />
+        <IconButton
+          isRound={true}
+          variant="solid"
+          aria-label="Done"
+          size="sm"
+          fontSize="10px"
+          icon={<MinusIcon />}
+          onClick={() => zoomOut()}
+        />
+        <IconButton
+          isRound={true}
+          variant="solid"
+          aria-label="Done"
+          size="sm"
+          fontSize="12px"
+          icon={<RepeatIcon />}
           onClick={() => resetTransform()}
-        >
-          x
-        </Button>
+        />
       </VStack>
     </div>
   );

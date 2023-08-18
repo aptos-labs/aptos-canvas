@@ -119,7 +119,7 @@ export default function DrawingCanvas({
     <Box>
       <canvas
         ref={drawingRef}
-        style={{ position: "absolute", cursor: "pointer" }}
+        style={{ position: "absolute", cursor: "crosshair" }}
         width={displayCanvasWidth}
         height={displayCanvasHeight}
         onMouseMove={handleMouseMoveDrawing}
