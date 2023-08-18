@@ -1,4 +1,5 @@
-import { Text, Icon, VStack, Box, IconButton, Button } from "@chakra-ui/react";
+import { VStack, Box, Button } from "@chakra-ui/react";
+import { BRUSH_COLORS, useDrawMode } from "../../context/DrawModeContext";
 
 function IconPalette() {
   return (
@@ -12,23 +13,67 @@ function IconPalette() {
   );
 }
 
-// Don't try to use this without the wallet being connected.
+function ColorCircle({
+  color,
+  isSelected,
+  onClick,
+}: {
+  color: string;
+  isSelected: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <Button
+      borderRadius="50%"
+      bg="transparent"
+      _hover={{
+        bg: "transparent", // Setting the background to transparent
+        transform: "none", // Removing any transformations
+      }}
+      margin={-2}
+      padding={0}
+      onClick={onClick}
+    >
+      <Box
+        width={3.5}
+        height={3.5}
+        borderRadius="50%"
+        bg={color}
+        borderWidth={1}
+        borderColor="#3333333"
+        boxShadow={isSelected ? "0px 0px 5px 1px rgba(0, 0, 0, 0.4)" : "none"}
+      />
+    </Button>
+  );
+}
+
 export default function Palette() {
+  const { brushColor, setBrushColor } = useDrawMode();
+
   const togglePalette = () => {
     console.log("Palette toggled");
   };
 
   return (
-    <VStack>
+    <VStack marginBottom={2}>
       <Button
         bg="transparent"
         borderRadius="50%"
         width={12}
         height={12}
+        margin={-1}
         onClick={togglePalette}
       >
         <IconPalette />
       </Button>
+      {BRUSH_COLORS.map((color) => (
+        <ColorCircle
+          key={color}
+          color={color}
+          isSelected={color === brushColor}
+          onClick={() => setBrushColor(color)}
+        />
+      ))}
     </VStack>
   );
 }

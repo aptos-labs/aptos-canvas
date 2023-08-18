@@ -10,6 +10,7 @@ import DrawModeToggleButton from "./DrawModeToggleButton";
 import PaintInfo from "./PaintInfo";
 import { ColorModeSwitcher } from "../ColorModeSwitcher";
 import Palette from "./Palette";
+import SizeSlider from "./SizeSlider";
 
 export const SIDEBAR_WIDTH = 80;
 
@@ -46,6 +47,8 @@ export default function SideBar() {
         <PaintInfo />
         <Divider />
         <Palette />
+        <Divider />
+        <SizeSlider />
       </VStack>
       <Spacer />
       <ColorModeSwitcher />
