@@ -4,7 +4,7 @@ import { Box } from "@chakra-ui/react";
 import { useGetPixels } from "../../api/hooks/useGetPixels";
 import { CanvasPopover } from "./CanvasPopover";
 import ZoomButtons from "./ZoomButtons";
-import DrawingCanvas from "./DrawingCanvas";
+import DrawingCanvas, { DrawPixelIntent } from "./DrawingCanvas";
 import { StyledCanvasBox } from "./StyledCanvasBox";
 import { useDrawMode } from "../../context/DrawModeContext";
 import SubmitDrawButton from "./SubmitDrawButton";
@@ -29,10 +29,8 @@ export const MyCanvas = ({
 
   const pixels = useGetPixels(tokenData);
 
-  const { drawModeOn, brushColor } = useDrawMode();
-  const [squaresToDraw, setSquaresToDraw] = useState<
-    { x: number; y: number }[]
-  >([]);
+  const { drawModeOn } = useDrawMode();
+  const [squaresToDraw, setSquaresToDraw] = useState<DrawPixelIntent[]>([]);
 
   // Store scale and pan in state
   const [scale, setScale] = useState<number | undefined>(undefined);
@@ -206,7 +204,7 @@ export const MyCanvas = ({
       context.fillRect(x, y, PIXEL_SIZE + margin, PIXEL_SIZE + margin);
 
       // Draw the squares.
-      context.fillStyle = brushColor;
+      context.fillStyle = `rgb(${square.color.r},${square.color.g},${square.color.b})`;
       context.fillRect(
         x + margin, // Shift the pixel to the right by the margin
         y + margin, // Shift the pixel down by the margin
@@ -409,6 +407,7 @@ export const MyCanvas = ({
         {drawModeOn && (
           <SubmitDrawButton
             squaresToDraw={squaresToDraw}
+            setSquaresToDraw={setSquaresToDraw}
             canvasAddress={canvasAddress}
           />
         )}

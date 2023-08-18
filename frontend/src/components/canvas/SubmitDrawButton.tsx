@@ -6,6 +6,8 @@ import { getModuleId, useGlobalState } from "../../GlobalState";
 import { useParams } from "react-router-dom";
 import BottomComponentWrapper from "./BottomComponentWrapper";
 import { useState } from "react";
+import { DrawPixelIntent } from "./DrawingCanvas";
+import { useDrawMode } from "../../context/DrawModeContext";
 
 // TODO: move to colors.ts
 const BG_COLOR_LIGHT = "#ffffff";
@@ -27,17 +29,20 @@ function ConfirmationModal({ paintPrice }: { paintPrice: number }) {
       padding={4}
       fontSize={FONT_SIZE}
     >
-      <Text>{`Beautiful artwork! This will cost ${paintPrice} PNT. Add it to the wall?`}</Text>
+      <Text>{`Beautiful artwork! Add it to the wall?`}</Text>
     </Box>
   );
+  //<Text>{`Beautiful artwork! This will cost ${paintPrice} PNT. Add it to the wall?`}</Text>
 }
 
 export default function SubmitDrawButton({
   canvasAddress,
   squaresToDraw,
+  setSquaresToDraw,
 }: {
   canvasAddress: string;
-  squaresToDraw: { x: number; y: number }[];
+  squaresToDraw: DrawPixelIntent[];
+  setSquaresToDraw: (squares: DrawPixelIntent[]) => void;
 }) {
   const toast = useToast();
   const [state] = useGlobalState();
@@ -45,27 +50,19 @@ export default function SubmitDrawButton({
   const { connected, signAndSubmitTransaction } = useWallet();
 
   const [confirming, setConfirming] = useState(false);
+  const { setDrawModeOn } = useDrawMode();
 
   // TODO: @dport get paint price
   const dummyPaintPrice = 130;
 
   // TODO: @dport submit transaction for squaresToDraw instead of squareToDraw
   const submitDraw = async () => {
-    const colorToSubmit = "#555555";
-
     try {
-      const out = hexToRgb(colorToSubmit);
-      if (out === null) {
-        throw `Failed to parse color: ${colorToSubmit}`;
-      }
-      const { r, g, b } = out;
-      // TODO: Temporary hack, squaresToDraw should have the color info attached
-      // on a per pixel basis.
       const xs = squaresToDraw.map((square) => square.x);
       const ys = squaresToDraw.map((square) => square.y);
-      const rs = new Array(squaresToDraw.length).fill(r);
-      const gs = new Array(squaresToDraw.length).fill(g);
-      const bs = new Array(squaresToDraw.length).fill(b);
+      const rs = squaresToDraw.map((square) => square.color.r);
+      const gs = squaresToDraw.map((square) => square.color.g);
+      const bs = squaresToDraw.map((square) => square.color.b);
       await draw(
         signAndSubmitTransaction,
         moduleId,
@@ -93,11 +90,12 @@ export default function SubmitDrawButton({
         isClosable: true,
       });
     } finally {
-      // TODO: close the confirmation modal
+      setConfirming(false);
     }
   };
 
   const closeConfirmationModal = () => {
+    setSquaresToDraw([]);
     setConfirming(false);
   };
 
@@ -149,6 +147,7 @@ export default function SubmitDrawButton({
         alignItems="center"
         width={BUTTON_WIDTH}
         fontSize={FONT_SIZE}
+        isDisabled={squaresToDraw.length === 0}
         onClick={openConfirmationModal}
       >
         Finish Drawing

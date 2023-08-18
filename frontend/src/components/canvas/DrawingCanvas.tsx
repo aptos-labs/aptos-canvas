@@ -1,9 +1,21 @@
 import { Box } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { useDrawMode } from "../../context/DrawModeContext";
+import { Color, useDrawMode } from "../../context/DrawModeContext";
+
+export type DrawPixelIntent = {
+  x: number;
+  y: number;
+  color: Color;
+};
 
 // Simple linear interpolation between two points
-function getInterpolatePoints(x1: number, y1: number, x2: number, y2: number) {
+function getInterpolatePoints(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  color: Color,
+) {
   const points = [];
   const dx = x2 - x1;
   const dy = y2 - y1;
@@ -15,6 +27,7 @@ function getInterpolatePoints(x1: number, y1: number, x2: number, y2: number) {
     points.push({
       x: Math.round(x1 + i * stepX),
       y: Math.round(y1 + i * stepY),
+      color,
     });
   }
 
@@ -22,22 +35,23 @@ function getInterpolatePoints(x1: number, y1: number, x2: number, y2: number) {
 }
 
 function getSizedSquares(
-  points: { x: number; y: number }[],
+  points: DrawPixelIntent[],
   size: number,
   canvasWidth: number,
   canvasHeight: number,
+  color: Color,
 ) {
   const numPointsUpLeft = Math.floor(size / 2);
   const numPointsDownRight = Math.ceil(size / 2);
 
-  const squares: { x: number; y: number }[] = [];
+  const squares: DrawPixelIntent[] = [];
   points.forEach((point) => {
     for (let i = -numPointsUpLeft; i < numPointsDownRight; i++) {
       for (let j = -numPointsUpLeft; j < numPointsDownRight; j++) {
         const x = point.x + i;
         const y = point.y + j;
         if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-          squares.push({ x, y });
+          squares.push({ x, y, color });
         }
       }
     }
@@ -57,8 +71,8 @@ export default function DrawingCanvas({
   pan,
 }: {
   drawingRef: any;
-  squaresToDraw: { x: number; y: number }[];
-  setSquaresToDraw: (squares: { x: number; y: number }[]) => void;
+  squaresToDraw: DrawPixelIntent[];
+  setSquaresToDraw: (squares: DrawPixelIntent[]) => void;
   displayCanvasWidth: number;
   displayCanvasHeight: number;
   offsets: { x: number; y: number };
@@ -70,7 +84,7 @@ export default function DrawingCanvas({
     null,
   );
 
-  const { brushSize } = useDrawMode();
+  const { brushSize, brushColor } = useDrawMode();
 
   const handleMouseMoveDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const drawing = drawingRef.current;
@@ -83,7 +97,7 @@ export default function DrawingCanvas({
     const x = Math.floor((e.clientX - rect.left - pan.x) / scale - offsets.x);
     const y = Math.floor((e.clientY - rect.top - pan.y) / scale - offsets.y);
 
-    const newPoints = [{ x, y }];
+    const newPoints = [{ x, y, color: brushColor }];
     if (prevPoint) {
       // fill in the points in between of the current mouse location and the previous mouse location
       const squaresInBetween = getInterpolatePoints(
@@ -91,6 +105,7 @@ export default function DrawingCanvas({
         prevPoint.y,
         x,
         y,
+        brushColor,
       );
       newPoints.push(...squaresInBetween);
     }
@@ -100,6 +115,7 @@ export default function DrawingCanvas({
       brushSize,
       displayCanvasWidth,
       displayCanvasHeight,
+      brushColor,
     );
 
     setSquaresToDraw([...squaresToDraw, ...sizedNewSquares]);

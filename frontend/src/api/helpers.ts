@@ -1,1 +1,1 @@
-export const REFETCH_INTERVAL_MS = 15000;
+export const REFETCH_INTERVAL_MS = 3000;

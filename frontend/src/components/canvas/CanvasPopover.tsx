@@ -40,13 +40,12 @@ export const CanvasPopover = ({
 
   const pixelIndex = calculateIndex(popoverPos.x, popoverPos.y, canvasWidth);
 
-  const { data: attributionData } = useGetPixelAttribution(
-    canvasAddress,
-    pixelIndex,
-    { enabled: isOpen },
-  );
+  const { data: attributionData, isLoading: attributionIsLoading } =
+    useGetPixelAttribution(canvasAddress, pixelIndex, { enabled: isOpen });
 
-  const artistAddress = attributionData?.artistAddress ?? "Never drawn on!";
+  const artistAddress = attributionData?.artistAddress
+    ? `0x${attributionData.artistAddress}`
+    : "Never drawn on!";
   const drawnAtSecs = attributionData?.drawnAtSecs;
 
   const { data: ansData } = useGetAnsNames([artistAddress], {
@@ -121,6 +120,10 @@ export const CanvasPopover = ({
                   {`Expires in ${timeLeft.formattedTime}`}
                 </Text>
               </>
+            ) : attributionIsLoading ? (
+              <Text fontSize={11} marginY={1}>
+                {"Loading..."}
+              </Text>
             ) : (
               <Text fontSize={11} marginY={1}>
                 {"Untouched wall"}
