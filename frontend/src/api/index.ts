@@ -71,9 +71,15 @@ export async function getPntBalance(
 
 function getAnsClient(network: NetworkName): AnsClient {
   // https://stackoverflow.com/a/42623905/3846032
-  const s = network as string;
-  const key = s as keyof typeof Network;
-  const providerNetwork = Network[key];
+  // This stopped working ^
+  let providerNetwork;
+  if (network === "testnet") {
+    providerNetwork = Network.TESTNET;
+  } else if (network === "mainnet") {
+    providerNetwork = Network.MAINNET;
+  } else {
+    providerNetwork = Network.LOCAL;
+  }
   const provider = new Provider(providerNetwork);
   const ansClient = new AnsClient(provider);
   return ansClient;

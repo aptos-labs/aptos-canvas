@@ -15,8 +15,10 @@ function PaintIcon() {
 export default function PaintInfo() {
   const { account } = useWallet();
 
-  const { data } = useGetPntBalance(account?.address ?? "", {
-    enabled: !!account,
+  const enabled = !!account;
+
+  const { data, isFetched } = useGetPntBalance(account?.address ?? "", {
+    enabled,
   });
 
   // On chain, it costs 100 units to paint a pixel. PNT, the fungible asset, uses
@@ -25,11 +27,19 @@ export default function PaintInfo() {
   // maintain the illusion that there is no such thing as fractional PNT.
   const pntAmount = Math.floor((data ?? 0) / 100);
 
+  let pntString;
+
+  if (!isFetched && enabled) {
+    pntString = "...";
+  } else {
+    pntString = pntAmount.toLocaleString();
+  }
+
   return (
     <VStack paddingY={2}>
       <PaintIcon />
       <Text fontSize={14} color="#555555" marginTop={1}>
-        {pntAmount.toLocaleString()}
+        {pntString}
       </Text>
       <Text fontSize={12} color="#555555">
         PNT

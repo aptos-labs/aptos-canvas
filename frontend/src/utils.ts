@@ -203,3 +203,12 @@ export function validateAptString(s: string): number | null {
   } catch (_) {}
   return null;
 }
+
+// Calculate the index of a pixel on a canvas, given 0,0 starts at the top left corner.
+export function calculateIndex(
+  x: number,
+  y: number,
+  canvasWidth: number,
+): number {
+  return y * canvasWidth + x;
+}

@@ -67,6 +67,7 @@ export async function draw(
     type_arguments: [],
     arguments: [canvasAddress, xs, ys, reds, greens, blues],
   };
+  console.log(JSON.stringify(transaction));
   await submitTransaction(signAndSubmitTransaction, fullnodeUrl, transaction);
 }
 

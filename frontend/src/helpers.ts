@@ -66,7 +66,7 @@ function ensureMillisecondTimestamp(timestamp: string): number {
   if (timestamp.length > 13) {
     timestamp = timestamp.slice(0, 13);
   }
-  if (timestamp.length == 10) {
+  if (timestamp.length === 10) {
     timestamp = timestamp + "000";
   }
   return parseInt(timestamp);
@@ -93,6 +93,7 @@ export function getTimeLeft(timestamp: string) {
 
   return {
     expiring: days < 1,
+    expired: now > expiry,
     formattedTime,
   };
 }

@@ -66,7 +66,11 @@ export const MyCanvasLoader = ({ address }: { address: string }) => {
 
   return (
     <Box>
-      <MyCanvas canvasData={canvasData} tokenData={tokenData} />
+      <MyCanvas
+        canvasAddress={address}
+        canvasData={canvasData}
+        tokenData={tokenData}
+      />
     </Box>
   );
 };

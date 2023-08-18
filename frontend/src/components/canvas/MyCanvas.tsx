@@ -14,9 +14,11 @@ const MARGIN_COLOR = "white";
 const INITIAL_SCALE_OFFSET = 1; // How much to scale the canvas by initially, for example 1.5 means 150% of the canvas size.
 
 export const MyCanvas = ({
+  canvasAddress,
   canvasData,
   tokenData,
 }: {
+  canvasAddress: string;
   canvasData: Canvas;
   tokenData: Token;
 }) => {
@@ -43,9 +45,19 @@ export const MyCanvas = ({
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
 
   // Where we show the color picker popover.
-  const [popoverPos, setPopoverPos] = useState<{ left: number; top: number }>({
+  const [popoverPos, setPopoverPos] = useState<{
+    left: number;
+    top: number;
+    x: number;
+    y: number;
+  }>({
+    // These two correspond to the popover position.
     left: 0,
     top: 0,
+    // These two correspond to the pixel, relative to the on-chain canvas,
+    // that the user clicked on.
+    x: 0,
+    y: 0,
   });
 
   const [openPopover, setOpenPopover] = useState(false);
@@ -322,7 +334,12 @@ export const MyCanvas = ({
       return;
     }
 
-    setPopoverPos({ left: e.clientX - rect.left, top: e.clientY - rect.top });
+    setPopoverPos({
+      left: e.clientX - rect.left,
+      top: e.clientY - rect.top,
+      x,
+      y,
+    });
     setOpenPopover(true);
   };
 
@@ -389,8 +406,19 @@ export const MyCanvas = ({
             resetTransform={resetTransform}
           />
         )}
-        {drawModeOn && <SubmitDrawButton squaresToDraw={squaresToDraw} />}
-        <CanvasPopover openPopover={openPopover} popoverPos={popoverPos} />
+        {drawModeOn && (
+          <SubmitDrawButton
+            squaresToDraw={squaresToDraw}
+            canvasAddress={canvasAddress}
+          />
+        )}
+        <CanvasPopover
+          openPopover={openPopover}
+          popoverPos={popoverPos}
+          canvasAddress={canvasAddress}
+          canvasWidth={canvasWidth}
+          pixelDecaySecs={parseInt(canvasData.config.cost_multiplier_decay_s)}
+        />
       </Box>
     </StyledCanvasBox>
   );
