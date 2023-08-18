@@ -1,17 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Token, Canvas, Color } from "../../canvas/generated/types";
-import { Box, useDisclosure, useToast } from "@chakra-ui/react";
-import { getModuleId, useGlobalState } from "../../GlobalState";
-import { useParams } from "react-router-dom";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { drawOne } from "../../api/transactions";
+import { Token, Canvas } from "../../canvas/generated/types";
+import { Box } from "@chakra-ui/react";
 import { useGetPixels } from "../../api/hooks/useGetPixels";
 import { CanvasPopover } from "./CanvasPopover";
 import ZoomButtons from "./ZoomButtons";
-import { hexToRgb } from "./helpers";
 import DrawingCanvas from "./DrawingCanvas";
 import { StyledCanvasBox } from "./StyledCanvasBox";
 import { useDrawMode } from "../../context/DrawModeContext";
+import SubmitDrawButton from "./SubmitDrawButton";
 
 const PIXEL_SIZE = 0.98; // the width of each pixel in the canvas
 const MARGIN_COLOR = "white";
@@ -36,12 +32,6 @@ export const MyCanvas = ({
     { x: number; y: number }[]
   >([]);
 
-  // These pixels get drawn over the top of the canvas after we draw the base layer
-  // using the png. The key is the index.
-  const [pixelsOverride, setPixelsOverride] = useState<Map<number, Color>>(
-    new Map(),
-  );
-
   // Store scale and pan in state
   const [scale, setScale] = useState<number | undefined>(undefined);
   const [initialScale, setInitialScale] = useState<number | undefined>(
@@ -57,30 +47,21 @@ export const MyCanvas = ({
     left: 0,
     top: 0,
   });
-  const {
-    isOpen: isPopoverOpen,
-    onOpen: onPopoverOpen,
-    onClose: onPopoverClose,
-  } = useDisclosure();
-  const [popoverCanBeClosed, setPopoverCanBeClosed] = useState(true);
 
-  // Tracking what square we'll submit a transaction for.
-  const [squareToDraw, setSquareToDraw] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
-
-  // Stuff for submitting txns.
-  const toast = useToast();
-
-  const [state] = useGlobalState();
-  const moduleId = getModuleId(state);
-
-  const address = useParams().address!;
-
-  const { connected, signAndSubmitTransaction } = useWallet();
-
-  const [colorToSubmit, setColorToSubmit] = useState(MARGIN_COLOR);
+  const [openPopover, setOpenPopover] = useState(false);
+  useEffect(() => {
+    // useEffect to set openPopover back to false after it has been passed to the child
+    // This is a way to notify the CanvasPopover component to open the popover.
+    let timeoutId: any;
+    if (openPopover) {
+      timeoutId = setTimeout(() => {
+        setOpenPopover(false);
+      }, 500); // Wait for 0.5 seconds
+    }
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [openPopover]);
 
   const canvasWidth = parseInt(canvasData.config.width);
   const canvasHeight = parseInt(canvasData.config.height);
@@ -203,25 +184,6 @@ export const MyCanvas = ({
       );
     });
 
-    // Draw the override pixels on top.
-    for (const [index, color] of pixelsOverride) {
-      const x = (index % canvasWidth) + offsets.x;
-      const y = Math.floor(index / canvasWidth) + offsets.y;
-
-      // Draw underneath the squares so a margin appears.
-      context.fillStyle = MARGIN_COLOR;
-      context.fillRect(x, y, PIXEL_SIZE + margin, PIXEL_SIZE + margin);
-
-      // Draw the squares.
-      context.fillStyle = `rgb(${color.r},${color.g},${color.b})`;
-      context.fillRect(
-        x + margin, // Shift the pixel to the right by the margin
-        y + margin, // Shift the pixel down by the margin
-        PIXEL_SIZE, // Reduce the pixel's width by the margin
-        PIXEL_SIZE, // Reduce the pixel's height by the margin
-      );
-    }
-
     // Draw the squares to draw on top.
     squaresToDraw.forEach((square) => {
       const x = square.x + offsets.x;
@@ -255,7 +217,6 @@ export const MyCanvas = ({
     scale,
     pan,
     pixels,
-    pixelsOverride,
     getOffsets,
     handleWheel,
     drawModeOn,
@@ -362,8 +323,7 @@ export const MyCanvas = ({
     }
 
     setPopoverPos({ left: e.clientX - rect.left, top: e.clientY - rect.top });
-    onPopoverOpen();
-    setSquareToDraw({ x, y });
+    setOpenPopover(true);
   };
 
   const zoomIn = () => {
@@ -378,90 +338,6 @@ export const MyCanvas = ({
     setScale(initialScale);
     setPan({ x: 0, y: 0 });
     setLastMousePos({ x: 0, y: 0 });
-  };
-
-  const onSubmitDraw = async () => {
-    setPopoverCanBeClosed(false);
-
-    try {
-      const out = hexToRgb(colorToSubmit);
-      if (out === null) {
-        throw `Failed to parse color: ${colorToSubmit}`;
-      }
-      const { r, g, b } = out;
-      await drawOne(
-        signAndSubmitTransaction,
-        moduleId,
-        state.network_info.node_api_url,
-        address,
-        squareToDraw.x,
-        squareToDraw.y,
-        r,
-        g,
-        b,
-      );
-      toast({
-        title: "Success!",
-        description: "Successfully drew pixel!!",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (e) {
-      toast({
-        title: "Failure",
-        description: `Failed to draw pixel: ${e}`,
-        status: "error",
-        duration: 7000,
-        isClosable: true,
-      });
-      setColorToSubmit(MARGIN_COLOR);
-      // On failure, reset the color of the square.
-      resetSquare(squareToDraw.x, squareToDraw.y);
-    } finally {
-      setPopoverCanBeClosed(true);
-      onPopoverClose();
-    }
-  };
-
-  const onChangeColorPicker = (color: string) => {
-    // Set squareToDraw to this color. If subjmitting fails or is cancelled out we undo
-    // this local modification.
-    setSquare(squareToDraw.x, squareToDraw.y, color);
-    setColorToSubmit(color);
-  };
-
-  const setSquare = (x: number, y: number, color: string) => {
-    const pixelIndex = squareToDraw.y * canvasWidth + squareToDraw.x;
-    const destructured = hexToRgb(color);
-    if (destructured === null) {
-      return;
-    }
-    const { r, g, b } = destructured;
-    setPixelsOverride((pixelsOverride) => {
-      const newPixelsOverride = new Map(pixelsOverride);
-      newPixelsOverride.set(pixelIndex, { r, g, b });
-      return newPixelsOverride;
-    });
-  };
-
-  const getPixelIndex = (x: number, y: number) => {
-    return y * canvasWidth + x;
-  };
-
-  const resetSquare = (x: number, y: number) => {
-    const pixelIndex = getPixelIndex(x, y);
-    setPixelsOverride((pixelsOverride) => {
-      const newPixelsOverride = new Map(pixelsOverride);
-      newPixelsOverride.delete(pixelIndex);
-      return newPixelsOverride;
-    });
-  };
-
-  const handlePopoverClose = () => {
-    onPopoverClose();
-    setPopoverPos({ left: 0, top: 0 });
-    resetSquare(squareToDraw.x, squareToDraw.y);
   };
 
   const displayCanvasWidth = canvasWidth * (scale ?? 0);
@@ -513,17 +389,8 @@ export const MyCanvas = ({
             resetTransform={resetTransform}
           />
         )}
-        <CanvasPopover
-          popoverCanBeClosed={popoverCanBeClosed}
-          isOpen={isPopoverOpen}
-          onOpen={onPopoverOpen}
-          onPopoverClose={handlePopoverClose}
-          popoverPos={popoverPos}
-          connected={connected}
-          colorToSubmit={colorToSubmit}
-          onSubmitDraw={onSubmitDraw}
-          onChangeColorPicker={onChangeColorPicker}
-        />
+        {drawModeOn && <SubmitDrawButton squaresToDraw={squaresToDraw} />}
+        <CanvasPopover openPopover={openPopover} popoverPos={popoverPos} />
       </Box>
     </StyledCanvasBox>
   );
