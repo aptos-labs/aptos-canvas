@@ -49,7 +49,7 @@ export default function Header() {
       justifyContent="center"
     >
       <Flex alignItems="center" gap="2">
-        <Flex alignItems="center" flex="1">
+        <Flex alignItems="center">
           <Text
             fontSize={14}
             fontWeight="normal"
