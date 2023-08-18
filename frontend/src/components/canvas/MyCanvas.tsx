@@ -8,6 +8,7 @@ import DrawingCanvas, { DrawPixelIntent } from "./DrawingCanvas";
 import { StyledCanvasBox } from "./StyledCanvasBox";
 import { useDrawMode } from "../../context/DrawModeContext";
 import SubmitDrawButton from "./SubmitDrawButton";
+import ClearButton from "./ClearButton";
 
 const PIXEL_SIZE = 0.98; // the width of each pixel in the canvas
 const MARGIN_COLOR = "white";
@@ -355,6 +356,10 @@ export const MyCanvas = ({
     setLastMousePos({ x: 0, y: 0 });
   };
 
+  const clearCanvas = () => {
+    setSquaresToDraw([]);
+  };
+
   const displayCanvasWidth = canvasWidth * (scale ?? 0);
   const displayCanvasHeight = canvasHeight * (scale ?? 0);
   const offsets = getOffsets()!;
@@ -409,6 +414,7 @@ export const MyCanvas = ({
             squaresToDraw={squaresToDraw}
             setSquaresToDraw={setSquaresToDraw}
             canvasAddress={canvasAddress}
+            onClearCanvas={clearCanvas}
           />
         )}
         <CanvasPopover

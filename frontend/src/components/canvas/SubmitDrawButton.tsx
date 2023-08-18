@@ -39,18 +39,19 @@ export default function SubmitDrawButton({
   canvasAddress,
   squaresToDraw,
   setSquaresToDraw,
+  onClearCanvas,
 }: {
   canvasAddress: string;
   squaresToDraw: DrawPixelIntent[];
   setSquaresToDraw: (squares: DrawPixelIntent[]) => void;
+  onClearCanvas: () => void;
 }) {
   const toast = useToast();
   const [state] = useGlobalState();
   const moduleId = getModuleId(state);
-  const { connected, signAndSubmitTransaction } = useWallet();
+  const { signAndSubmitTransaction } = useWallet();
 
   const [confirming, setConfirming] = useState(false);
-  const { setDrawModeOn } = useDrawMode();
 
   // TODO: @dport get paint price
   const dummyPaintPrice = 130;
@@ -139,19 +140,35 @@ export default function SubmitDrawButton({
     </BottomComponentWrapper>
   ) : (
     <BottomComponentWrapper>
-      <Button
-        backgroundColor={PRIMARY_COLOR}
-        color={SECONDARY_COLOR}
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        width={BUTTON_WIDTH}
-        fontSize={FONT_SIZE}
-        isDisabled={squaresToDraw.length === 0}
-        onClick={openConfirmationModal}
-      >
-        Finish Drawing
-      </Button>
+      <HStack spacing={2}>
+        <Button
+          backgroundColor={SECONDARY_COLOR}
+          color={PRIMARY_COLOR}
+          borderColor={PRIMARY_COLOR}
+          borderWidth="1px"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          width={BUTTON_WIDTH}
+          fontSize={FONT_SIZE}
+          onClick={onClearCanvas}
+        >
+          Clear
+        </Button>
+        <Button
+          backgroundColor={PRIMARY_COLOR}
+          color={SECONDARY_COLOR}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          width={BUTTON_WIDTH}
+          fontSize={FONT_SIZE}
+          isDisabled={squaresToDraw.length === 0}
+          onClick={openConfirmationModal}
+        >
+          Finish Drawing
+        </Button>
+      </HStack>
     </BottomComponentWrapper>
   );
 }
