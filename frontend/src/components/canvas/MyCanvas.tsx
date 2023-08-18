@@ -8,7 +8,6 @@ import DrawingCanvas, { DrawPixelIntent } from "./DrawingCanvas";
 import { StyledCanvasBox } from "./StyledCanvasBox";
 import { useDrawMode } from "../../context/DrawModeContext";
 import SubmitDrawButton from "./SubmitDrawButton";
-import ClearButton from "./ClearButton";
 
 const PIXEL_SIZE = 0.98; // the width of each pixel in the canvas
 const MARGIN_COLOR = "white";
