@@ -1,5 +1,4 @@
 import { Box, Button, Spacer, VStack, useColorMode } from "@chakra-ui/react";
-import { useDrawMode } from "../../context/DrawModeContext";
 import DrawModeToggleButton from "./DrawModeToggleButton";
 
 export const SIDEBAR_WIDTH = 80;
@@ -9,8 +8,6 @@ const BG_COLOR_LIGHT = "#ffffff";
 const BG_COLOR_DARK = "#1C1C1C";
 
 export default function SideBar() {
-  const { drawModeOn } = useDrawMode();
-
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
 
