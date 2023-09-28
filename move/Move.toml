@@ -17,4 +17,4 @@ git = 'https://github.com/banool/aptos-dport-std.git'
 rev = 'main'
 
 [addresses]
-addr = "0x123"
+addr = "_"
