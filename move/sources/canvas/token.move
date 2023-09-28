@@ -67,7 +67,7 @@ module addr::canvas_token {
     /// The caller exceeds the max number of pixels per draw.
     const E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW: u64 = 11;
 
-    /// Drawing disabled for non admin
+    /// Drawing disabled for non admin.
     const E_DRAW_DISABLED_FOR_NON_ADMIN: u64 = 12;
 
     /// Based on the allowlist and/or blocklist (or lack thereof), the caller is
@@ -324,11 +324,7 @@ module addr::canvas_token {
         gs: vector<u8>,
         bs: vector<u8>,
     ) acquires Canvas {
-        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
-        assert!(
-            !is_admin(canvas, signer::address_of(caller)) && canvas_.config.draw_enabled,
-            E_DRAW_DISABLED_FOR_NON_ADMIN
-        );
+        assert_canvas_enabled_for_non_admin(signer::address_of(caller), canvas);
 
         // Assert the vectors are all the same length.
         assert!(
@@ -429,7 +425,6 @@ module addr::canvas_token {
     ) acquires Canvas {
         let caller_is_admin = is_admin(canvas, caller_addr);
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
-
         // If there is a per-account timeout, first confirm that the caller is allowed
         // to write a pixel, and if so, update their last contribution time.
         if (canvas_.config.per_account_timeout_s > 0) {
@@ -448,6 +443,20 @@ module addr::canvas_token {
                 smart_table::add(&mut canvas_.last_contribution_s, caller_addr, now);
             };
         };
+    }
+
+    fun assert_canvas_enabled_for_non_admin(
+        caller_addr: address,
+        canvas: Object<Canvas>,
+    ) acquires Canvas {
+        let caller_is_admin = is_admin(canvas, caller_addr);
+        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
+        if (!caller_is_admin) {
+            assert!(
+                canvas_.config.draw_enabled,
+                E_DRAW_DISABLED_FOR_NON_ADMIN
+            )
+        }
     }
 
     #[view]
@@ -970,7 +979,12 @@ module addr::canvas_token {
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196614, location = addr::canvas_token)]
-    fun test_per_account_timeout(caller: signer, friend1: signer, friend2: signer, aptos_framework: signer) acquires Canvas {
+    fun test_per_account_timeout(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 0, 1, 60);
@@ -984,7 +998,12 @@ module addr::canvas_token {
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
-    fun test_admin_can_update_per_account_timeout(caller: signer, friend1: signer, friend2: signer, aptos_framework: signer) acquires Canvas {
+    fun test_admin_can_update_per_account_timeout(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 0, 1, 60);
@@ -999,11 +1018,76 @@ module addr::canvas_token {
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196612, location = addr::canvas_token)]
-    fun test_nonadmin_cannot_update_per_account_timeout(caller: signer, friend1: signer, friend2: signer, aptos_framework: signer) acquires Canvas {
+    fun test_nonadmin_cannot_update_per_account_timeout(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 0, 1, 60);
-        // Non admin cannot Update per account timeout to 2 seconds
+        // Non admin cannot update per account timeout to 2 seconds
         update_per_account_timeout(&friend1, canvas, 2);
+    }
+
+    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[expected_failure(abort_code = 12, location = addr::canvas_token)]
+    fun test_nonadmin_cannot_draw_after_drawing_disabled_by_admin(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
+        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        // Initially per account timeout to 1 second
+        let canvas = create_canvas(&caller, 0, 1, 60);
+        // Non admin can draw
+        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        // Admin disable drawing
+        set_draw_enabled_or_not(&caller, canvas, false);
+        // Admin can still draw after disabled
+        draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        // Non admin cannot draw
+        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+    }
+
+    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[expected_failure(abort_code = 196612, location = addr::canvas_token)]
+    fun test_nonadmin_cannot_disable_drawing(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
+        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        // Initially per account timeout to 1 second
+        let canvas = create_canvas(&caller, 0, 1, 60);
+        // Non admin cannot disable drawing
+        set_draw_enabled_or_not(&friend1, canvas, false);
+    }
+
+    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    fun test_nonadmin_can_draw_after_drawing_enabled_by_admin(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
+        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        // Initially per account timeout to 1 second
+        let canvas = create_canvas(&caller, 0, 1, 60);
+        // Non admin can draw
+        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        // Admin disable drawing
+        set_draw_enabled_or_not(&caller, canvas, false);
+        // Admin can still draw after disabled
+        draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        // Admin re-enable drawing
+        set_draw_enabled_or_not(&caller, canvas, true);
+        // Wait for 1 second so non admin pass the timeout
+        timestamp::fast_forward_seconds(1);
+        // Non admin can draw
+        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
     }
 }
