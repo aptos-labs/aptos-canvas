@@ -382,10 +382,13 @@ module addr::canvas_token {
             let now = now_seconds();
             if (smart_table::contains(&canvas_.last_contribution_s, caller_addr)) {
                 let last_contribution = smart_table::borrow(&canvas_.last_contribution_s, caller_addr);
-                assert!(
-                    now > (*last_contribution + canvas_.config.per_account_timeout_s),
-                    error::invalid_state(E_MUST_WAIT),
-                );
+                // Admin is not restricted by timeout
+                if (!is_admin(canvas, caller_addr)) {
+                    assert!(
+                        now > (*last_contribution + canvas_.config.per_account_timeout_s),
+                        error::invalid_state(E_MUST_WAIT),
+                    );
+                };
                 *smart_table::borrow_mut(&mut canvas_.last_contribution_s, caller_addr) = now;
             } else {
                 smart_table::add(&mut canvas_.last_contribution_s, caller_addr, now);
