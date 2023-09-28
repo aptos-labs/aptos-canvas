@@ -166,7 +166,7 @@ module addr::canvas_token {
         max_number_of_pixels_per_draw: u64,
 
         /// Drawing is enabled or not
-        draw_enabled: bool,
+        draw_enabled_for_non_admin: bool,
     }
 
     struct Pixel has copy, drop, store {
@@ -204,7 +204,7 @@ module addr::canvas_token {
         can_draw_multiple_pixels_at_once: bool,
         owner_is_super_admin: bool,
         max_number_of_pixels_per_draw: u64,
-        draw_enabled: bool,
+        draw_enabled_for_non_admin: bool,
     ) {
         let config = CanvasConfig {
             width,
@@ -223,7 +223,7 @@ module addr::canvas_token {
             can_draw_multiple_pixels_at_once,
             owner_is_super_admin,
             max_number_of_pixels_per_draw,
-            draw_enabled,
+            draw_enabled_for_non_admin,
         };
         create_(caller, description, name, config);
     }
@@ -453,7 +453,7 @@ module addr::canvas_token {
         let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
         if (!caller_is_admin) {
             assert!(
-                canvas_.config.draw_enabled,
+                canvas_.config.draw_enabled_for_non_admin,
                 E_DRAW_DISABLED_FOR_NON_ADMIN
             )
         }
@@ -673,7 +673,7 @@ module addr::canvas_token {
         canvas_.config.max_number_of_pixels_per_draw = updated_max_number_of_pixels_per_draw
     }
 
-    public entry fun set_draw_enabled_or_not(
+    public entry fun set_draw_enabled_for_non_admin_or_not(
         caller: &signer,
         canvas: Object<Canvas>,
         enabled: bool,
@@ -681,7 +681,7 @@ module addr::canvas_token {
         let caller_addr = signer::address_of(caller);
         assert_is_admin(canvas, caller_addr);
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
-        canvas_.config.draw_enabled = enabled
+        canvas_.config.draw_enabled_for_non_admin = enabled
     }
 
     public entry fun update_per_account_timeout(
@@ -856,7 +856,7 @@ module addr::canvas_token {
             can_draw_multiple_pixels_at_once: false,
             owner_is_super_admin: true,
             max_number_of_pixels_per_draw: 1,
-            draw_enabled: true,
+            draw_enabled_for_non_admin: true,
         };
 
         create_(caller, string::utf8(b"description"), string::utf8(b"name"), config)
@@ -1045,7 +1045,7 @@ module addr::canvas_token {
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin disable drawing
-        set_draw_enabled_or_not(&caller, canvas, false);
+        set_draw_enabled_for_non_admin_or_not(&caller, canvas, false);
         // Admin can still draw after disabled
         draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Non admin cannot draw
@@ -1064,7 +1064,7 @@ module addr::canvas_token {
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 0, 1, 60);
         // Non admin cannot disable drawing
-        set_draw_enabled_or_not(&friend1, canvas, false);
+        set_draw_enabled_for_non_admin_or_not(&friend1, canvas, false);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -1080,11 +1080,11 @@ module addr::canvas_token {
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin disable drawing
-        set_draw_enabled_or_not(&caller, canvas, false);
+        set_draw_enabled_for_non_admin_or_not(&caller, canvas, false);
         // Admin can still draw after disabled
         draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin re-enable drawing
-        set_draw_enabled_or_not(&caller, canvas, true);
+        set_draw_enabled_for_non_admin_or_not(&caller, canvas, true);
         // Wait for 1 second so non admin pass the timeout
         timestamp::fast_forward_seconds(1);
         // Non admin can draw
