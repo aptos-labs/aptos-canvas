@@ -155,6 +155,9 @@ module addr::canvas_token {
         /// ability to add / remove additional admins. Set at creation time and can
         /// never be changed.
         owner_is_super_admin: bool,
+
+        /// Max number of pixels can draw at one time
+        max_number_of_pixels_per_draw: u64,
     }
 
     struct Pixel has copy, drop, store {
@@ -191,6 +194,7 @@ module addr::canvas_token {
         default_color_b: u8,
         can_draw_multiple_pixels_at_once: bool,
         owner_is_super_admin: bool,
+        max_number_of_pixels_per_draw: u64,
     ) {
         let config = CanvasConfig {
             width,
@@ -208,6 +212,7 @@ module addr::canvas_token {
             },
             can_draw_multiple_pixels_at_once,
             owner_is_super_admin,
+            max_number_of_pixels_per_draw,
         };
         create_(caller, description, name, config);
     }
@@ -323,6 +328,12 @@ module addr::canvas_token {
         );
         assert!(
             vector::length(&xs) == vector::length(&bs),
+            error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
+        );
+
+        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
+        assert!(
+            vector::length(&xs) <= canvas_.config.max_number_of_pixels_per_draw,
             error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
         );
 
@@ -606,6 +617,17 @@ module addr::canvas_token {
         simple_set::remove(&mut canvas_.blocklisted_artists, &addr);
     }
 
+    public entry fun update_max_number_of_piexls_per_draw(
+        caller: &signer,
+        canvas: Object<Canvas>,
+        updated_max_number_of_pixels_per_draw: u64,
+    ) acquires Canvas {
+        let caller_addr = signer::address_of(caller);
+        assert_is_admin(canvas, caller_addr);
+        let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
+        canvas_.config.max_number_of_pixels_per_draw = updated_max_number_of_pixels_per_draw
+    }
+
     public entry fun clear(
         caller: &signer,
         canvas: Object<Canvas>,
@@ -654,6 +676,14 @@ module addr::canvas_token {
 
         let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
         simple_set::contains(&canvas_.admins, &caller_addr)
+    }
+
+    #[view]
+    public fun get_max_number_of_piexls_per_draw(
+        canvas: Object<Canvas>,
+    ): u64 acquires Canvas {
+        let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
+        canvas_.config.max_number_of_pixels_per_draw
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -766,6 +796,7 @@ module addr::canvas_token {
             },
             can_draw_multiple_pixels_at_once: false,
             owner_is_super_admin: true,
+            max_number_of_pixels_per_draw: 1000,
         };
 
         create_(caller, string::utf8(b"description"), string::utf8(b"name"), config)
