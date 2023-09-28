@@ -21,7 +21,7 @@ module addr::canvas_token {
     use aptos_std::math64;
     use aptos_std::object::{Self, ExtendRef, Object};
     use aptos_std::string_utils;
-    use aptos_std::smart_table::{Self, SmartTable};
+    use aptos_std::table::{Self, Table};
     use aptos_token_objects::token::{Self, MutatorRef};
     use dport_std::simple_set::{Self, SimpleSet};
     use addr::paint_fungible_asset;
@@ -87,11 +87,11 @@ module addr::canvas_token {
         config: CanvasConfig,
 
         /// The pixels of the canvas.
-        pixels: SmartTable<u64, Pixel>,
+        pixels: Table<u64, Pixel>,
 
         /// When each artist last contributed. Only tracked if
         /// per_account_timeout_s is non-zero.
-        last_contribution_s: SmartTable<address, u64>,
+        last_contribution_s: Table<address, u64>,
 
         /// Accounts that are allowed to contribute. If empty, anyone can contribute.
         /// One notable application of this list is the owner of the canvas, if
@@ -267,8 +267,8 @@ module addr::canvas_token {
         // Create the canvas.
         let canvas = Canvas {
             config,
-            pixels: smart_table::new(),
-            last_contribution_s: smart_table::new(),
+            pixels: table::new(),
+            last_contribution_s: table::new(),
             allowlisted_artists: simple_set::create(),
             blocklisted_artists: simple_set::create(),
             admins: simple_set::create(),
@@ -416,7 +416,7 @@ module addr::canvas_token {
         let color = Color { r, g, b };
         let pixel = Pixel { color, drawn_at_s: now_seconds() };
         let index = y * canvas_.config.width + x;
-        smart_table::upsert(&mut canvas_.pixels, index, pixel);
+        table::upsert(&mut canvas_.pixels, index, pixel);
     }
 
     fun assert_timeout_and_update_last_contribution_time(
@@ -429,8 +429,8 @@ module addr::canvas_token {
         // to write a pixel, and if so, update their last contribution time.
         if (canvas_.config.per_account_timeout_s > 0) {
             let now = now_seconds();
-            if (smart_table::contains(&canvas_.last_contribution_s, caller_addr)) {
-                let last_contribution = smart_table::borrow(&canvas_.last_contribution_s, caller_addr);
+            if (table::contains(&canvas_.last_contribution_s, caller_addr)) {
+                let last_contribution = table::borrow(&canvas_.last_contribution_s, caller_addr);
                 // Admin is not restricted by timeout
                 if (!caller_is_admin) {
                     assert!(
@@ -438,9 +438,9 @@ module addr::canvas_token {
                         error::invalid_state(E_MUST_WAIT),
                     );
                 };
-                *smart_table::borrow_mut(&mut canvas_.last_contribution_s, caller_addr) = now;
+                *table::borrow_mut(&mut canvas_.last_contribution_s, caller_addr) = now;
             } else {
-                smart_table::add(&mut canvas_.last_contribution_s, caller_addr, now);
+                table::add(&mut canvas_.last_contribution_s, caller_addr, now);
             };
         };
     }
@@ -471,8 +471,8 @@ module addr::canvas_token {
 
         // Determine when the pixel was last drawn.
         let index = y * canvas_.config.width + x;
-        let drawn_at_s = if (smart_table::contains(&canvas_.pixels, index)) {
-            let pixel = smart_table::borrow(&canvas_.pixels, index);
+        let drawn_at_s = if (table::contains(&canvas_.pixels, index)) {
+            let pixel = table::borrow(&canvas_.pixels, index);
             pixel.drawn_at_s
         } else {
             0
@@ -585,7 +585,7 @@ module addr::canvas_token {
         let new_canvas_ = Canvas {
             config,
             pixels,
-            last_contribution_s: smart_table::new(),
+            last_contribution_s: table::new(),
             allowlisted_artists,
             blocklisted_artists,
             admins,
@@ -593,8 +593,7 @@ module addr::canvas_token {
             extend_ref,
             mutator_ref,
         };
-        move_to(&object_signer, new_canvas_);
-        smart_table::destroy(last_contribution_s);
+        move_to(&object_signer, new_canvas_)
     }
 
     #[view]
@@ -725,7 +724,7 @@ module addr::canvas_token {
         let object_signer = object::generate_signer_for_extending(&extend_ref);
         let new_canvas_ = Canvas {
             config,
-            pixels: smart_table::new(),
+            pixels: table::new(),
             last_contribution_s,
             allowlisted_artists,
             blocklisted_artists,
@@ -734,8 +733,7 @@ module addr::canvas_token {
             extend_ref,
             mutator_ref,
         };
-        move_to(&object_signer, new_canvas_);
-        smart_table::destroy(pixels);
+        move_to(&object_signer, new_canvas_)
     }
 
     fun assert_is_admin(canvas: Object<Canvas>, caller_addr: address) acquires Canvas {
