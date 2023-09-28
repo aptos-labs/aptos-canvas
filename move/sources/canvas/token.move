@@ -67,6 +67,9 @@ module addr::canvas_token {
     /// The caller exceeds the max number of pixels per draw.
     const E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW: u64 = 11;
 
+    /// Drawing disabled for non admin
+    const E_DRAW_DISABLED_FOR_NON_ADMIN: u64 = 12;
+
     /// Based on the allowlist and/or blocklist (or lack thereof), the caller is
     /// allowed to contribute to the canvas.
     const STATUS_ALLOWED: u8 = 1;
@@ -161,6 +164,9 @@ module addr::canvas_token {
 
         /// Max number of pixels can draw at one time
         max_number_of_pixels_per_draw: u64,
+
+        /// Drawing is enabled or not
+        draw_enabled: bool,
     }
 
     struct Pixel has copy, drop, store {
@@ -198,6 +204,7 @@ module addr::canvas_token {
         can_draw_multiple_pixels_at_once: bool,
         owner_is_super_admin: bool,
         max_number_of_pixels_per_draw: u64,
+        draw_enabled: bool,
     ) {
         let config = CanvasConfig {
             width,
@@ -216,6 +223,7 @@ module addr::canvas_token {
             can_draw_multiple_pixels_at_once,
             owner_is_super_admin,
             max_number_of_pixels_per_draw,
+            draw_enabled,
         };
         create_(caller, description, name, config);
     }
@@ -316,6 +324,12 @@ module addr::canvas_token {
         gs: vector<u8>,
         bs: vector<u8>,
     ) acquires Canvas {
+        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
+        assert!(
+            !is_admin(canvas, signer::address_of(caller)) && canvas_.config.draw_enabled,
+            E_DRAW_DISABLED_FOR_NON_ADMIN
+        );
+
         // Assert the vectors are all the same length.
         assert!(
             vector::length(&xs) == vector::length(&ys),
@@ -650,6 +664,17 @@ module addr::canvas_token {
         canvas_.config.max_number_of_pixels_per_draw = updated_max_number_of_pixels_per_draw
     }
 
+    public entry fun set_draw_enabled_or_not(
+        caller: &signer,
+        canvas: Object<Canvas>,
+        enabled: bool,
+    ) acquires Canvas {
+        let caller_addr = signer::address_of(caller);
+        assert_is_admin(canvas, caller_addr);
+        let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
+        canvas_.config.draw_enabled = enabled
+    }
+
     public entry fun update_per_account_timeout(
         caller: &signer,
         canvas: Object<Canvas>,
@@ -822,6 +847,7 @@ module addr::canvas_token {
             can_draw_multiple_pixels_at_once: false,
             owner_is_super_admin: true,
             max_number_of_pixels_per_draw: 1,
+            draw_enabled: true,
         };
 
         create_(caller, string::utf8(b"description"), string::utf8(b"name"), config)
