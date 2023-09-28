@@ -413,7 +413,7 @@ module addr::canvas_token {
         caller_addr: address,
         canvas: Object<Canvas>,
     ) acquires Canvas {
-        let is_caller_admin = is_admin(canvas, caller_addr);
+        let caller_is_admin = is_admin(canvas, caller_addr);
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
 
         // If there is a per-account timeout, first confirm that the caller is allowed
@@ -423,7 +423,7 @@ module addr::canvas_token {
             if (smart_table::contains(&canvas_.last_contribution_s, caller_addr)) {
                 let last_contribution = smart_table::borrow(&canvas_.last_contribution_s, caller_addr);
                 // Admin is not restricted by timeout
-                if (!is_caller_admin) {
+                if (!caller_is_admin) {
                     assert!(
                         now >= (*last_contribution + canvas_.config.per_account_timeout_s),
                         error::invalid_state(E_MUST_WAIT),
