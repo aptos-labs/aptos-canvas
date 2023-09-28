@@ -335,10 +335,22 @@ module addr::canvas_token {
         );
 
         let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
+
+        // If `can_draw_for_s` is non-zero, confirm that the canvas is still open.
+        if (canvas_.config.can_draw_for_s > 0) {
+            let now = now_seconds();
+            assert!(
+                now <= (canvas_.created_at_s + canvas_.config.can_draw_for_s),
+                error::invalid_state(E_CANVAS_CLOSED),
+            );
+        };
+
         assert!(
             vector::length(&xs) <= canvas_.config.max_number_of_pixels_per_draw,
             error::invalid_argument(E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW),
         );
+
+        assert_timeout_and_update_last_contribution_time(signer::address_of(caller), canvas);
 
         let i = 0;
         let len = vector::length(&xs);
@@ -354,7 +366,7 @@ module addr::canvas_token {
     }
 
     /// Draw a single pixel to the canvas. We consider the top left corner 0,0.
-    public entry fun draw_one(
+    public fun draw_one(
         caller: &signer,
         canvas: Object<Canvas>,
         x: u64,
@@ -369,7 +381,6 @@ module addr::canvas_token {
         assert_allowlisted_to_draw(canvas, caller_addr);
 
         let cost = determine_cost(canvas, x, y);
-        let caller_is_admin = is_admin(canvas, caller_addr);
 
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
 
@@ -391,6 +402,20 @@ module addr::canvas_token {
             paint_fungible_asset::burn(caller_addr, cost);
         };
 
+        // Write the pixel.
+        let color = Color { r, g, b };
+        let pixel = Pixel { color, drawn_at_s: now_seconds() };
+        let index = y * canvas_.config.width + x;
+        smart_table::upsert(&mut canvas_.pixels, index, pixel);
+    }
+
+    fun assert_timeout_and_update_last_contribution_time(
+        caller_addr: address,
+        canvas: Object<Canvas>,
+    ) acquires Canvas {
+        let is_caller_admin = is_admin(canvas, caller_addr);
+        let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
+
         // If there is a per-account timeout, first confirm that the caller is allowed
         // to write a pixel, and if so, update their last contribution time.
         if (canvas_.config.per_account_timeout_s > 0) {
@@ -398,7 +423,7 @@ module addr::canvas_token {
             if (smart_table::contains(&canvas_.last_contribution_s, caller_addr)) {
                 let last_contribution = smart_table::borrow(&canvas_.last_contribution_s, caller_addr);
                 // Admin is not restricted by timeout
-                if (!caller_is_admin) {
+                if (!is_caller_admin) {
                     assert!(
                         now >= (*last_contribution + canvas_.config.per_account_timeout_s),
                         error::invalid_state(E_MUST_WAIT),
@@ -409,12 +434,6 @@ module addr::canvas_token {
                 smart_table::add(&mut canvas_.last_contribution_s, caller_addr, now);
             };
         };
-
-        // Write the pixel.
-        let color = Color { r, g, b };
-        let pixel = Pixel { color, drawn_at_s: now_seconds() };
-        let index = y * canvas_.config.width + x;
-        smart_table::upsert(&mut canvas_.pixels, index, pixel);
     }
 
     #[view]
@@ -906,6 +925,8 @@ module addr::canvas_token {
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Update max number of pixels per draw to 2
         update_max_number_of_piexls_per_draw(&caller, canvas, 2);
+        // Wait for 1 second
+        timestamp::fast_forward_seconds(1);
         // Can draw 2 pixels now
         draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2], vector[1, 2], vector[1, 2]);
     }
