@@ -894,7 +894,7 @@ module addr::canvas_token {
         // See that when `cost` is five and the multiplier is four, after drawing a
         // pixel, drawing that same pixel costs four times as much.
         let canvas = create_canvas(&caller, 5, 4, 60);
-        draw_one(&caller, canvas, 0, 0, 255, 255, 255);
+        draw_one(signer::address_of(&caller), canvas, 0, 0, 255, 255, 255);
         assert!(determine_cost(canvas, 0, 0) == 20, 1);
 
         // See that after passing half of the delay time, the cost is half of what it
