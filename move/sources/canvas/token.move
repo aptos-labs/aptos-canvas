@@ -324,7 +324,25 @@ module addr::canvas_token {
         gs: vector<u8>,
         bs: vector<u8>,
     ) acquires Canvas {
+        let caller_addr = signer::address_of(caller);
+
+        // Make sure the caller is allowed to draw.
+        assert_allowlisted_to_draw(canvas, caller_addr);
+
+        // Make sure canvas is open to draw.
         assert_canvas_enabled_for_non_admin(signer::address_of(caller), canvas);
+
+        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
+
+        // If `can_draw_for_s` is non-zero, confirm that the canvas is still open.
+        // This is a more granular control than draw_enabled_for_non_admin as it checks open for a certain time
+        if (canvas_.config.can_draw_for_s > 0) {
+            let now = now_seconds();
+            assert!(
+                now <= (canvas_.created_at_s + canvas_.config.can_draw_for_s),
+                error::invalid_state(E_CANVAS_CLOSED),
+            );
+        };
 
         // Assert the vectors are all the same length.
         assert!(
@@ -344,17 +362,6 @@ module addr::canvas_token {
             error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
         );
 
-        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
-
-        // If `can_draw_for_s` is non-zero, confirm that the canvas is still open.
-        if (canvas_.config.can_draw_for_s > 0) {
-            let now = now_seconds();
-            assert!(
-                now <= (canvas_.created_at_s + canvas_.config.can_draw_for_s),
-                error::invalid_state(E_CANVAS_CLOSED),
-            );
-        };
-
         assert!(
             vector::length(&xs) <= canvas_.config.max_number_of_pixels_per_draw,
             error::invalid_argument(E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW),
@@ -370,14 +377,14 @@ module addr::canvas_token {
             let r = vector::pop_back(&mut rs);
             let g = vector::pop_back(&mut gs);
             let b = vector::pop_back(&mut bs);
-            draw_one(caller, canvas, x, y, r, g, b);
+            draw_one(caller_addr, canvas, x, y, r, g, b);
             i = i + 1;
         };
     }
 
     /// Draw a single pixel to the canvas. We consider the top left corner 0,0.
     public fun draw_one(
-        caller: &signer,
+        caller_addr: address,
         canvas: Object<Canvas>,
         x: u64,
         y: u64,
@@ -385,23 +392,9 @@ module addr::canvas_token {
         g: u8,
         b: u8,
     ) acquires Canvas {
-        let caller_addr = signer::address_of(caller);
-
-        // Make sure the caller is allowed to draw.
-        assert_allowlisted_to_draw(canvas, caller_addr);
-
         let cost = determine_cost(canvas, x, y);
 
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
-
-        // If `can_draw_for_s` is non-zero, confirm that the canvas is still open.
-        if (canvas_.config.can_draw_for_s > 0) {
-            let now = now_seconds();
-            assert!(
-                now <= (canvas_.created_at_s + canvas_.config.can_draw_for_s),
-                error::invalid_state(E_CANVAS_CLOSED),
-            );
-        };
 
         // Confirm the coordinates are not out of bounds.
         assert!(x < canvas_.config.width, error::invalid_argument(E_COORDINATE_OUT_OF_BOUNDS));
