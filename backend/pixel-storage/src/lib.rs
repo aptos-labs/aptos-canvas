@@ -5,7 +5,7 @@ use anyhow::Result;
 use aptos_move_graphql_scalars::Address;
 pub use mmap::{MmapPixelStorage, MmapPixelStorageConfig};
 use move_types::Color;
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug};
 
 /// Handles creating, updating, and reading canvases.
 #[async_trait::async_trait]
@@ -13,6 +13,7 @@ pub trait PixelStorageTrait: Debug + Send + Sync + 'static {
     async fn create_canvas(&self, intent: CreateCanvasIntent) -> Result<()>;
     async fn write_pixel(&self, intent: WritePixelIntent) -> Result<()>;
     async fn get_canvas_as_png(&self, canvas_address: &Address) -> Result<Vec<u8>>;
+    async fn get_canvases_as_pngs(&self) -> Result<HashMap<Address, Vec<u8>>>;
 }
 
 /// All the information necessary to write a Pixel to storage.

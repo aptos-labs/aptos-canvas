@@ -6,6 +6,7 @@ use memmap2::MmapMut;
 use move_types::Color;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     fs::{File, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
@@ -14,6 +15,12 @@ use std::{
 // There could be an alternate implementation where instead of using the mmap, for
 // every pixel we read the png, update the pixel, and write the png back to disk.
 // This would be slower and result in more disk IO but use less storage and memory.
+
+// Note: The POSIX standard states that when a process dies, no matter how (even if
+// it receives SIGKILL) the kernel will eventually flush all the writes in the mmap
+// to disk, as long as the mmap is created using MAP_SHARED (which it is, because we
+// use `map_mut` when creating the mmap). So there should be no need to manually flush
+// the mmap on shutdown.
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct MmapPixelStorageConfig {
@@ -129,6 +136,22 @@ impl PixelStorageTrait for MmapPixelStorage {
             .context("Failed to convert data to a png")?;
 
         Ok(png)
+    }
+
+    /// This function returns all the canvases in the mmap as pngs. We use this for the
+    /// flusher, which takes the local mmap data and writes it to an external location
+    /// as PNGs. One thing worth noting is `mmaps` doesn't contain every file on disk,
+    /// only those written to at least once since startup. This is actually fine for
+    /// use in the flusher, since if nothing has been written since startup, there is
+    /// also nothing to flush.
+    async fn get_canvases_as_pngs(&self) -> Result<HashMap<Address, Vec<u8>>> {
+        let mut pngs = HashMap::new();
+        for mmap in self.mmaps.iter() {
+            let address = mmap.key();
+            let png = self.get_canvas_as_png(address).await?;
+            pngs.insert(address.clone(), png);
+        }
+        Ok(pngs)
     }
 }
 

@@ -27,20 +27,20 @@ pub struct CanvasProcessorConfig {
 #[derive(Debug)]
 pub struct CanvasProcessor {
     config: CanvasProcessorConfig,
-    canvas_storage: Arc<dyn PixelStorageTrait>,
-    db_storage: Arc<dyn MetadataStorageTrait>,
+    pixels_storage: Arc<dyn PixelStorageTrait>,
+    metadata_storage: Arc<dyn MetadataStorageTrait>,
 }
 
 impl CanvasProcessor {
     pub fn new(
         config: CanvasProcessorConfig,
-        canvas_storage: Arc<dyn PixelStorageTrait>,
-        db_storage: Arc<dyn MetadataStorageTrait>,
+        pixels_storage: Arc<dyn PixelStorageTrait>,
+        metadata_storage: Arc<dyn MetadataStorageTrait>,
     ) -> Self {
         Self {
             config,
-            canvas_storage,
-            db_storage,
+            pixels_storage,
+            metadata_storage,
         }
     }
 
@@ -100,7 +100,7 @@ impl ProcessorTrait for CanvasProcessor {
         // Create canvases.
         for create_canvas_intent in all_create_canvas_intents {
             info!("Creating canvas {}", create_canvas_intent.canvas_address);
-            self.canvas_storage
+            self.pixels_storage
                 .create_canvas(create_canvas_intent)
                 .await
                 .context("Failed to create canvas in storage")?;
@@ -115,7 +115,7 @@ impl ProcessorTrait for CanvasProcessor {
                 start_version,
                 end_version
             );
-            self.canvas_storage
+            self.pixels_storage
                 .write_pixel(write_pixel_intent)
                 .await
                 .context("Failed to write pixel in storage")?;
@@ -130,7 +130,7 @@ impl ProcessorTrait for CanvasProcessor {
                 start_version,
                 end_version
             );
-            self.db_storage
+            self.metadata_storage
                 .update_attribution(update_attribution_intent)
                 .await
                 .context("Failed to update attribution in storage")?;
