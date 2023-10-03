@@ -46,12 +46,12 @@ jobs:
           ref: ${{ env.GIT_SHA }}
 
       - name: Login to GCP Artifact Registry
-        uses: ./.github/actions/gar-auth
+        uses: aptos-labs/actions/gar-auth@main
         with:
           GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           GCP_SERVICE_ACCOUNT_EMAIL: ${{ vars.GCP_SERVICE_ACCOUNT_EMAIL }}
 
-      - uses: ./.github/actions/docker-buildx-setup
+      - uses: aptos-labs/actions/docker-setup@main
 
       - name: Build and Push Graffio image
         working-directory: backend
