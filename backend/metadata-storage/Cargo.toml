@@ -1,0 +1,26 @@
+[package]
+name = "metadata-storage"
+description = "todo"
+version = "0.1.0"
+
+# Workspace inherited keys
+authors = { workspace = true }
+edition = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+# External types
+anyhow = { workspace = true }
+aptos-move-graphql-scalars = { workspace = true }
+aptos-processor-framework = { workspace = true }
+async-trait = { workspace = true }
+entities = { workspace = true }
+migrations = { workspace = true }
+sea-orm = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

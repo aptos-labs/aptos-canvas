@@ -1,0 +1,31 @@
+[package]
+name = "all-in-one"
+description = "todo"
+version = "0.1.0"
+
+# Workspace inherited keys
+authors = { workspace = true }
+edition = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+# Internal
+api = { workspace = true }
+metadata-storage = { workspace = true }
+pixel-storage = { workspace = true }
+processor = { workspace = true }
+
+# External
+anyhow = { workspace = true }
+aptos-processor-framework = { workspace = true }
+clap = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

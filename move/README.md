@@ -48,17 +48,25 @@ aptos move view --assume-yes --function-id $NETWORK::paint_fungible_asset::get_m
 ```
 
 ## Generating schema
-Using an Aptos CLI built from the `banool/rust-move-codegen` branch.
+Build the Aptos CLI from the correct aptos-core branch.
 ```
-aptos move generate schema --named-addresses addr=0x3 --schema-path ./
+cd ~/a/core
+git checkout banool/rust-move-codegen
+cargo build -p aptos
 ```
 
-The from within `frontend/` run this:
+Generate the GraphQL schema representation of the module ABI.
+```
+~/a/core/target/debug/aptos move generate schema --named-addresses addr=0x3 --schema-path ./
+```
+
+To regenerate the types for the backend run this here.
+```
+~/a/core/target/debug/aptos move generate rust --named-addresses addr=0x3 --generate-to ../backend/move-types/src/
+mv ../backend/move-types/src/mod.rs ../backend/move-types/src/lib.rs
+```
+
+To regenerate the types for the frontend run this from within `frontend/`.
 ```
 pnpm generate-canvas-gql
-```
-
-For Rust code, you can generate it with the CLI directly. Use this:
-```
-aptos move generate rust --named-addresses addr=0x3 --generate-to ../processor/service/src/generated
 ```

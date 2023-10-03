@@ -1,0 +1,12 @@
+stream_subscriber_config:
+  indexer_grpc_data_service_address: 127.0.0.1:50051
+  auth_token: dummy_token
+dispatcher_config:
+common_storage_config:
+canvas_processor_config:
+  canvas_contract_address: "0xfbc45a84bd65b000d259ac91a8f314c93313e6d6787dbac71bdaf044f661a4f8"
+pixel_storage_config:
+  storage_directory: /tmp/canvases
+api_config:
+metadata_storage_config:
+  connection_string: "postgres://dport:@localhost:5432/canvas"

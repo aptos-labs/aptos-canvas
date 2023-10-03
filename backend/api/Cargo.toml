@@ -1,0 +1,32 @@
+[package]
+name = "api"
+description = "todo"
+version = "0.1.0"
+
+# Workspace inherited keys
+authors = { workspace = true }
+edition = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+publish = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+# Internal
+metadata-storage = { workspace = true }
+pixel-storage = { workspace = true }
+
+# External
+anyhow = { workspace = true }
+aptos-move-graphql-scalars = { workspace = true }
+async-graphql = { workspace = true }
+async-graphql-poem = { workspace = true }
+entities = { workspace = true }
+once_cell = { workspace = true }
+poem = { workspace = true }
+sea-orm = { workspace = true }
+seaography = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

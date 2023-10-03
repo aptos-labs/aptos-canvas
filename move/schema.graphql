@@ -67,6 +67,10 @@ type AggregatorFactory {
 	phantom_table: Table!
 }
 
+type AggregatorSnapshot {
+	value: Any!
+}
+
 type AllowedDep {
 	account: Address!
 	module_name: String!
@@ -84,6 +88,10 @@ type ApprovedExecutionHashes {
 
 type AptosCoin {
 	dummy_field: Boolean!
+}
+
+type AptosCoinMintCapability {
+	mint_cap: MintCapability!
 }
 
 type AptosCollection {
@@ -162,6 +170,8 @@ type CanvasConfig {
 	default_color: Color!
 	can_draw_multiple_pixels_at_once: Boolean!
 	owner_is_super_admin: Boolean!
+	max_number_of_pixels_per_draw: U64!
+	draw_enabled_for_non_admin: Boolean!
 }
 
 type Cap {
@@ -442,6 +452,14 @@ type FakeCons {
 
 type Features {
 	features: [U8!]!
+}
+
+type FeeStatement {
+	total_charge_gas_units: U64!
+	execution_gas_units: U64!
+	io_gas_units: U64!
+	storage_fee_octas: U64!
+	storage_fee_refund_octas: U64!
 }
 
 type FixedPoint32 {
@@ -1128,6 +1146,10 @@ type Token {
 	name: String!
 	uri: String!
 	mutation_events: EventHandle!
+}
+
+type TombStone {
+	original_owner: Address!
 }
 
 type TransactionExecutionFailedEvent {
