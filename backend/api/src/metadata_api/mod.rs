@@ -11,18 +11,20 @@ use poem::{get, handler, web::Html, Endpoint, IntoResponse, Route};
 use schema::{build_schema, OrmDataloader};
 use std::sync::Arc;
 
-const GQL_ENDPOINT: &str = "/gql";
+pub const BASE: &str = "/metadata";
+const GRAPHQL_ENDPOINT: &str = "/graphql";
 
 #[handler]
 async fn graphql_playground() -> impl IntoResponse {
     Html(playground_source(GraphQLPlaygroundConfig::new(
-        GQL_ENDPOINT,
+        // This tells the UI where to send requests.
+        &format!("{}{}", BASE, GRAPHQL_ENDPOINT),
     )))
 }
 
 #[handler]
 async fn root() -> String {
-    "Hello from the metadata API!!".to_string()
+    "Hello from the metadata API!! Try adding /graphql to the route!".to_string()
 }
 
 pub struct MetadataApi {
@@ -50,7 +52,7 @@ impl MetadataApi {
 
         // Return the route.
         Ok(Route::new().at("/", get(root)).at(
-            GQL_ENDPOINT,
+            GRAPHQL_ENDPOINT,
             get(graphql_playground).post(GraphQL::new(schema)),
         ))
     }

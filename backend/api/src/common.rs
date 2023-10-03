@@ -17,6 +17,7 @@ use std::{
 use tracing::info;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct ApiConfig {
     #[serde(default = "ApiConfig::default_listen_address")]
     pub listen_address: SocketAddrV4,
@@ -40,27 +41,33 @@ pub async fn start_api(config: ApiConfig, route: Route) -> Result<()> {
         .context("API server ended unexpectedly")
 }
 
-#[handler]
-async fn root() -> String {
-    "Hello from the root!!".to_string()
-}
-
 /// This convenience method helps with building an API with the desired routes based
 /// on the APIs the user has built.
 pub fn build_full_route(
     pixel_storage: Option<Arc<dyn PixelStorageTrait>>,
     metadata_storage: Option<Arc<PostgresMetadataStorage>>,
 ) -> Result<Route> {
-    let mut route = Route::new().at("/", get(root));
+    let mut route = Route::new().nest("/", get(v1_root));
     if let Some(pixel_storage) = pixel_storage {
         let pixel_api = PixelApi::new(pixel_storage);
         let pixel_route = pixel_api.get_route()?;
-        route = route.at("/pixel", pixel_route);
+        route = route.nest(crate::pixel_api::BASE, pixel_route);
     }
     if let Some(metadata_storage) = metadata_storage {
         let metadata_api = MetadataApi::new(metadata_storage);
         let metadata_route = metadata_api.get_route()?;
-        route = route.at("/metadata", metadata_route);
+        route = route.nest(crate::metadata_api::BASE, metadata_route);
     }
-    Ok(route)
+    // Nest everything under /v1
+    Ok(Route::new().at("/", get(root)).nest("/v1", route))
+}
+
+#[handler]
+async fn root() -> String {
+    "Hello from the root!! Try querying /v1, e.g. /v1/pixels or /v1/metadata 🤠".to_string()
+}
+
+#[handler]
+async fn v1_root() -> String {
+    "Hello from the root at /v1!!".to_string()
 }

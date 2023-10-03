@@ -2596,6 +2596,7 @@ dependencies = [
  "pixel-storage",
  "serde",
  "serde_json",
+ "tokio",
  "tracing",
 ]
 

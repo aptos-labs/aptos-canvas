@@ -1,15 +1,14 @@
 use anyhow::{Context, Result};
 use aptos_move_graphql_scalars::Address;
-use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use pixel_storage::PixelStorageTrait;
 use poem::{
     get, handler,
-    web::{Data, Html, Path},
-    Endpoint, EndpointExt, IntoResponse, Response, Route,
+    web::{Data, Path},
+    Endpoint, EndpointExt, Response, Route,
 };
 use std::{str::FromStr, sync::Arc};
 
-const GQL_ENDPOINT: &str = "/gql";
+pub const BASE: &str = "/pixels";
 
 #[handler]
 async fn get_image(
@@ -38,15 +37,8 @@ async fn get_image(
 }
 
 #[handler]
-async fn graphql_playground() -> impl IntoResponse {
-    Html(playground_source(GraphQLPlaygroundConfig::new(
-        GQL_ENDPOINT,
-    )))
-}
-
-#[handler]
 async fn root() -> String {
-    "Hello from the pixel API!!".to_string()
+    "Hello from the pixels API!!".to_string()
 }
 
 pub struct PixelApi {

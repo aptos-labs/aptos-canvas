@@ -1,12 +1,7 @@
 use anyhow::Context as AnyhowContext;
 use api::ApiConfig;
-use aptos_processor_framework::{
-    CommonStorageConfig, DispatcherConfig, GrpcStreamSubscriberConfig,
-};
 use clap::Parser;
-use metadata_storage::PostgresMetadataStorageConfig;
-use pixel_storage::MmapPixelStorageConfig;
-use processor::CanvasProcessorConfig;
+use processor::RunConfig;
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::BufReader, path::PathBuf};
 
@@ -17,13 +12,9 @@ pub struct Args {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
-    pub stream_subscriber_config: GrpcStreamSubscriberConfig,
-    pub dispatcher_config: DispatcherConfig,
-    pub common_storage_config: CommonStorageConfig,
-    pub canvas_processor_config: CanvasProcessorConfig,
-    pub pixel_storage_config: MmapPixelStorageConfig,
-    pub metadata_storage_config: PostgresMetadataStorageConfig,
+    pub processor_config: RunConfig,
     pub api_config: ApiConfig,
 }
 
