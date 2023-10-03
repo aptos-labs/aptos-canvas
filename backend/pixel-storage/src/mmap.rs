@@ -149,7 +149,7 @@ impl PixelStorageTrait for MmapPixelStorage {
         for mmap in self.mmaps.iter() {
             let address = mmap.key();
             let png = self.get_canvas_as_png(address).await?;
-            pngs.insert(address.clone(), png);
+            pngs.insert(*address, png);
         }
         Ok(pngs)
     }

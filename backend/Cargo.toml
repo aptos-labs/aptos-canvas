@@ -4,6 +4,7 @@ members = [
     "all-in-one",
     "api",
     "entities",
+    "flusher",
     "metadata-storage",
     "migrations",
     "move-types",
@@ -24,6 +25,7 @@ rust-version = "1.72.1"
 # Internal
 api = { path = "api" }
 entities = { path = "entities" }
+flusher = { path = "flusher" }
 migrations = { path = "migrations" }
 metadata-storage = { path = "metadata-storage" }
 move-types = { path = "move-types" }
