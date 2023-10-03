@@ -1,0 +1,8 @@
+target
+Dockerfile
+.dockerignore
+.git
+.gitignore
+
+# ignore these non-build directories
+deployment/

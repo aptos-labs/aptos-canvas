@@ -1,0 +1,59 @@
+name: "*run Docker Build"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches:
+      - rustielin/ci # canary
+
+# cancel redundant builds
+concurrency:
+  # for push and workflow_dispatch events we use `github.sha` in the concurrency group and don't really cancel each other out/limit concurrency
+  # for pull_request events newer jobs cancel earlier jobs to save on CI etc.
+  group: ${{ github.workflow }}-${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.sha || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # In case of pull_request events by default github actions merges main into the PR branch and then runs the tests etc
+  # on the prospective merge result instead of only on the tip of the PR.
+  # For more info also see https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
+  GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  GCP_DOCKER_ARTIFACT_REPO: ${{ vars.GCP_DOCKER_ARTIFACT_REPO }}
+
+  # On push events, tag the image with a special image tag prefix, so it's easier to identify
+  # Otherwise, default to empty
+  IMAGE_TAG_PREFIX: ${{ (github.event_name == 'push' && github.ref_name) || '' }}
+
+  # TARGET_CACHE_ID is used as part of the docker tag / cache key inside our bake.hcl docker bake files.
+  # The goal here is to have a branch or PR-local cache such that consecutive pushes to a shared branch or a specific PR can
+  # reuse layers from a previous docker build/commit.
+  # We use `pr-<pr_number>` as cache-id for PRs and simply <branch_name> otherwise.
+  TARGET_CACHE_ID: ${{ github.event.number && format('pr-{0}', github.event.number) || github.ref_name }}
+
+permissions:
+  contents: read
+  id-token: write #required for GCP Workload Identity federation which we use to login into Google Artifact Registry
+
+jobs:
+  build_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          ref: ${{ env.GIT_SHA }}
+
+      - name: Login to GCP Artifact Registry
+        uses: ./.github/actions/gar-auth
+        with:
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SERVICE_ACCOUNT_EMAIL: ${{ vars.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - uses: ./.github/actions/docker-buildx-setup
+
+      - name: Build and Push Graffio image
+        working-directory: backend
+        run: |
+          docker buildx bake --progress=plain --push -f ./docker-bake.hcl
