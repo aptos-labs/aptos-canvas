@@ -17,8 +17,9 @@ const GRAPHQL_ENDPOINT: &str = "/graphql";
 #[handler]
 async fn graphql_playground() -> impl IntoResponse {
     Html(playground_source(GraphQLPlaygroundConfig::new(
-        // This tells the UI where to send requests.
-        &format!("{}{}", BASE, GRAPHQL_ENDPOINT),
+        // This tells the UI where to send requests. It's a little hacky but it works
+        // fine for now.
+        &format!("/v1{}{}", BASE, GRAPHQL_ENDPOINT),
     )))
 }
 

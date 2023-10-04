@@ -12,7 +12,7 @@ When I say "pixel data" I mean specifically the pixels of the canvas. When I say
 - `migrations`: Written by hand, this defines the DB schema. Use this to setup tables in the DB.
 - `entities`: This reads the tables in the DB and defines entities to help with reading to / writing from the DB and making it possible to expose data via GraphQL (courtesy of Seaography derive magic).
 - `move-types`: The `src/` in this dir is generated based on the GraphQL schema representation of the ABI of the Move module. See below for how to regenerate it.
-- `service`: Top level service that ties it all together. It can run the 3 desired combinations of services.
+- `service`: Top level service that ties it all together. It can run the 3 desired combinations of services. We do this all in one place for convenience since coupling all the deps isn't a big deal.
 
 ## Local Development
 Spin up a local development environment (node API + txn stream service):
@@ -22,10 +22,10 @@ aptos node run-local-testnet --force-restart --assume-yes
 
 Run the processor:
 ```
-rm -rf /tmp/canvases && mkdir /tmp/canvases && cargo run -p service -- --config-path configs/local.yaml
+rm -rf /tmp/canvases && mkdir /tmp/canvases && cargo run -p service -- -c configs/local.yaml
 ```
 
-The API will be running at http://127.0.0.1:7645. You can access the gql playground at http://127.0.0.1:7645/gql.
+The metadata API will be running at http://127.0.0.1:7645. You can access the gql playground at http://127.0.0.1:7645/v1/metadata/graphql.
 
 ## Updating DB
 Install the necessary tools:

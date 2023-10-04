@@ -2,6 +2,7 @@ mod gcs;
 
 use anyhow::Result;
 pub use gcs::{GcsFlusher, GcsFlusherConfig};
+use std::time::Duration;
 use tokio::task::JoinHandle;
 use tracing::{debug, error, info};
 
@@ -11,9 +12,12 @@ pub trait FlusherTrait: Send + Sync + 'static {
     /// Flush the data just once.
     async fn flush(&self) -> Result<()>;
 
+    /// Get the interval at which we should flush.
+    fn get_interval(&self) -> Duration;
+
     /// Consume the flusher to create a task in which we periodically flush the data.
     /// This returns a handle for the task. This task should never end.
-    fn run(self, interval: std::time::Duration) -> JoinHandle<()>
+    fn run(self) -> JoinHandle<()>
     where
         Self: Sized,
     {
@@ -36,7 +40,7 @@ pub trait FlusherTrait: Send + Sync + 'static {
                         }
                     },
                 }
-                tokio::time::sleep(interval).await;
+                tokio::time::sleep(self.get_interval()).await;
             }
         })
         // This ^ task is never meant to end. If it does, we should move past the

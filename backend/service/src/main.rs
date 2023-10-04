@@ -9,6 +9,7 @@ use crate::config::{Args, Config};
 use anyhow::{Context as AnyhowContext, Result};
 use api::{build_full_route, start_api};
 use clap::Parser;
+use flusher::{FlusherTrait, GcsFlusher};
 use metadata_storage::PostgresMetadataStorage;
 use pixel_storage::MmapPixelStorage;
 use processor::run;
@@ -73,7 +74,17 @@ async fn main() -> Result<()> {
                     .await
                     .context("Failed to initialize Postgres storage")?,
             );
-            run(config.processor_config, metadata_storage, pixels_storage).await?
+            let mut tasks = run(
+                config.processor_config,
+                metadata_storage,
+                pixels_storage.clone(),
+            )
+            .await?;
+            let gcs_flusher =
+                GcsFlusher::new(config.gcs_flusher.clone(), pixels_storage.clone()).await?;
+            let gcs_flusher_task = gcs_flusher.run();
+            tasks.push(gcs_flusher_task);
+            tasks
         },
         Config::MetadataApiOnly(config) => {
             let metadata_storage = Arc::new(

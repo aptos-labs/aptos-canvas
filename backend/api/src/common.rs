@@ -18,14 +18,16 @@ use tracing::info;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+#[serde(default)]
 pub struct ApiConfig {
-    #[serde(default = "ApiConfig::default_listen_address")]
     pub listen_address: SocketAddrV4,
 }
 
-impl ApiConfig {
-    pub fn default_listen_address() -> SocketAddrV4 {
-        SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 7645)
+impl Default for ApiConfig {
+    fn default() -> Self {
+        Self {
+            listen_address: SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 7645),
+        }
     }
 }
 

@@ -10,7 +10,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 #[derive(Debug, Parser)]
 pub struct Args {
-    #[clap(long)]
+    #[clap(short, long)]
     pub config_path: PathBuf,
 }
 

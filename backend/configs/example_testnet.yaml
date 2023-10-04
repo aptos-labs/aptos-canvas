@@ -1,13 +1,13 @@
-stream_subscriber_config:
-  indexer_grpc_data_service_address: grpc.testnet.aptoslabs.com:443
-  auth_token: "todo"
-dispatcher_config:
-common_storage_config:
-  initial_starting_version: 613358990
-canvas_processor_config:
-  canvas_contract_address: "0x481d6509302e3379b9a8cf524da0000feee18f811d1da7e5addc7f64cdaaac60"
+type: processor_only
+processor_config:
+  stream_subscriber_config:
+    indexer_grpc_data_service_address: grpc.testnet.aptoslabs.com:443
+    auth_token: todo
+  dispatcher_config: {}
+  common_storage_config: {}
+  processor_config:
+    canvas_contract_address: "0xfbc45a84bd65b000d259ac91a8f314c93313e6d6787dbac71bdaf044f661a4f8"
 pixel_storage_config:
-  storage_directory: /var/canvases
-api_config:
+  storage_directory: /tmp/canvases
 metadata_storage_config:
-  connection_string: "postgres://canvas:@localhost:5432/canvas"
+  connection_string: "postgres://user:password@123.123.123.123:5432/canvas"
