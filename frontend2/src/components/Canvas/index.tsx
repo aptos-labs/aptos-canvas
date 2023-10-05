@@ -4,6 +4,8 @@
 import { fabric } from "fabric";
 import { useEffect, useRef } from "react";
 
+import { PIXELS_PER_SIDE } from "@/constants/canvas";
+
 import { alterImagePixels, createSquareImage, createSquareOfWhitePixels } from "./drawingImage";
 import { mousePan, wheelPan, zoom } from "./gestures";
 import { setGridVisibility } from "./gridLines";
@@ -11,8 +13,6 @@ import { EventCanvas } from "./types";
 
 // TODO: Convert grid lines to single image
 // TODO: Make pan and zoom work on mobile
-
-export const PIXELS_PER_SIDE = 1000;
 
 export interface CanvasProps {
   height: number;

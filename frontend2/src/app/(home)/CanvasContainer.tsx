@@ -6,8 +6,8 @@ import useMeasure from "react-use-measure";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
-import { PIXELS_PER_SIDE } from "@/components/Canvas";
 import { Skeleton } from "@/components/Skeleton";
+import { PIXELS_PER_SIDE } from "@/constants/canvas";
 import { isServer } from "@/utils/isServer";
 
 export function CanvasContainer() {

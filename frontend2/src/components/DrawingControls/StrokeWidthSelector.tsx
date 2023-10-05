@@ -1,6 +1,7 @@
 "use client";
 
-import { STROKE_WIDTH_CONFIG, useCanvasState } from "@/contexts/canvas";
+import { STROKE_WIDTH_CONFIG } from "@/constants/canvas";
+import { useCanvasState } from "@/contexts/canvas";
 
 import { Slider } from "../Slider";
 

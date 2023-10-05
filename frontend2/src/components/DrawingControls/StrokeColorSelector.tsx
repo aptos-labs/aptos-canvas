@@ -3,7 +3,8 @@
 import { css } from "styled-system/css";
 import { stack } from "styled-system/patterns";
 
-import { STROKE_COLORS, useCanvasState } from "@/contexts/canvas";
+import { STROKE_COLORS } from "@/constants/canvas";
+import { useCanvasState } from "@/contexts/canvas";
 import { RgbaColor } from "@/utils/color";
 
 export function StrokeColorSelector() {
