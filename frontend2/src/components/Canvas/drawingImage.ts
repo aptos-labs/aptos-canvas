@@ -97,7 +97,8 @@ export function alterImagePixels({ image, size, pixelArray, canvas, event }: Alt
     scalePosition(event.offsetY - (panY ?? 0)),
     scalePosition(event.movementX),
     scalePosition(event.movementY),
-  );
+    // Filter out-of-bounds coordinates
+  ).filter(({ x, y }) => x >= 0 && x < size && y >= 0 && y < size);
 
   const { strokeColor } = useCanvasState.getState();
   const arr = pixelArray;

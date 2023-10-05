@@ -103,7 +103,6 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
         mousePan(this, e.clientX, e.clientY);
       } else if (isDrawing.current) {
         if (!imageRef.current) return;
-        // TODO: This condition needs to be tweaked
         if (e.target !== this.upperCanvasEl) return; // Stop handling event when outside canvas
         alterImagePixels({
           image: imageRef.current,
