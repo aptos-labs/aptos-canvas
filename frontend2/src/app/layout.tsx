@@ -1,0 +1,26 @@
+import "./global.css";
+
+import type { Metadata } from "next";
+import { DM_Sans } from "next/font/google";
+import { css } from "styled-system/css";
+
+const dmSans = DM_Sans({
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  display: "fallback",
+  variable: "--font-dm-sans",
+});
+
+export const metadata: Metadata = {
+  title: "Graffio",
+  description: "Celebrate the Aptos Mainnet Anniversary",
+  metadataBase: process.env.CLIENT_URL ? new URL(process.env.CLIENT_URL) : undefined,
+};
+
+export default function RootLayout({ children }: React.PropsWithChildren) {
+  return (
+    <html lang="en" className={dmSans.variable}>
+      <body className={css({ color: "text", bg: "surface", fontFamily: "sans" })}>{children}</body>
+    </html>
+  );
+}

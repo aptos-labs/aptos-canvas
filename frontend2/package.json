@@ -1,0 +1,44 @@
+{
+  "name": "graffio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "ts:check": "tsc --noEmit",
+    "lint": "next lint --fix --max-warnings 0",
+    "lint:check": "next lint --max-warnings 0",
+    "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,md}'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx,js,jsx,json,md}'",
+    "panda:clean": "panda codegen --clean",
+    "prepare": "panda codegen"
+  },
+  "dependencies": {
+    "@radix-ui/react-slider": "^1.1.2",
+    "@types/fabric": "^5.3.4",
+    "fabric": "^5.3.0",
+    "framer-motion": "^10.16.4",
+    "next": "13.5.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-use-measure": "^2.1.1",
+    "zustand": "^4.4.2"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^0.15.4",
+    "@types/node": "18.17.9",
+    "@types/react": "18.2.24",
+    "@types/react-dom": "18.2.9",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "encoding": "^0.1.13",
+    "eslint": "8.50.0",
+    "eslint-config-next": "13.5.4",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "prettier": "^3.0.3",
+    "typescript": "5.2.2"
+  }
+}
