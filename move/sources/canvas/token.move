@@ -666,7 +666,7 @@ module addr::canvas_token {
         canvas_.config.max_number_of_pixels_per_draw = updated_max_number_of_pixels_per_draw
     }
 
-    public entry fun enable_draw_non_admin(
+    public entry fun enable_draw_for_non_admin(
         caller: &signer,
         canvas: Object<Canvas>,
     ) acquires Canvas {
@@ -676,7 +676,7 @@ module addr::canvas_token {
         canvas_.config.draw_enabled_for_non_admin = true
     }
 
-    public entry fun disable_draw_non_admin(
+    public entry fun disable_draw_for_non_admin(
         caller: &signer,
         canvas: Object<Canvas>,
     ) acquires Canvas {
