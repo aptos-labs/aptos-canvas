@@ -90,7 +90,10 @@ export function alterImagePixels({ image, size, pixelArray, canvas, event }: Alt
   const panX = canvas.viewportTransform?.[4];
   const panY = canvas.viewportTransform?.[5];
 
-  const scalePosition = (position: number) => Math.floor(position / imageScale / zoom);
+  const scalePosition = (position: number) => {
+    const newPos = position / imageScale / zoom;
+    return newPos < 0 ? Math.ceil(newPos) : Math.floor(newPos);
+  };
 
   const coords = getAffectedCoordinates(
     scalePosition(event.offsetX - (panX ?? 0)),
@@ -135,9 +138,6 @@ function getAffectedCoordinates(
 
   // Push the initial position to the array
   coordinates.push({ x: offsetX, y: offsetY });
-
-  // Sometimes movement values are 1 or -1 even though a full pixel hasn't been covered yet
-  if (Math.abs(movementX) < 2 || Math.abs(movementY) < 2) return coordinates;
 
   // Calculate all intermediate positions based on movementX and movementY
   while (Math.abs(movementX) > 0 || Math.abs(movementY) > 0) {
