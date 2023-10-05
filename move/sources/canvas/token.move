@@ -1047,7 +1047,7 @@ module addr::canvas_token {
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin disable drawing
-        disable_draw_enabled_for_non_admin(&caller, canvas);
+        disable_draw_for_non_admin(&caller, canvas);
         // Non admin cannot draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
     }
@@ -1064,7 +1064,7 @@ module addr::canvas_token {
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 0, 1, 60);
         // Non admin cannot disable drawing
-        disable_draw_enabled_for_non_admin(&friend1, canvas);
+        disable_draw_for_non_admin(&friend1, canvas);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -1080,11 +1080,11 @@ module addr::canvas_token {
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin disable drawing
-        disable_draw_enabled_for_non_admin(&caller, canvas);
+        disable_draw_for_non_admin(&caller, canvas);
         // Admin can still draw after disabled
         draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin re-enable drawing
-        enable_draw_enabled_for_non_admin(&caller, canvas);
+        enable_draw_for_non_admin(&caller, canvas);
         // Wait for 1 second so non admin pass the timeout
         timestamp::fast_forward_seconds(1);
         // Non admin can draw
