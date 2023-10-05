@@ -100,18 +100,20 @@ export function alterImagePixels({ image, size, pixelArray, canvas, event }: Alt
     // Filter out-of-bounds coordinates
   ).filter(({ x, y }) => x >= 0 && x < size && y >= 0 && y < size);
 
-  const { strokeColor } = useCanvasState.getState();
-  const arr = pixelArray;
+  const { strokeColor, pixelsChanged } = useCanvasState.getState();
+  const nextPixelsChanged = { ...pixelsChanged };
+
   for (const coord of coords) {
+    nextPixelsChanged[`${coord.x}-${coord.y}`] = strokeColor.value;
     const index = (coord.y * size + coord.x) * 4;
-    arr[index + 0] = strokeColor.red; // R value
-    arr[index + 1] = strokeColor.green; // G value
-    arr[index + 2] = strokeColor.blue; // B value
-    arr[index + 3] = 255; // A value
+    pixelArray[index + 0] = strokeColor.red; // R value
+    pixelArray[index + 1] = strokeColor.green; // G value
+    pixelArray[index + 2] = strokeColor.blue; // B value
+    pixelArray[index + 3] = 255; // A value
   }
 
   // Initialize a new ImageData object
-  const imageData = new ImageData(arr, size, size);
+  const imageData = new ImageData(pixelArray, size, size);
 
   c.getContext("2d")?.putImageData(imageData, 0, 0);
 
@@ -120,6 +122,7 @@ export function alterImagePixels({ image, size, pixelArray, canvas, event }: Alt
     c = null;
     document.getElementById("#_temp_canvas")?.remove();
   });
+  useCanvasState.setState({ pixelsChanged: nextPixelsChanged });
 }
 
 function getAffectedCoordinates(

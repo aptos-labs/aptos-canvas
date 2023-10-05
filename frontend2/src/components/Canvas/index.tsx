@@ -33,7 +33,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
     const newCanvas = new fabric.Canvas(canvasRef.current, {
       height,
       width,
-      backgroundColor: "#ccc",
+      backgroundColor: "#ddd",
       selection: false,
       defaultCursor: "crosshair",
       hoverCursor: "crosshair",
