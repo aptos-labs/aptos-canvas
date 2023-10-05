@@ -14,7 +14,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Graffio",
   description: "Celebrate the Aptos Mainnet Anniversary",
-  metadataBase: process.env.CLIENT_URL ? new URL(process.env.CLIENT_URL) : undefined,
+  metadataBase: process.env.VERCEL_URL ? new URL(process.env.VERCEL_URL) : undefined,
 };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
