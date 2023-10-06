@@ -1,41 +1,66 @@
-import Image from "next/image";
 import { css } from "styled-system/css";
-import { flex, stack } from "styled-system/patterns";
-
-import { SidePanel } from "@/components/DrawingControls/SidePanel";
 
 import { CanvasContainer } from "./CanvasContainer";
+import { DesktopCanvasHeader } from "./DesktopCanvasHeader";
+import { DesktopSidePanel } from "./DesktopSidePanel";
+import { MobileCanvasFooter } from "./MobileCanvasFooter";
+import { MobileCanvasHeader } from "./MobileCanvasHeader";
+import { MobileCanvasSidePanel } from "./MobileCanvasSidePanel";
+import { MobileHeader } from "./MobileHeader";
 
-export default function LandingPage() {
+export default function HomePage() {
   return (
     <div className={wrapper}>
-      <SidePanel />
+      <DesktopSidePanel />
+      <MobileHeader />
       <main className={main}>
-        <div className={flex({ gap: 16, align: "center" })}>
-          <Image src="/images/aptos-logo.svg" alt="Aptos Logo" height={32} width={32} />
-          <p className={css({ textStyle: "body.md.regular", opacity: 0.4 })}>
-            <strong className={css({ textStyle: "body.md.bold" })}>
-              XX days XX hours and XX minutes
-            </strong>{" "}
-            left before we&apos;re minting this board as an NFT.
-          </p>
+        <DesktopCanvasHeader />
+        <MobileCanvasHeader />
+        <div className={canvasWrapper}>
+          <MobileCanvasSidePanel />
+          <CanvasContainer />
         </div>
-        <CanvasContainer />
+        <MobileCanvasFooter />
       </main>
     </div>
   );
 }
 
 const wrapper = css({
-  display: "grid",
-  gridTemplateColumns: "auto minmax(0, 1fr)",
-  height: "100svh",
-  width: "100vw",
+  h: "100svh",
+  w: "100vw",
   overflow: "hidden",
   bg: "surface.secondary",
+  display: "grid",
+  gridTemplateRows: "auto minmax(0, 1fr)",
+  md: {
+    display: "grid",
+    gridTemplateRows: "unset",
+    gridTemplateColumns: "auto minmax(0, 1fr)",
+  },
 });
 
-const main = stack({
-  p: 32,
-  gap: 24,
+const main = css({
+  display: "grid",
+  gridTemplateRows: "auto minmax(0, 1fr) auto",
+  p: 16,
+  pt: 12,
+  gap: 12,
+  md: {
+    display: "flex",
+    flexDir: "column",
+    p: 32,
+    gap: 24,
+  },
+});
+
+const canvasWrapper = css({
+  h: "100%",
+  w: "100%",
+  display: "grid",
+  gridTemplateColumns: "auto minmax(0, 1fr)",
+  gap: 4,
+  md: {
+    display: "flex",
+  },
 });

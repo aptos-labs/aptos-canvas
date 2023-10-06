@@ -38,7 +38,9 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
       selection: false,
       defaultCursor: "crosshair",
       hoverCursor: "crosshair",
-    });
+      enablePointerEvents: true,
+      // The types for this package are out of date so we have to do some type-casting
+    } as fabric.ICanvasOptions);
 
     // Create image for user's to draw on
     createSquareImage({

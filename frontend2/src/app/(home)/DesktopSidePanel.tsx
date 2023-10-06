@@ -4,16 +4,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { css } from "styled-system/css";
 import { stack } from "styled-system/patterns";
 
+import { DrawModeToggle } from "@/components/DrawingControls/DrawModeToggle";
+import { PaintInfo } from "@/components/DrawingControls/PaintInfo";
+import { StrokeColorSelector } from "@/components/DrawingControls/StrokeColorSelector";
+import { StrokeWidthSelector } from "@/components/DrawingControls/StrokeWidthSelector";
+import { EyeIcon } from "@/components/Icons/EyeIcon";
+import { SunIcon } from "@/components/Icons/SunIcon";
 import { useCanvasState } from "@/contexts/canvas";
 
-import { EyeIcon } from "../Icons/EyeIcon";
-import { SunIcon } from "../Icons/SunIcon";
-import { DrawModeToggle } from "./DrawModeToggle";
-import { PaintInfo } from "./PaintInfo";
-import { StrokeColorSelector } from "./StrokeColorSelector";
-import { StrokeWidthSelector } from "./StrokeWidthSelector";
-
-export function SidePanel() {
+export function DesktopSidePanel() {
   const isDrawing = useCanvasState((s) => s.isDrawing);
 
   const divider = (
@@ -28,9 +27,9 @@ export function SidePanel() {
         <AnimatePresence initial={false} mode="popLayout">
           {isDrawing ? (
             <motion.div key="drawTools" className={section} {...transition}>
-              <PaintInfo />
+              <PaintInfo direction="column" />
               {divider}
-              <StrokeColorSelector />
+              <StrokeColorSelector direction="column" />
               {divider}
               <StrokeWidthSelector />
             </motion.div>
@@ -59,6 +58,8 @@ export function SidePanel() {
 }
 
 const wrapper = stack({
+  display: "none",
+  md: { display: "flex" },
   justify: "space-between",
   align: "center",
   w: 96,

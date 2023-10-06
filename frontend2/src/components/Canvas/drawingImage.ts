@@ -1,5 +1,4 @@
 import { fabric } from "fabric";
-import { IImageOptions } from "fabric/fabric-impl";
 
 import { useCanvasState } from "@/contexts/canvas";
 
@@ -63,8 +62,8 @@ export function createSquareImage({ size, pixelArray, canvas, imageRef }: Create
       tempCanvas = null;
       document.getElementById("#_temp_canvas")?.remove();
     },
-    // The types for this package are out of date so I had to do some type-casting
-    { selectable: false, imageSmoothing: false, objectCaching: false } as IImageOptions,
+    // The types for this package are out of date so we have to do some type-casting
+    { selectable: false, imageSmoothing: false, objectCaching: false } as fabric.IImageOptions,
   );
 }
 
