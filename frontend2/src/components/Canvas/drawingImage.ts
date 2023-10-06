@@ -108,13 +108,19 @@ export function alterImagePixels({
     y: scalePosition(point.y - (panY ?? 0)),
   });
 
-  const points = getContinuousPoints(scalePoint(point1), scalePoint(point2)).filter(
+  let points = getContinuousPoints(scalePoint(point1), scalePoint(point2)).filter(
+    // Filter out out-of-bounds points
     ({ x, y }) => x >= 0 && x < size && y >= 0 && y < size,
   );
 
-  const { strokeColor, pixelsChanged } = useCanvasState.getState();
-  const nextPixelsChanged = { ...pixelsChanged };
+  const { strokeColor, strokeWidth, pixelsChanged } = useCanvasState.getState();
 
+  if (strokeWidth > 1) {
+    // Multiply points by stroke width if it's greater than 1
+    points = multiplyPoints(strokeWidth, points);
+  }
+
+  const nextPixelsChanged = { ...pixelsChanged };
   for (const point of points) {
     nextPixelsChanged[`${point.x}-${point.y}`] = strokeColor.value;
     const index = (point.y * size + point.x) * 4;
@@ -176,4 +182,20 @@ function getContinuousPoints(point1: Point, point2: Point): Array<Point> {
   }
 
   return points;
+}
+
+function multiplyPoints(strokeWidth: number, points: Array<Point>): Array<Point> {
+  const multipliedPoints = [];
+
+  const halfSideLength = Math.floor(strokeWidth / 2);
+
+  for (const point of points) {
+    for (let i = -halfSideLength; i < halfSideLength; i++) {
+      for (let j = -halfSideLength; j < halfSideLength; j++) {
+        multipliedPoints.push({ x: point.x + i, y: point.y + j });
+      }
+    }
+  }
+
+  return multipliedPoints;
 }

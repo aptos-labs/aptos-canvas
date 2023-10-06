@@ -25,9 +25,9 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas>();
   const imageRef = useRef<fabric.Image>();
-  const isDrawing = useRef<boolean>(false);
+  const isDrawingRef = useRef<boolean>(false);
   const prevPointRef = useRef<Point>();
-  const pixelArray = useRef(initialImage ?? createSquareOfWhitePixels(PIXELS_PER_SIDE));
+  const pixelArrayRef = useRef(initialImage ?? createSquareOfWhitePixels(PIXELS_PER_SIDE));
 
   useEffect(() => {
     // Initialize canvas
@@ -43,7 +43,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
     // Create image for user's to draw on
     createSquareImage({
       size: PIXELS_PER_SIDE,
-      pixelArray: pixelArray.current,
+      pixelArray: pixelArrayRef.current,
       canvas: newCanvas,
       imageRef,
     });
@@ -79,20 +79,20 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
 
     newCanvas.on("mouse:down", function (this: EventCanvas, { e }) {
       if (e.altKey) {
-        isDrawing.current = false;
+        isDrawingRef.current = false;
         this.hoverCursor = "grab";
         this.isDragging = true;
         this.lastPosX = e.clientX;
         this.lastPosY = e.clientY;
       } else {
-        isDrawing.current = true;
+        isDrawingRef.current = true;
         this.hoverCursor = "crosshair";
         if (!imageRef.current) return;
         prevPointRef.current = { x: e.offsetX, y: e.offsetY };
         alterImagePixels({
           image: imageRef.current,
           size: PIXELS_PER_SIDE,
-          pixelArray: pixelArray.current,
+          pixelArray: pixelArrayRef.current,
           canvas: this,
           point1: prevPointRef.current,
           point2: { x: e.offsetX, y: e.offsetY },
@@ -104,13 +104,13 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
       if (this.isDragging) {
         this.hoverCursor = "grabbing";
         mousePan(this, e.clientX, e.clientY);
-      } else if (isDrawing.current) {
+      } else if (isDrawingRef.current) {
         if (!imageRef.current) return;
         if (e.target !== this.upperCanvasEl) return; // Stop handling event when outside canvas
         alterImagePixels({
           image: imageRef.current,
           size: PIXELS_PER_SIDE,
-          pixelArray: pixelArray.current,
+          pixelArray: pixelArrayRef.current,
           canvas: this,
           point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
           point2: { x: e.offsetX, y: e.offsetY },
@@ -125,7 +125,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
       if (this.viewportTransform) this.setViewportTransform(this.viewportTransform);
       this.isDragging = false;
       this.hoverCursor = "crosshair";
-      isDrawing.current = false;
+      isDrawingRef.current = false;
       prevPointRef.current = undefined;
     });
 
