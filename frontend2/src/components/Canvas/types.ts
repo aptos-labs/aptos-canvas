@@ -6,3 +6,8 @@ export interface EventCanvas extends fabric.Canvas {
   upperCanvasEl: HTMLCanvasElement;
   lowerCanvasEl: HTMLCanvasElement;
 }
+
+export interface Point {
+  x: number;
+  y: number;
+}

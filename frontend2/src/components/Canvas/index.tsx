@@ -9,7 +9,7 @@ import { PIXELS_PER_SIDE } from "@/constants/canvas";
 import { alterImagePixels, createSquareImage, createSquareOfWhitePixels } from "./drawingImage";
 import { mousePan, wheelPan, zoom } from "./gestures";
 import { setGridVisibility } from "./gridLines";
-import { EventCanvas } from "./types";
+import { EventCanvas, Point } from "./types";
 
 // TODO: Convert grid lines to single image
 // TODO: Make pan and zoom work on mobile
@@ -26,6 +26,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
   const fabricRef = useRef<fabric.Canvas>();
   const imageRef = useRef<fabric.Image>();
   const isDrawing = useRef<boolean>(false);
+  const prevPointRef = useRef<Point>();
   const pixelArray = useRef(initialImage ?? createSquareOfWhitePixels(PIXELS_PER_SIDE));
 
   useEffect(() => {
@@ -87,12 +88,14 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
         isDrawing.current = true;
         this.hoverCursor = "crosshair";
         if (!imageRef.current) return;
+        prevPointRef.current = { x: e.offsetX, y: e.offsetY };
         alterImagePixels({
           image: imageRef.current,
           size: PIXELS_PER_SIDE,
           pixelArray: pixelArray.current,
           canvas: this,
-          event: e,
+          point1: prevPointRef.current,
+          point2: { x: e.offsetX, y: e.offsetY },
         });
       }
     });
@@ -109,8 +112,10 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
           size: PIXELS_PER_SIDE,
           pixelArray: pixelArray.current,
           canvas: this,
-          event: e,
+          point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
+          point2: { x: e.offsetX, y: e.offsetY },
         });
+        prevPointRef.current = { x: e.offsetX, y: e.offsetY };
       }
     });
 
@@ -121,6 +126,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
       this.isDragging = false;
       this.hoverCursor = "crosshair";
       isDrawing.current = false;
+      prevPointRef.current = undefined;
     });
 
     fabricRef.current = newCanvas;
