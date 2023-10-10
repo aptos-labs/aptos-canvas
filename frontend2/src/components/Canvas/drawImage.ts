@@ -79,10 +79,7 @@ export function alterImagePixels({
     y: scalePosition(point.y - (panY ?? 0)),
   });
 
-  let points = getContinuousPoints(scalePoint(point1), scalePoint(point2)).filter(
-    // Filter out out-of-bounds points
-    ({ x, y }) => x >= 0 && x < size && y >= 0 && y < size,
-  );
+  let points = getContinuousPoints(scalePoint(point1), scalePoint(point2));
 
   const { strokeColor, strokeWidth, pixelsChanged } = useCanvasState.getState();
 
@@ -90,6 +87,9 @@ export function alterImagePixels({
     // Multiply points by stroke width if it's greater than 1
     points = multiplyPoints(strokeWidth, points);
   }
+
+  // Filter out out-of-bounds points
+  points = points.filter(({ x, y }) => x >= 0 && x < size && y >= 0 && y < size);
 
   const nextPixelsChanged = { ...pixelsChanged };
   for (const point of points) {
