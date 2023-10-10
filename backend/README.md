@@ -1,7 +1,7 @@
 # Aptos Canvas: Processor
 
 ## Crates
-When I say "pixel data" I mean specifically the pixels of the canvas. When I say "metadata" I mean everything else, e.g. pixel attribution information.
+When we say "pixel data" we mean specifically the pixels of the canvas. When I say "metadata" I mean everything else, e.g. pixel attribution information.
 
 - `api`: Contains a few components. It can be run as a standalone service but also used as a library (i.e. in `service`).
   - `metadata_api`: The API that sits on top of the DB. This serves canvas metadata as a GraphQL API.
