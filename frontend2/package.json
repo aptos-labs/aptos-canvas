@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slider": "^1.1.2",
-    "@types/fabric": "^5.3.4",
+    "@radix-ui/react-toast": "^1.1.5",
     "fabric": "^5.3.0",
     "framer-motion": "^10.16.4",
     "next": "13.5.4",
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@pandacss/dev": "^0.15.4",
+    "@types/fabric": "^5.3.4",
     "@types/node": "18.17.9",
     "@types/react": "18.2.24",
     "@types/react-dom": "18.2.9",
@@ -40,5 +41,11 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "prettier": "^3.0.3",
     "typescript": "5.2.2"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@types/fabric@5.3.4": "patches/@types__fabric@5.3.4.patch",
+      "fabric@5.3.0": "patches/fabric@5.3.0.patch"
+    }
   }
 }

@@ -10,41 +10,9 @@ export const durations = {
 } satisfies Tokens["durations"];
 
 export const keyframes = {
-  scaleIn: {
-    "0%": { transform: "scale(0)", opacity: 0 },
-    "100%": { transform: "scale(1)", opacity: 1 },
-  },
-  scaleOut: {
-    "0%": { transform: "scale(1)", opacity: 1 },
-    "100%": { transform: "scale(0)", opacity: 0 },
-  },
-  dialogScaleIn: {
-    "0%": { transform: "translate(-50%, -50%) scale(0)", opacity: 0 },
-    "100%": { transform: "translate(-50%, -50%) scale(1)", opacity: 1 },
-  },
-  dialogScaleOut: {
-    "0%": { transform: "translate(-50%, -50%) scale(1)", opacity: 1 },
-    "100%": { transform: "translate(-50%, -50%) scale(0)", opacity: 0 },
-  },
-  fadeIn: {
-    "0%": { opacity: 0 },
-    "100%": { opacity: 1 },
-  },
-  fadeOut: {
-    "0%": { opacity: 1 },
-    "100%": { opacity: 0 },
-  },
   spin: {
     "0%": { transform: "rotate(0deg)" },
     "100%": { transform: "rotate(360deg)" },
-  },
-  slideInFromRight: {
-    "0%": { transform: "translateX(150%)" },
-    "100%": { transform: "translateX(0%)" },
-  },
-  slideOutToRight: {
-    "0%": { transform: "translateX(0%)" },
-    "100%": { transform: "translateX(150%)" },
   },
   shimmer: {
     "0%": { transform: "translateX(-100%)" },

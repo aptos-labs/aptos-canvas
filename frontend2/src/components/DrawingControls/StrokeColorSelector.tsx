@@ -1,6 +1,6 @@
 "use client";
 
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
 import { STROKE_COLORS } from "@/constants/canvas";
@@ -9,13 +9,14 @@ import { RgbaColor } from "@/utils/color";
 
 export interface StrokeColorSelectorProps {
   direction: "row" | "column";
+  className?: string;
 }
 
-export function StrokeColorSelector({ direction }: StrokeColorSelectorProps) {
+export function StrokeColorSelector({ direction, className }: StrokeColorSelectorProps) {
   const strokeColor = useCanvasState((s) => s.strokeColor);
 
   return (
-    <div className={flex({ direction, align: "center", gap: 16 })}>
+    <div className={cx(flex({ direction, align: "center", gap: 16 }), className)}>
       {STROKE_COLORS.map((color) => (
         <ColorButton
           key={color.value}

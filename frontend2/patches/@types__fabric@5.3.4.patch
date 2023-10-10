@@ -1,0 +1,81 @@
+diff --git a/fabric-impl.d.ts b/fabric-impl.d.ts
+index d47a6cb33d35dba1acae9f8de803e0fd00de7fef..822a0eb0c520e9c8258d7eeb3dbb7cf15f0cd6ae 100644
+--- a/fabric-impl.d.ts
++++ b/fabric-impl.d.ts
+@@ -381,6 +381,35 @@ type EventName =
+     | "dragenter"
+     | "dragleave";
+ 
++interface IGestureEvent extends IEvent {
++    self: {
++        enabled: boolean;
++        gesture: "string";
++        target: { uniqueId: string };
++        bbox: {
++            width: number;
++            height: number;
++            x1: number;
++            y1: number;
++            scaleX: number;
++            scaleY: number;
++            scrollLeft: number;
++            scrollTop: number;
++            x2: number;
++            y2: number;
++            scrollBodyLeft: number;
++            scrollBodyTop: number;
++        };
++        identifier: number;
++        fingers: number;
++        scale: number;
++        rotation: number;
++        state: string;
++        x: number;
++        y: number;
++    }
++}
++
+ interface IObservable<T> {
+     /**
+      * Observes specified event
+@@ -389,6 +418,7 @@ interface IObservable<T> {
+      */
+     on(eventName: EventName, handler: (e: IEvent<MouseEvent>) => void): T;
+     on(eventName: "mouse:wheel", handler: (e: IEvent<WheelEvent>) => void): T;
++    on(eventName: "touch:gesture", handler: (e: IGestureEvent) => void): T
+     on(eventName: string, handler: (e: IEvent) => void): T;
+ 
+     /**
+@@ -397,6 +427,9 @@ interface IObservable<T> {
+      * @param eventName Event name (eg. 'after:render') or object with key/value pairs (eg. {'after:render': handler, 'selection:cleared': handler})
+      * @param handler Function to be deleted from EventListeners
+      */
++    off(eventName: EventName, handler: (e: IEvent<MouseEvent>) => void): T;
++    off(eventName: "mouse:wheel", handler: (e: IEvent<WheelEvent>) => void): T;
++    off(eventName: "touch:gesture", handler: (e: IGestureEvent) => void): T
+     off(eventName?: string | any, handler?: (e: IEvent) => void): T;
+ 
+     /**
+@@ -1949,6 +1982,11 @@ interface ICanvasOptions extends IStaticCanvasOptions {
+      * @default
+      */
+     height?: number | undefined;
++
++    /**
++     * When true, pointer events will be handled like mouse events
++     */
++    enablePointerEvents?: boolean | undefined;
+ }
+ export interface Canvas extends StaticCanvas {}
+ export interface Canvas extends ICanvasOptions {}
+@@ -2517,6 +2555,10 @@ interface IImageOptions extends IObjectOptions {
+      * Image filter array
+      */
+     filters?: IBaseFilter[] | undefined;
++    /**
++     * Indicates whether this image will use image smoothing, this is on by default in browsers
++     */
++    imageSmoothing?: boolean | undefined
+ }
+ interface Image extends Object, IImageOptions {}
+ export class Image {

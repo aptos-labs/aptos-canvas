@@ -1,21 +1,9 @@
 import { fabric } from "fabric";
 
 import { useCanvasState } from "@/contexts/canvas";
+import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { EventCanvas, Point } from "./types";
-
-export function createSquareOfWhitePixels(size: number): Uint8ClampedArray {
-  const pixelArray = new Uint8ClampedArray(size * size * 4);
-
-  for (let i = 0; i < pixelArray.length; i += 4) {
-    pixelArray[i + 0] = 255; // R value
-    pixelArray[i + 1] = 255; // G value
-    pixelArray[i + 2] = 255; // B value
-    pixelArray[i + 3] = 255; // A value
-  }
-
-  return pixelArray;
-}
 
 export interface CreateImageArgs {
   size: number;
@@ -25,27 +13,19 @@ export interface CreateImageArgs {
 }
 
 export function createSquareImage({ size, pixelArray, canvas, imageRef }: CreateImageArgs) {
-  let tempCanvas: HTMLCanvasElement | null = document.createElement("canvas");
+  const [tempCanvas, cleanUp] = createTempCanvas(pixelArray, size);
 
-  tempCanvas.setAttribute("id", "_temp_canvas");
-  tempCanvas.width = size;
-  tempCanvas.height = size;
-
-  // Initialize a new ImageData object
-  const imageData = new ImageData(pixelArray, size, size);
-
-  // Write image data to temporary canvas
-  tempCanvas.getContext("2d")?.putImageData(imageData, 0, 0);
-
-  const canvasHeight = canvas.getHeight();
-  const canvasWidth = canvas.getWidth();
-  const minCanvas = Math.min(canvasHeight, canvasWidth);
-
+  // Write data from temporary canvas to new fabric image and clean up when done
   fabric.Image.fromURL(
     tempCanvas.toDataURL(),
     function (img) {
       img.left = 0;
       img.top = 0;
+
+      // Calculate minimum dimension of fabric canvas
+      const canvasHeight = canvas.getHeight();
+      const canvasWidth = canvas.getWidth();
+      const minCanvas = Math.min(canvasHeight, canvasWidth);
 
       // Scale image to fit canvas
       img.scaleToHeight(minCanvas);
@@ -58,12 +38,10 @@ export function createSquareImage({ size, pixelArray, canvas, imageRef }: Create
       // Save image to ref if provided
       if (imageRef) imageRef.current = img;
 
-      // Clean up temporary canvas
-      tempCanvas = null;
-      document.getElementById("#_temp_canvas")?.remove();
+      cleanUp();
     },
     // The types for this package are out of date so we have to do some type-casting
-    { selectable: false, imageSmoothing: false, objectCaching: false } as fabric.IImageOptions,
+    { selectable: false, imageSmoothing: false, objectCaching: false },
   );
 }
 
@@ -84,11 +62,6 @@ export function alterImagePixels({
   point1,
   point2,
 }: AlterImagePixelsArgs) {
-  let c: HTMLCanvasElement | null = document.createElement("canvas");
-  c.setAttribute("id", "_temp_canvas");
-  c.width = size;
-  c.height = size;
-
   // Get the initial current scaling of the image. It doesn't matter if we use scaleX or scaleY
   // since the image is a square
   const imageScale = image.getObjectScaling().scaleX;
@@ -121,7 +94,13 @@ export function alterImagePixels({
 
   const nextPixelsChanged = { ...pixelsChanged };
   for (const point of points) {
-    nextPixelsChanged[`${point.x}-${point.y}`] = strokeColor.value;
+    nextPixelsChanged[`${point.x}-${point.y}`] = {
+      x: point.x,
+      y: point.y,
+      r: strokeColor.red,
+      g: strokeColor.green,
+      b: strokeColor.blue,
+    };
     const index = (point.y * size + point.x) * 4;
     pixelArray[index + 0] = strokeColor.red; // R value
     pixelArray[index + 1] = strokeColor.green; // G value
@@ -129,15 +108,12 @@ export function alterImagePixels({
     pixelArray[index + 3] = 255; // A value
   }
 
-  // Initialize a new ImageData object
-  const imageData = new ImageData(pixelArray, size, size);
+  const [tempCanvas, cleanUp] = createTempCanvas(pixelArray, size);
 
-  c.getContext("2d")?.putImageData(imageData, 0, 0);
-
-  image.setSrc(c.toDataURL(), () => {
+  // Update fabric image with data from temporary canvas and clean up when done
+  image.setSrc(tempCanvas.toDataURL(), () => {
     canvas.renderAll();
-    c = null;
-    document.getElementById("#_temp_canvas")?.remove();
+    cleanUp();
   });
   useCanvasState.setState({ pixelsChanged: nextPixelsChanged });
 }

@@ -13,13 +13,13 @@ export interface PaintInfoProps {
 
 export function PaintInfo({ direction }: PaintInfoProps) {
   const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
-  const changedPixelsCounts = Object.keys(pixelsChanged).length;
+  const changedPixelsCount = Object.keys(pixelsChanged).length;
 
   return (
     <div className={flex({ direction, align: "center", gap: { base: 8, md: 16 }, color: "text" })}>
       <PaintIcon />
       <div className={css({ textStyle: "body.sm.regular", textAlign: "center" })}>
-        {changedPixelsCounts.toLocaleString()} <br /> Pixels
+        {changedPixelsCount.toLocaleString()} <br /> Pixels
       </div>
     </div>
   );

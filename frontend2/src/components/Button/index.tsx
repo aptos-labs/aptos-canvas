@@ -41,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           >
             <Spinner
               size="md"
-              color={variant === "primary" || variant === "danger" ? "onInteractive" : "secondary"}
+              color={variant === "primary" || variant === "danger" ? "onInteractive" : "primary"}
             />
           </div>
         )}
@@ -84,15 +84,15 @@ const buttonStyles = cva({
       },
       secondary: {
         bg: "interactive.secondary",
-        borderColor: "border",
-        color: "text.onInteractive.secondary",
+        borderColor: "interactive.primary",
+        color: "interactive.primary",
         "&:hover:not(:disabled)": {
           bg: "interactive.secondary.hovered",
-          borderColor: "border.hovered",
+          borderColor: "interactive.primary.hovered",
         },
         "&:active:not(:disabled)": {
           bg: "interactive.secondary.pressed",
-          borderColor: "border.pressed",
+          borderColor: "interactive.primary.pressed",
         },
         "&:disabled:not([data-loading=true])": {
           bg: "interactive.secondary.disabled",

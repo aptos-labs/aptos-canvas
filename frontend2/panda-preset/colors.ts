@@ -40,18 +40,6 @@ export const colors = {
     800: { value: "#306E69" },
     900: { value: "#214B47" },
   },
-  tan: {
-    50: { value: "#FBFBF9" },
-    100: { value: "#F7F7F3" },
-    200: { value: "#F3F3EE" },
-    300: { value: "#ECECE4" },
-    400: { value: "#DFE0DB" },
-    500: { value: "#C3C6BD" },
-    600: { value: "#B2B6AA" },
-    700: { value: "#999C8C" },
-    800: { value: "#888B79" },
-    900: { value: "#5D6053" },
-  },
   orange: {
     50: { value: "#FEF8F1" },
     100: { value: "#FDF4E7" },
@@ -130,28 +118,10 @@ export const semanticColors = {
     disabled: { value: "{colors.navy.100}" },
     faint: { value: "{colors.navy.50}" },
   },
-  checkbox: {
-    indicator: {
-      border: { value: "{colors.navy.900}" },
-      fill: {
-        DEFAULT: { value: "{colors.white}" },
-        checked: { value: "{colors.navy.900}" },
-      },
-      disabled: { value: "{colors.navy.100}" },
-    },
-    text: {
-      DEFAULT: { value: "{colors.navy.900}" },
-      disabled: { value: "{colors.navy.300}" },
-    },
-  },
   spinner: {
     primary: {
-      arc: { value: "{colors.green.600}" },
-      track: { value: "{colors.green.100}" },
-    },
-    secondary: {
-      arc: { value: "{colors.navy.900}" },
-      track: { value: "{colors.navy.100}" },
+      arc: { value: "{colors.blue.600}" },
+      track: { value: "{colors.blue.100}" },
     },
     onInteractive: {
       arc: { value: "{colors.white}" },
@@ -159,19 +129,18 @@ export const semanticColors = {
     },
   },
   skeleton: { value: "{colors.navy.100}" },
-  dialogOverlay: { value: "rgba(0, 0, 0, 0.25)" },
   warning: {
     DEFAULT: { value: "{colors.orange.600}" },
     strong: { value: "{colors.orange.900}" },
     faint: { value: "{colors.orange.50}" },
   },
   error: {
-    DEFAULT: { value: "#BC2626" }, // custom red
+    DEFAULT: { value: "#BC2626" },
     strong: { value: "{colors.salmon.900}" },
     faint: { value: "{colors.salmon.50}" },
   },
   success: {
-    DEFAULT: { value: "{colors.green.500}" },
+    DEFAULT: { value: "#34B53A" },
     strong: { value: "{colors.green.900}" },
     faint: { value: "{colors.green.50}" },
   },

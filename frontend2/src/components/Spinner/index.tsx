@@ -40,10 +40,6 @@ const spinnerStyles = sva({
         arc: { stroke: "spinner.primary.arc" },
         track: { stroke: "spinner.primary.track" },
       },
-      secondary: {
-        arc: { stroke: "spinner.secondary.arc" },
-        track: { stroke: "spinner.secondary.track" },
-      },
       onInteractive: {
         arc: { stroke: "spinner.onInteractive.arc" },
         track: { stroke: "spinner.onInteractive.track" },

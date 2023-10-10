@@ -5,31 +5,33 @@ import { fabric } from "fabric";
 import { useEffect, useRef } from "react";
 
 import { PIXELS_PER_SIDE } from "@/constants/canvas";
+import { useCanvasCommandListener, useCanvasState } from "@/contexts/canvas";
+import { createTempCanvas } from "@/utils/tempCanvas";
 
-import { alterImagePixels, createSquareImage, createSquareOfWhitePixels } from "./drawingImage";
-import { mousePan, wheelPan, zoom } from "./gestures";
-import { setGridVisibility } from "./gridLines";
+import { alterImagePixels, createSquareImage } from "./drawImage";
+import { mousePan, pinchZoom, wheelPan, wheelZoom } from "./gestures";
 import { EventCanvas, Point } from "./types";
 
-// TODO: Convert grid lines to single image
-// TODO: Make pan and zoom work on mobile
+// TODO: Implement canvas toast messages
+// TODO: Consider reversing wheel events for mouse users
+// TODO: Add grid lines when zoom reaches ~50x
 
 export interface CanvasProps {
   height: number;
   width: number;
-  showGrid: boolean;
-  initialImage?: Uint8ClampedArray;
+  baseImage: Uint8ClampedArray;
 }
 
-export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
+export function Canvas({ height, width, baseImage }: CanvasProps) {
+  const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas>();
   const imageRef = useRef<fabric.Image>();
   const isDrawingRef = useRef<boolean>(false);
   const prevPointRef = useRef<Point>();
-  const pixelArrayRef = useRef(initialImage ?? createSquareOfWhitePixels(PIXELS_PER_SIDE));
+  const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
 
-  useEffect(() => {
+  useEffect(function initializeCanvas() {
     // Initialize canvas
     const newCanvas = new fabric.Canvas(canvasRef.current, {
       height,
@@ -39,8 +41,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
       defaultCursor: "crosshair",
       hoverCursor: "crosshair",
       enablePointerEvents: true,
-      // The types for this package are out of date so we have to do some type-casting
-    } as fabric.ICanvasOptions);
+    });
 
     // Create image for user's to draw on
     createSquareImage({
@@ -51,7 +52,7 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
     });
 
     // Zoom into the center of the image
-    const initialZoom = 4;
+    const initialZoom = 3;
     const minCanvas = Math.min(height, width);
     const zoomedHeight = minCanvas * initialZoom;
     const zoomedWidth = minCanvas * initialZoom;
@@ -59,99 +60,180 @@ export function Canvas({ height, width, showGrid, initialImage }: CanvasProps) {
     const y = zoomedHeight / 2 - height + height / 2;
 
     newCanvas.setZoom(initialZoom);
-    newCanvas.setViewportTransform([4, 0, 0, 4, -x, -y]);
-
-    // TODO: Rework grid overlay to only display at high zoom level
-    // Create grid line overlay
-    // createGridLines({
-    //   size: PIXELS_PER_SIDE,
-    //   canvas: newCanvas,
-    //   visible: showGrid,
-    // });
-
-    newCanvas.on("mouse:wheel", function (this: EventCanvas, { e }) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.ctrlKey) {
-        zoom(this, e.deltaY);
-      } else {
-        wheelPan(this, e.deltaX, e.deltaY);
-      }
-    });
-
-    newCanvas.on("mouse:down", function (this: EventCanvas, { e }) {
-      if (e.altKey) {
-        isDrawingRef.current = false;
-        this.hoverCursor = "grab";
-        this.isDragging = true;
-        this.lastPosX = e.clientX;
-        this.lastPosY = e.clientY;
-      } else {
-        isDrawingRef.current = true;
-        this.hoverCursor = "crosshair";
-        if (!imageRef.current) return;
-        prevPointRef.current = { x: e.offsetX, y: e.offsetY };
-        alterImagePixels({
-          image: imageRef.current,
-          size: PIXELS_PER_SIDE,
-          pixelArray: pixelArrayRef.current,
-          canvas: this,
-          point1: prevPointRef.current,
-          point2: { x: e.offsetX, y: e.offsetY },
-        });
-      }
-    });
-
-    newCanvas.on("mouse:move", function (this: EventCanvas, { e }) {
-      if (this.isDragging) {
-        this.hoverCursor = "grabbing";
-        mousePan(this, e.clientX, e.clientY);
-      } else if (isDrawingRef.current) {
-        if (!imageRef.current) return;
-        if (e.target !== this.upperCanvasEl) return; // Stop handling event when outside canvas
-        alterImagePixels({
-          image: imageRef.current,
-          size: PIXELS_PER_SIDE,
-          pixelArray: pixelArrayRef.current,
-          canvas: this,
-          point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
-          point2: { x: e.offsetX, y: e.offsetY },
-        });
-        prevPointRef.current = { x: e.offsetX, y: e.offsetY };
-      }
-    });
-
-    newCanvas.on("mouse:up", function (this: EventCanvas) {
-      // On mouse up we want to recalculate new interaction
-      // for all objects, so we call setViewportTransform
-      if (this.viewportTransform) this.setViewportTransform(this.viewportTransform);
-      this.isDragging = false;
-      this.hoverCursor = "crosshair";
-      isDrawingRef.current = false;
-      prevPointRef.current = undefined;
-    });
+    newCanvas.setViewportTransform([initialZoom, 0, 0, initialZoom, -x, -y]);
 
     fabricRef.current = newCanvas;
 
     return () => {
       newCanvas.dispose();
     };
+    // This initialization effect should only be run once so we shouldn't provide any effect deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-    canvas.setDimensions({ height, width });
-    canvas.calcOffset();
-    canvas.renderAll();
-  }, [height, width]);
+  useEffect(
+    function updateCanvasSize() {
+      const canvas = fabricRef.current;
+      if (!canvas) return;
 
-  useEffect(() => {
+      canvas.setDimensions({ height, width });
+      canvas.calcOffset();
+      canvas.renderAll();
+    },
+    [height, width],
+  );
+
+  useEffect(
+    function updateBaseImage() {
+      const canvas = fabricRef.current;
+      const image = imageRef.current;
+      if (!canvas || !image) return;
+
+      const newPixelArray = new Uint8ClampedArray(baseImage);
+      const { pixelsChanged } = useCanvasState.getState();
+      for (const pixelChanged of Object.values(pixelsChanged)) {
+        const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
+        newPixelArray[index + 0] = pixelChanged.r; // R value
+        newPixelArray[index + 1] = pixelChanged.g; // G value
+        newPixelArray[index + 2] = pixelChanged.b; // B value
+        newPixelArray[index + 3] = 255; // A value
+      }
+      pixelArrayRef.current = newPixelArray;
+
+      const [tempCanvas, cleanUp] = createTempCanvas(newPixelArray, PIXELS_PER_SIDE);
+
+      // Update fabric image with data from temporary canvas and clean up when done
+      image.setSrc(tempCanvas.toDataURL(), () => {
+        canvas.renderAll();
+        cleanUp();
+      });
+    },
+    [baseImage],
+  );
+
+  useEffect(
+    function manageViewAndDrawModes() {
+      const canvas = fabricRef.current;
+      if (!canvas) return;
+
+      if (isViewOnly) {
+        canvas.defaultCursor = "grab";
+        canvas.hoverCursor = "grab";
+      } else {
+        canvas.defaultCursor = "crosshair";
+        canvas.hoverCursor = "crosshair";
+      }
+
+      function handleMouseWheel(this: EventCanvas, { e }: fabric.IEvent<WheelEvent>) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.ctrlKey) {
+          wheelZoom(this, e.offsetX, e.offsetY, e.deltaY);
+        } else {
+          wheelPan(this, e.deltaX, e.deltaY);
+        }
+      }
+
+      function handleMouseDown(this: EventCanvas, { e }: fabric.IEvent<MouseEvent>) {
+        if (e.altKey || isViewOnly) {
+          isDrawingRef.current = false;
+          this.hoverCursor = "grabbing";
+          this.isDragging = true;
+          this.lastPosX = e.clientX;
+          this.lastPosY = e.clientY;
+        } else {
+          isDrawingRef.current = true;
+          this.hoverCursor = "crosshair";
+          if (!imageRef.current) return;
+          prevPointRef.current = { x: e.offsetX, y: e.offsetY };
+          alterImagePixels({
+            image: imageRef.current,
+            size: PIXELS_PER_SIDE,
+            pixelArray: pixelArrayRef.current,
+            canvas: this,
+            point1: prevPointRef.current,
+            point2: { x: e.offsetX, y: e.offsetY },
+          });
+        }
+      }
+
+      function handleMouseMove(this: EventCanvas, { e }: fabric.IEvent<MouseEvent>) {
+        if (this.isDragging) {
+          this.hoverCursor = "grabbing";
+          mousePan(this, e.clientX, e.clientY);
+        } else if (isDrawingRef.current) {
+          if (!imageRef.current) return;
+          if (e.target !== this.upperCanvasEl) return; // Stop handling event when outside canvas
+          alterImagePixels({
+            image: imageRef.current,
+            size: PIXELS_PER_SIDE,
+            pixelArray: pixelArrayRef.current,
+            canvas: this,
+            point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
+            point2: { x: e.offsetX, y: e.offsetY },
+          });
+          prevPointRef.current = { x: e.offsetX, y: e.offsetY };
+        }
+      }
+
+      function handleMouseUp(this: EventCanvas) {
+        // On mouse up we want to recalculate new interaction
+        // for all objects, so we call setViewportTransform
+        if (this.viewportTransform) this.setViewportTransform(this.viewportTransform);
+        this.isDragging = false;
+        this.hoverCursor = isViewOnly ? "grab" : "crosshair";
+        isDrawingRef.current = false;
+        prevPointRef.current = undefined;
+      }
+
+      let zoomStartScale = fabricRef.current?.getZoom() ?? 1;
+      function handleTouchGesture(this: EventCanvas, event: fabric.IGestureEvent) {
+        // Disable touch gestures while drawing
+        if (isDrawingRef.current) return;
+        const { fingers, state, x, y, scale } = event.self;
+        if (fingers === 2) {
+          if (state == "start") {
+            zoomStartScale = this.getZoom();
+          } else {
+            pinchZoom(this, x, y, zoomStartScale * scale);
+          }
+        }
+      }
+
+      canvas.on("mouse:wheel", handleMouseWheel);
+      canvas.on("touch:gesture", handleTouchGesture);
+      canvas.on("mouse:down", handleMouseDown);
+      canvas.on("mouse:move", handleMouseMove);
+      canvas.on("mouse:up", handleMouseUp);
+
+      return () => {
+        canvas.off("mouse:wheel", handleMouseWheel);
+        canvas.on("touch:gesture", handleTouchGesture);
+        canvas.off("mouse:down", handleMouseDown);
+        canvas.off("mouse:move", handleMouseMove);
+        canvas.off("mouse:up", handleMouseUp);
+      };
+    },
+    [isViewOnly],
+  );
+
+  useCanvasCommandListener(() => {
+    // Handle clear changed pixels command
     const canvas = fabricRef.current;
-    if (!canvas) return;
-    setGridVisibility(canvas, showGrid);
-  }, [showGrid]);
+    const image = imageRef.current;
+    if (!canvas || !image) return;
+
+    const [tempCanvas, cleanUp] = createTempCanvas(baseImage, PIXELS_PER_SIDE);
+
+    // Update fabric image with data from temporary canvas and clean up when done
+    image.setSrc(tempCanvas.toDataURL(), () => {
+      canvas.renderAll();
+      cleanUp();
+    });
+
+    useCanvasState.setState({ pixelsChanged: {} });
+    pixelArrayRef.current = new Uint8ClampedArray(baseImage);
+  });
 
   return <canvas ref={canvasRef} />;
 }

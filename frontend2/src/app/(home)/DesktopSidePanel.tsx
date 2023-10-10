@@ -13,7 +13,7 @@ import { SunIcon } from "@/components/Icons/SunIcon";
 import { useCanvasState } from "@/contexts/canvas";
 
 export function DesktopSidePanel() {
-  const isDrawing = useCanvasState((s) => s.isDrawing);
+  const isViewOnly = useCanvasState((s) => s.isViewOnly);
 
   const divider = (
     <div className={css({ w: 48, h: 1, bg: "rgba(0, 0, 0, 0.2)", rounded: "full" })} />
@@ -25,15 +25,7 @@ export function DesktopSidePanel() {
         <DrawModeToggle />
         {divider}
         <AnimatePresence initial={false} mode="popLayout">
-          {isDrawing ? (
-            <motion.div key="drawTools" className={section} {...transition}>
-              <PaintInfo direction="column" />
-              {divider}
-              <StrokeColorSelector direction="column" />
-              {divider}
-              <StrokeWidthSelector />
-            </motion.div>
-          ) : (
+          {isViewOnly ? (
             <motion.div
               key="viewOnly"
               className={stack({ align: "center", gap: 16, color: "text" })}
@@ -45,6 +37,14 @@ export function DesktopSidePanel() {
               >
                 View <br /> Only
               </div>
+            </motion.div>
+          ) : (
+            <motion.div key="drawTools" className={section} {...transition}>
+              <PaintInfo direction="column" />
+              {divider}
+              <StrokeColorSelector direction="column" />
+              {divider}
+              <StrokeWidthSelector />
             </motion.div>
           )}
         </AnimatePresence>
@@ -77,6 +77,6 @@ const section = stack({ gap: 32, alignItems: "center" });
 
 const transition = {
   initial: { transform: "translateX(-128px)" },
-  animate: { transform: "translateX(0%)" },
+  animate: { transform: "translateX(0px)" },
   exit: { transform: "translateX(-128px)" },
 };

@@ -10,18 +10,19 @@ import { EditBoxIcon } from "../Icons/EditBoxIcon";
 import { EyeIcon } from "../Icons/EyeIcon";
 
 export function DrawModeToggle() {
-  const isDrawing = useCanvasState((s) => s.isDrawing);
+  const isViewOnly = useCanvasState((s) => s.isViewOnly);
+  const setViewOnly = useCanvasState((s) => s.setViewOnly);
 
   return (
     <div className={stack({ gap: 16, align: "center" })}>
       <Button
         iconOnly
-        aria-label={isDrawing ? "Back to View Only" : "Go to Draw Mode"}
+        aria-label={isViewOnly ? "Go to Draw Mode" : "Back to View Only"}
         onClick={() => {
-          useCanvasState.setState({ isDrawing: !isDrawing });
+          setViewOnly(!isViewOnly);
         }}
       >
-        {isDrawing ? <EyeIcon /> : <EditBoxIcon />}
+        {isViewOnly ? <EditBoxIcon /> : <EyeIcon />}
       </Button>
       <div
         aria-hidden="true"
@@ -31,13 +32,13 @@ export function DrawModeToggle() {
           opacity: 0.4,
         })}
       >
-        {isDrawing ? (
+        {isViewOnly ? (
           <>
-            Back to <br /> View Only
+            Go to <br /> Draw Mode
           </>
         ) : (
           <>
-            Go to <br /> Draw Mode
+            Back to <br /> View Only
           </>
         )}
       </div>

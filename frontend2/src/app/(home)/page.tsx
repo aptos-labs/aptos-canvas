@@ -57,10 +57,5 @@ const main = css({
 const canvasWrapper = css({
   h: "100%",
   w: "100%",
-  display: "grid",
-  gridTemplateColumns: "auto minmax(0, 1fr)",
-  gap: 4,
-  md: {
-    display: "flex",
-  },
+  position: "relative",
 });
