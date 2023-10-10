@@ -16,7 +16,7 @@ export function CanvasActions() {
     setViewOnly(true);
   };
 
-  const undo = () => {
+  const clear = () => {
     emitCanvasCommand("clearChangedPixels");
   };
 
@@ -33,8 +33,8 @@ export function CanvasActions() {
       })}
     >
       {changedPixelsCount ? (
-        <Button variant="secondary" onClick={undo}>
-          Undo
+        <Button variant="secondary" onClick={clear}>
+          Clear
         </Button>
       ) : (
         <Button variant="secondary" onClick={cancel}>
