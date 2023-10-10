@@ -2,8 +2,8 @@ mod gcs;
 mod local;
 
 use anyhow::Result;
-pub use local::{LocalFlusher, LocalFlusherConfig};
 pub use gcs::{GcsFlusher, GcsFlusherConfig};
+pub use local::{LocalFlusher, LocalFlusherConfig};
 use std::time::Duration;
 use tokio::task::JoinHandle;
 use tracing::{debug, error, info};

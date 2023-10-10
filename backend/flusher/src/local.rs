@@ -4,7 +4,7 @@ use aptos_move_graphql_scalars::Address;
 use async_trait::async_trait;
 use pixel_storage::PixelStorageTrait;
 use serde::{Deserialize, Serialize};
-use std::{sync::Arc, time::Duration, path::PathBuf};
+use std::{path::PathBuf, sync::Arc, time::Duration};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct LocalFlusherConfig {
@@ -38,15 +38,12 @@ impl LocalFlusher {
         })
     }
 
-    pub async fn write_image(
-        &self,
-        canvas_address: Address,
-        png_data: Vec<u8>,
-    ) -> Result<()> {
+    pub async fn write_image(&self, canvas_address: Address, png_data: Vec<u8>) -> Result<()> {
         let extension = "png";
         let filename = format!("images/{}.{}", canvas_address, extension);
 
-        std::fs::write(self.config.flush_dir.join(filename), png_data).context("Failed to write image to disk")?;
+        std::fs::write(self.config.flush_dir.join(filename), png_data)
+            .context("Failed to write image to disk")?;
 
         Ok(())
     }

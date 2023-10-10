@@ -36,6 +36,7 @@ service = { path = "service" }
 # External
 aptos-move-graphql-scalars = { git = "https://github.com/aptos-labs/aptos-core", branch = "banool/custom-scalars" }
 aptos-processor-framework = { git = "https://github.com/aptos-labs/aptos-indexer-processors", branch = "banool/txn-parsers" }
+# aptos-processor-framework = { package = "processor", git = "https://github.com/aptos-labs/aptos-indexer-processors", rev = "f4518968eefd9232297af72e3dd44127317392f1" }
 async-graphql = { version = "5.0.10", features = ["decimal", "chrono", "dataloader", "dynamic-schema"] }
 async-graphql-poem = { version = "5.0.10" }
 anyhow = "1.0.62"
