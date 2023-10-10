@@ -5,6 +5,7 @@ import { flex } from "styled-system/patterns";
 import { emitCanvasCommand, useCanvasState } from "@/contexts/canvas";
 
 import { Button } from "../Button";
+import { toast } from "../Toast";
 
 export function CanvasActions() {
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
@@ -17,6 +18,10 @@ export function CanvasActions() {
 
   const undo = () => {
     emitCanvasCommand("clearChangedPixels");
+  };
+
+  const finishDrawing = () => {
+    toast({ id: "not-implemented", variant: "warning", content: "Sorry, not implemented yet" });
   };
 
   return (
@@ -36,7 +41,7 @@ export function CanvasActions() {
           Cancel
         </Button>
       )}
-      <Button variant="primary" disabled={!changedPixelsCount}>
+      <Button variant="primary" disabled={!changedPixelsCount} onClick={finishDrawing}>
         Finish Drawing
       </Button>
     </div>
