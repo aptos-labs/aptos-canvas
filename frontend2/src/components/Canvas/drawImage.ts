@@ -40,7 +40,6 @@ export function createSquareImage({ size, pixelArray, canvas, imageRef }: Create
 
       cleanUp();
     },
-    // The types for this package are out of date so we have to do some type-casting
     { selectable: false, imageSmoothing: false, objectCaching: false },
   );
 }
