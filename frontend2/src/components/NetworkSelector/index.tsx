@@ -14,14 +14,21 @@ export function NetworkSelector() {
       className={select}
       value={network}
       onChange={(e) => {
-        setNetwork(e.currentTarget.value as NetworkName);
+        const network = e.currentTarget.value as NetworkName;
+        if (network !== NetworkName.Mainnet && network !== NetworkName.Testnet) {
+          console.error(`Unexpected network ${network}`);
+          return;
+        }
+        setNetwork(network);
       }}
     >
-      {Object.values(NetworkName).map((networkName) => (
-        <option key={networkName} value={networkName}>
-          {capitalizeFirstLetter(networkName)}
-        </option>
-      ))}
+      {Object.values(NetworkName)
+        .filter((networkName) => networkName !== NetworkName.Devnet)
+        .map((networkName) => (
+          <option key={networkName} value={networkName}>
+            {capitalizeFirstLetter(networkName)}
+          </option>
+        ))}
     </select>
   );
 }

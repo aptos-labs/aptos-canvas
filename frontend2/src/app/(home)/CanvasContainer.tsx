@@ -8,29 +8,27 @@ import { flex } from "styled-system/patterns";
 
 import { Skeleton } from "@/components/Skeleton";
 import { PIXELS_PER_SIDE } from "@/constants/canvas";
+import { APP_CONFIG } from "@/constants/config";
+import { useAptosNetworkState } from "@/contexts/wallet";
 import { isServer } from "@/utils/isServer";
 import { getPixelArrayFromImageElement } from "@/utils/tempCanvas";
 
 import { CanvasOverlay } from "./CanvasOverlay";
 
-const CANVAS_IMAGE_URL = process.env.NEXT_PUBLIC_CANVAS_IMAGE_URL;
-
 export function CanvasContainer() {
   const [canvasContainer, containerBounds] = useMeasure();
+  const network = useAptosNetworkState((s) => s.network);
   const { height, width } = containerBounds;
   const hasSize = Boolean(height && width);
 
   const [baseImage, setBaseImage] = useState<Uint8ClampedArray>();
 
   useEffect(() => {
-    if (!CANVAS_IMAGE_URL) {
-      throw new Error("NEXT_PUBLIC_CANVAS_IMAGE_URL is not set");
-    }
     if (isServer()) return;
 
     const fetchBaseImage = () => {
       const img = new Image();
-      img.src = CANVAS_IMAGE_URL;
+      img.src = APP_CONFIG[network].canvasImageUrl;
       img.crossOrigin = "anonymous";
       img.onload = () => {
         const [pixelArray, cleanUp] = getPixelArrayFromImageElement(img, PIXELS_PER_SIDE);
@@ -47,7 +45,7 @@ export function CanvasContainer() {
     return () => {
       window.clearInterval(interval);
     };
-  }, []);
+  }, [network]);
 
   return (
     <div

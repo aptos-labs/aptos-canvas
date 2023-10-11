@@ -16,14 +16,17 @@ import { isServer } from "@/utils/isServer";
 const IC_DAPP_ID = process.env.NEXT_PUBLIC_IC_DAPP_ID;
 
 export interface AptosNetworkState {
-  network: NetworkName;
-  setNetwork: (network: NetworkName) => void;
+  network: SupportedNetworkName;
+  setNetwork: (network: SupportedNetworkName) => void;
 }
+
+export type SupportedNetworkName = NetworkName.Mainnet | NetworkName.Testnet;
 
 export const useAptosNetworkState = create<AptosNetworkState>((set) => ({
   network: isServer()
     ? NetworkName.Mainnet
-    : ((window.localStorage.getItem("aptos-network") ?? NetworkName.Mainnet) as NetworkName),
+    : ((window.localStorage.getItem("aptos-network") ??
+        NetworkName.Mainnet) as SupportedNetworkName),
   setNetwork: (network) => {
     set({ network });
     window.localStorage.setItem("aptos-network", network);
