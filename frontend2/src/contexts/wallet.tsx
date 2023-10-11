@@ -13,8 +13,7 @@ import { create } from "zustand";
 
 import { isServer } from "@/utils/isServer";
 
-// It is okay for this to be publicly accessible.
-const IC_DAPP_ID = "a7a31f32-841e-4c5f-90bd-08df7d5175f6";
+const IC_DAPP_ID = process.env.NEXT_PUBLIC_IC_DAPP_ID;
 
 export interface AptosNetworkState {
   network: NetworkName;
@@ -37,6 +36,10 @@ export function WalletProvider({ children }: React.PropsWithChildren) {
   const identityConnectWalletConfig: IdentityConnectWalletConfig = {
     networkName: network,
   };
+
+  if (!IC_DAPP_ID) {
+    throw new Error("NEXT_PUBLIC_IC_DAPP_ID is not set");
+  }
 
   const wallets: Array<Wallet> = [
     new IdentityConnectWallet(IC_DAPP_ID, identityConnectWalletConfig),
