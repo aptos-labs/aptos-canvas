@@ -10,7 +10,7 @@ import { toast } from "../Toast";
 export function ThemeToggle() {
   return (
     <button
-      className={css({ cursor: "pointer" })}
+      className={css({ cursor: "pointer", color: "text" })}
       onClick={() => {
         toast({
           id: "theme-not-implemented",

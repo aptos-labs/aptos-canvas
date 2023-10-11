@@ -63,6 +63,8 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
 
     fabricRef.current = newCanvas;
 
+    useCanvasState.setState({ isInitialized: true });
+
     return () => {
       newCanvas.dispose();
     };

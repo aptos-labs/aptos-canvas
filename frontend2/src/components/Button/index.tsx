@@ -1,6 +1,3 @@
-// Copyright © Aptos
-// SPDX-License-Identifier: Apache-2.0
-
 "use client";
 
 import { forwardRef, ReactNode } from "react";
@@ -118,6 +115,7 @@ const buttonStyles = cva({
       },
     },
     size: {
+      xs: { textStyle: "body.sm.medium", px: 16, h: 32, rounded: "md" },
       sm: { textStyle: "body.sm.medium", px: 20, h: 40, rounded: "md" },
       md: { textStyle: "body.md.medium", px: 20, h: 48, rounded: "md" },
     },

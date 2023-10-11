@@ -1,6 +1,3 @@
-// Copyright © Aptos
-// SPDX-License-Identifier: Apache-2.0
-
 import { css, cx } from "styled-system/css";
 
 export interface ChevronIconProps extends React.SVGProps<SVGSVGElement> {

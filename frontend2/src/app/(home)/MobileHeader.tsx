@@ -1,22 +1,27 @@
 import Image from "next/image";
-import { css } from "styled-system/css";
+import { flex } from "styled-system/patterns";
 
+import { ConnectWalletButton } from "@/components/ConnectWalletModal";
+import { NetworkSelector } from "@/components/NetworkSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function MobileHeader() {
   return (
     <div className={wrapper}>
       <Image src="/images/aptos-logo.svg" alt="Aptos Logo" height={24} width={24} />
-      <ThemeToggle />
+      <div className={flex({ gap: 16, align: "center" })}>
+        <ConnectWalletButton />
+        <NetworkSelector />
+        <ThemeToggle />
+      </div>
     </div>
   );
 }
 
-const wrapper = css({
-  display: "flex",
+const wrapper = flex({
   md: { display: "none" },
-  justifyContent: "space-between",
-  alignItems: "center",
+  justify: "space-between",
+  align: "center",
   bg: "surface",
   px: 16,
   py: 12,

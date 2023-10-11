@@ -21,6 +21,7 @@ module.exports = {
     "@typescript-eslint/array-type": ["error", { default: "generic" }],
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/unbound-method": "off",
     curly: ["error", "multi-line"],
     "object-shorthand": ["error", "always"],
     "react/self-closing-comp": ["error", { component: true, html: true }],

@@ -129,6 +129,7 @@ export const semanticColors = {
     },
   },
   skeleton: { value: "{colors.navy.100}" },
+  dialogOverlay: { value: "rgba(0, 0, 0, 0.25)" },
   warning: {
     DEFAULT: { value: "{colors.orange.600}" },
     strong: { value: "{colors.orange.900}" },

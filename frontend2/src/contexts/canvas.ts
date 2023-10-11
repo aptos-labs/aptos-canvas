@@ -23,6 +23,7 @@ export interface PixelData {
 }
 
 export interface CanvasState {
+  isInitialized: boolean;
   isViewOnly: boolean;
   setViewOnly: (isViewOnly: boolean) => void;
   strokeColor: RgbaColor;
@@ -32,6 +33,7 @@ export interface CanvasState {
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
+  isInitialized: false,
   isViewOnly: true,
   setViewOnly: (isViewOnly) => {
     if (isViewOnly && Object.keys(get().pixelsChanged).length) {

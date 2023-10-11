@@ -38,6 +38,12 @@ const bodyMd = {
   lineHeight: fontSizes[20].value,
 };
 
+const bodyLg = {
+  fontFamily: fonts.sans.value,
+  fontSize: fontSizes[16].value,
+  lineHeight: fontSizes[24].value,
+};
+
 export const textStyles = defineTextStyles({
   body: {
     sm: {
@@ -49,6 +55,21 @@ export const textStyles = defineTextStyles({
       regular: { value: { ...bodyMd, fontWeight: fontWeights.regular.value } },
       medium: { value: { ...bodyMd, fontWeight: fontWeights.medium.value } },
       bold: { value: { ...bodyMd, fontWeight: fontWeights.bold.value } },
+    },
+    lg: {
+      regular: { value: { ...bodyLg, fontWeight: fontWeights.regular.value } },
+      medium: { value: { ...bodyLg, fontWeight: fontWeights.medium.value } },
+      bold: { value: { ...bodyLg, fontWeight: fontWeights.bold.value } },
+    },
+  },
+  heading: {
+    xl: {
+      value: {
+        fontFamily: fonts.sans.value,
+        fontSize: fontSizes[20].value,
+        lineHeight: fontSizes[28].value,
+        fontWeight: fontWeights.bold.value,
+      },
     },
   },
 });
