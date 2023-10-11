@@ -246,7 +246,7 @@ module addr::canvas_token {
         name: String,
         config: CanvasConfig,
     ): Object<Canvas> {
-        assert_caller_is_collector_owner(caller);
+        assert_caller_is_collection_owner(caller);
         assert_canvas_dimension_is_within_limit(config.width, config.height);
 
         // If a palette is given, assert it contains the default color.
@@ -540,7 +540,7 @@ module addr::canvas_token {
     //                                  Collection owner                             //
     ///////////////////////////////////////////////////////////////////////////////////
 
-    fun assert_caller_is_collector_owner(caller: &signer) {
+    fun assert_caller_is_collection_owner(caller: &signer) {
         let collection = get_collection();
         assert!(is_owner_of_collection(caller, collection), error::invalid_state(E_CALLER_NOT_COLLECTION_OWNER));
     }
