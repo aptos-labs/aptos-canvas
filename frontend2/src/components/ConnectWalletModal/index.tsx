@@ -42,12 +42,7 @@ export function ConnectWalletButton() {
       {account?.ansName || truncateAddress(account?.address) || "Unknown"}
     </button>
   ) : (
-    <button
-      className={buttonStyles}
-      onClick={() => {
-        openConnectWalletModal();
-      }}
-    >
+    <button className={buttonStyles} onClick={openConnectWalletModal}>
       Connect a Wallet
     </button>
   );
