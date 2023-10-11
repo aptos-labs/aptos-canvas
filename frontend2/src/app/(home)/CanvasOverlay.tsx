@@ -17,22 +17,14 @@ export function CanvasOverlay() {
         gap: 0,
         position: "absolute",
         bottom: { base: 16, md: 48 },
-        mx: { base: 16, md: 48 },
-        w: "100%",
         justify: "center",
         align: "center",
       })}
     >
-      <div className={css({ position: "relative", w: "100%", maxW: { base: 448, md: 336 } })}>
+      <div className={css({ position: "relative", w: 336, maxW: "calc(100vw - 64px)" })}>
         <ToastContainer />
       </div>
-      <div
-        className={css({
-          display: { base: "none", md: "block" },
-          w: "100%",
-          maxW: { base: 448, md: 336 },
-        })}
-      >
+      <div className={css({ display: { base: "none", md: "block" }, w: 336 })}>
         <AnimatePresence initial={false}>
           {isViewOnly ? null : (
             <motion.div

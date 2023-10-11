@@ -9,7 +9,7 @@ import { PaintInfo } from "@/components/DrawingControls/PaintInfo";
 import { StrokeColorSelector } from "@/components/DrawingControls/StrokeColorSelector";
 import { StrokeWidthSelector } from "@/components/DrawingControls/StrokeWidthSelector";
 import { EyeIcon } from "@/components/Icons/EyeIcon";
-import { SunIcon } from "@/components/Icons/SunIcon";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useCanvasState } from "@/contexts/canvas";
 
 export function DesktopSidePanel() {
@@ -50,8 +50,7 @@ export function DesktopSidePanel() {
         </AnimatePresence>
       </section>
       <section className={section}>
-        {/* TODO: Theme toggle */}
-        <SunIcon />
+        <ThemeToggle />
       </section>
     </aside>
   );

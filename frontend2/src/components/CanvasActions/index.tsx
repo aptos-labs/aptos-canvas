@@ -21,7 +21,11 @@ export function CanvasActions() {
   };
 
   const finishDrawing = () => {
-    toast({ id: "not-implemented", variant: "warning", content: "Sorry, not implemented yet" });
+    toast({
+      id: "finish-not-implemented",
+      variant: "warning",
+      content: "Sorry, not implemented yet",
+    });
   };
 
   return (

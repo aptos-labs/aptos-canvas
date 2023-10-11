@@ -57,5 +57,6 @@ const main = css({
 const canvasWrapper = css({
   h: "100%",
   w: "100%",
+  overflow: "hidden",
   position: "relative",
 });

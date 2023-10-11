@@ -1,14 +1,13 @@
 import Image from "next/image";
 import { css } from "styled-system/css";
 
-import { SunIcon } from "@/components/Icons/SunIcon";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function MobileHeader() {
   return (
     <div className={wrapper}>
       <Image src="/images/aptos-logo.svg" alt="Aptos Logo" height={24} width={24} />
-      {/* TODO: Theme toggle */}
-      <SunIcon className={css({ h: 20, w: 20 })} />
+      <ThemeToggle />
     </div>
   );
 }

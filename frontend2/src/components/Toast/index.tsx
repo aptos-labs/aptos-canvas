@@ -49,7 +49,7 @@ function ToastContainer() {
     <ToastPrimitive.Provider duration={Infinity}>
       <ToastPrimitive.Viewport asChild>
         <motion.div layout className={stack({ zIndex: "toast", w: "100%", gap: 16 })}>
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
             {Array.from(toastMap.values()).map((toast) => (
               <Toast key={toast.id} {...toast} />
             ))}
