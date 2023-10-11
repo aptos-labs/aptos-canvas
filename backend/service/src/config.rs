@@ -5,7 +5,7 @@ use figment::{
     providers::{Env, Format, Yaml},
     Figment,
 };
-use flusher::GcsFlusherConfig;
+use flusher::{GcsFlusherConfig, LocalFlusherConfig};
 use metadata_storage::PostgresMetadataStorageConfig;
 use pixel_storage::MmapPixelStorageConfig;
 use processor::RunConfig;
@@ -68,6 +68,8 @@ pub struct AllInOneConfig {
     pub pixel_storage_config: MmapPixelStorageConfig,
     pub metadata_storage_config: PostgresMetadataStorageConfig,
     pub api_config: ApiConfig,
+    // For testing purposes you may choose to also run a LocalFlusher.
+    pub local_flusher_config: Option<LocalFlusherConfig>,
 }
 
 /// Config for running just the processor.
@@ -81,7 +83,7 @@ pub struct ProcessorOnlyConfig {
     // actually hook up the pixel or metadata APIs, we only run the root API so
     // we can respond to health checks.
     pub api_config: ApiConfig,
-    pub gcs_flusher: GcsFlusherConfig,
+    pub gcs_flusher_config: GcsFlusherConfig,
 }
 
 /// Config for running just the metadata storage and metadata API. In this setup

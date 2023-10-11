@@ -95,6 +95,7 @@ impl FlusherTrait for GcsFlusher {
     async fn flush(&self) -> Result<()> {
         let pngs = self.pixel_storage.get_canvases_as_pngs().await?;
         for (canvas_address, png_data) in pngs {
+            // This could be optimized by only writing images that have changed.
             self.write_image_to_gcs(canvas_address, png_data).await?;
         }
         Ok(())

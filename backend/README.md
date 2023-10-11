@@ -1,7 +1,7 @@
 # Aptos Canvas: Processor
 
 ## Crates
-When I say "pixel data" I mean specifically the pixels of the canvas. When I say "metadata" I mean everything else, e.g. pixel attribution information.
+When we say "pixel data" we mean specifically the pixels of the canvas. When I say "metadata" I mean everything else, e.g. pixel attribution information.
 
 - `api`: Contains a few components. It can be run as a standalone service but also used as a library (i.e. in `service`).
   - `metadata_api`: The API that sits on top of the DB. This serves canvas metadata as a GraphQL API.
@@ -18,17 +18,39 @@ When I say "pixel data" I mean specifically the pixels of the canvas. When I say
 The `service` crate uses [Figment](https://github.com/SergioBenitez/Figment) to parse configuration. This means you can set config values in a file as well as env vars and they will be parsed hierarchically and merged into one final config. For more information about how this works see the `Config::from_str` function in [`service/src/config.rs`](service/src/config.rs).
 
 ## Local Development
+Make sure you have postgres installed and running.
+
 Spin up a local development environment (node API + txn stream service):
 ```
 aptos node run-local-testnet --force-restart --assume-yes
 ```
 
+Recreate the DB (you need to update the user here to your postgres username):
+```
+psql postgres://dport@127.0.0.1:5432/postgres -c 'DROP DATABASE IF EXISTS canvas' && psql postgres://dport@127.0.0.1:5432/postgres -c 'CREATE DATABASE canvas'
+```
+
 Run the processor:
 ```
-rm -rf /tmp/canvases && mkdir /tmp/canvases && cargo run -p service -- -c configs/local.yaml
+rm -rf /tmp/canvases && mkdir /tmp/canvases
+cargo run -p service -- -c configs/local.yaml
 ```
 
 The metadata API will be running at http://127.0.0.1:7645. You can access the gql playground at http://127.0.0.1:7645/v1/metadata/graphql.
+
+You should also expect to see images appear from the LocalFlusher at `/tmp/flushed`.
+
+## Running against testnet
+Get an auth key for the txn stream service from the API gateway site: https://aptos-api-gateway-prod.firebaseapp.com/api-keys.
+
+Replace `replace_me` in `configs/example_testnet.yaml` with the auth key.
+
+Do the step above where you replace the DB.
+
+Run the processor using the testnet config:
+```
+cargo run -p service -- -c configs/example_testnet.yaml
+```
 
 ## Updating DB
 Install the necessary tools:

@@ -61,12 +61,18 @@ pub async fn run(
     // Start the stream subscriber.
     let channel_handle = stream_subscriber.start().await?;
 
+    // Forcibly set the number of concurrent workers to 1. This processor depends on
+    // txns being processed in order because of how we only create files when we
+    // process the create canvas txns.
+    let mut dispatcher_config = config.dispatcher_config.clone();
+    dispatcher_config.num_concurrent_processing_tasks = 1;
+
     // Build the dispatcher, which is what reads from the channel and dispatches txns
     // to the processor.
     let metadata_storage_clone = metadata_storage.clone();
     let dispatcher_task = tokio::spawn(async move {
         let mut dispatcher = Dispatcher {
-            config: config.dispatcher_config.clone(),
+            config: dispatcher_config,
             storage: metadata_storage_clone.clone(),
             processor: processor.clone(),
             receiver: channel_handle.receiver,

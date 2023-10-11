@@ -9,7 +9,7 @@ use crate::config::{Args, Config};
 use anyhow::{Context as AnyhowContext, Result};
 use api::{build_full_route, start_api};
 use clap::Parser;
-use flusher::{FlusherTrait, GcsFlusher};
+use flusher::{FlusherTrait, GcsFlusher, LocalFlusher};
 use metadata_storage::PostgresMetadataStorage;
 use pixel_storage::MmapPixelStorage;
 use processor::run;
@@ -62,6 +62,13 @@ async fn main() -> Result<()> {
                 eprintln!("API finished unexpectedly: {:?}", result);
             });
 
+            // Run the local flusher if configured (helpful for testing).
+            if let Some(config) = &config.local_flusher_config {
+                let local_flusher =
+                    LocalFlusher::new(config.clone(), pixels_storage.clone()).await?;
+                tasks.push(local_flusher.run());
+            }
+
             // Return all the tasks.
             tasks.push(api_task);
             tasks
@@ -80,10 +87,11 @@ async fn main() -> Result<()> {
                 pixels_storage.clone(),
             )
             .await?;
+
+            // Run the GCS flusher.
             let gcs_flusher =
-                GcsFlusher::new(config.gcs_flusher.clone(), pixels_storage.clone()).await?;
-            let gcs_flusher_task = gcs_flusher.run();
-            tasks.push(gcs_flusher_task);
+                GcsFlusher::new(config.gcs_flusher_config.clone(), pixels_storage.clone()).await?;
+            tasks.push(gcs_flusher.run());
 
             // Run the API, but without the pixel or metadata APIs attached.
             let route = build_full_route(None, None)?;

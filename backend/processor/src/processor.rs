@@ -108,11 +108,14 @@ impl ProcessorTrait for CanvasProcessor {
         }
 
         // Write pixels.
-        for write_pixel_intent in all_write_pixel_intents {
+        let len = all_write_pixel_intents.len();
+        for (i, write_pixel_intent) in all_write_pixel_intents.into_iter().enumerate() {
             info!(
-                "Writing pixel to canvas {} index {} (from txns {} to {})",
+                "Writing pixel to canvas {} index {} (intent {}/{} from txns {} to {})",
                 write_pixel_intent.canvas_address,
                 write_pixel_intent.index,
+                i + 1,
+                len,
                 start_version,
                 end_version
             );
@@ -123,11 +126,15 @@ impl ProcessorTrait for CanvasProcessor {
         }
 
         // Update attribution.
-        for update_attribution_intent in all_update_attribution_intents {
+        let len = all_update_attribution_intents.len();
+        for (i, update_attribution_intent) in all_update_attribution_intents.into_iter().enumerate()
+        {
             info!(
-                "Updating attribution for canvas {} index {} (from txns {} to {})",
+                "Updating attribution for canvas {} index {} (intent {}/{} from txns {} to {})",
                 update_attribution_intent.canvas_address,
                 update_attribution_intent.index,
+                i + 1,
+                len,
                 start_version,
                 end_version
             );

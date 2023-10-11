@@ -40,6 +40,12 @@ module addr::canvas_collection {
         mutator_ref: MutatorRef,
     }
 
+    /// Resource we store at the object address to limit the max dimension of the canvas can be created in the collection.
+    struct CollectionConfig has key {
+        max_width: u64,
+        max_height: u64,
+    }
+
     /// One-time initialization in which we create the collection. I choose to use an
     /// explicit create_collection function rather than init_module because maybe I'll
     /// want to create more collections down the line, so this way it will be more
@@ -63,8 +69,13 @@ module addr::canvas_collection {
             transfer_ref,
             mutator_ref,
         };
+        let collection_config = CollectionConfig {
+            max_width: 1000,
+            max_height: 1000,
+        };
         let object_signer = object::generate_signer(&constructor_ref);
         move_to(&object_signer, collection_refs);
+        move_to(&object_signer, collection_config);
     }
 
     #[test_only]
@@ -92,6 +103,22 @@ module addr::canvas_collection {
         );
         let collection_refs = borrow_global<CollectionRefs>(object::object_address(&collection));
         collection::set_description(&collection_refs.mutator_ref, description);
+    }
+
+    /// Update the max dimension of the canvas can be created in the collection.
+    public entry fun update_max_canvas_dimension(
+        caller: &signer,
+        updated_max_width: u64,
+        updated_max_height: u64
+    ) acquires CollectionConfig {
+        let collection = get_collection();
+        assert!(
+            is_owner(caller, collection),
+            error::invalid_argument(E_COLLECTION_MUTATOR_FORBIDDEN),
+        );
+        let collection_config = borrow_global_mut<CollectionConfig>(object::object_address(&collection));
+        collection_config.max_width = updated_max_width;
+        collection_config.max_height = updated_max_height;
     }
 
     /// Transfer ownership of the collection.
@@ -122,5 +149,24 @@ module addr::canvas_collection {
 
     public fun get_collection_name(): String {
         string::utf8(COLLECTION_NAME)
+    }
+
+    /// Returns the (max_width, max_height) of the canvas allowed to create in the collection
+    public fun get_max_canvas_dimension(): (u64, u64) acquires CollectionConfig {
+        let collection = get_collection();
+        let collection_config = borrow_global<CollectionConfig>(object::object_address(&collection));
+        (collection_config.max_width, collection_config.max_height)
+    }
+
+    #[test(caller = @addr)]
+    fun test_can_update_max_canvas_dimension(
+        caller: signer,
+    ) acquires CollectionConfig {
+        init_module_for_test(&caller);
+        let (max_width, max_height) = get_max_canvas_dimension();
+        assert!(max_width == 1000 && max_height == 1000, 1);
+        update_max_canvas_dimension(&caller, 2000, 2000);
+        let (max_width, max_height) = get_max_canvas_dimension();
+        assert!(max_width == 2000 && max_height == 2000, 1);
     }
 }

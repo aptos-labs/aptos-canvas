@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 
 FROM debian:bullseye-slim
 
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y build-essential ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --link --from=builder /repo/target/release/service /usr/local/bin/service

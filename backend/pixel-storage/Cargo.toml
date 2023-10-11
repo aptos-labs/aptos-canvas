@@ -20,7 +20,8 @@ move-types = { workspace = true }
 anyhow = { workspace = true }
 aptos-move-graphql-scalars = { workspace = true }
 async-trait = { workspace = true }
-dashmap = { workspace = true }
 image = { workspace = true }
 memmap2 = { workspace = true }
 serde = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

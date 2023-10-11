@@ -13,6 +13,8 @@ import { getPixelArrayFromImageElement } from "@/utils/tempCanvas";
 
 import { CanvasOverlay } from "./CanvasOverlay";
 
+const CANVAS_IMAGE_URL = process.env.NEXT_PUBLIC_CANVAS_IMAGE_URL;
+
 export function CanvasContainer() {
   const [canvasContainer, containerBounds] = useMeasure();
   const { height, width } = containerBounds;
@@ -21,14 +23,24 @@ export function CanvasContainer() {
   const [baseImage, setBaseImage] = useState<Uint8ClampedArray>();
 
   useEffect(() => {
-    // TODO: Eventually fetch the image from an API endpoint and poll for updates
+    if (!CANVAS_IMAGE_URL) {
+      throw new Error("NEXT_PUBLIC_CANVAS_IMAGE_URL is not set");
+    }
+
     if (isServer()) return;
-    const img = new Image();
-    img.src = "/images/initialCanvas.png";
-    img.onload = () => {
-      const [pixelArray, cleanUp] = getPixelArrayFromImageElement(img, PIXELS_PER_SIDE);
-      if (pixelArray) setBaseImage(pixelArray);
-      cleanUp();
+    const interval = setInterval(() => {
+      const img = new Image();
+      img.src = CANVAS_IMAGE_URL;
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const [pixelArray, cleanUp] = getPixelArrayFromImageElement(img, PIXELS_PER_SIDE);
+        if (pixelArray) setBaseImage(pixelArray);
+        cleanUp();
+      };
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
     };
   }, []);
 
