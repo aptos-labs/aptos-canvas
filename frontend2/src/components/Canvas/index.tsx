@@ -5,7 +5,11 @@ import { fabric } from "fabric";
 import { useEffect, useRef } from "react";
 
 import { PIXELS_PER_SIDE } from "@/constants/canvas";
-import { useCanvasCommandListener, useCanvasState } from "@/contexts/canvas";
+import {
+  useCanvasCommandListener,
+  useCanvasState,
+  useOptimisticUpdateGarbageCollector,
+} from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { alterImagePixels, createSquareImage } from "./drawImage";
@@ -91,13 +95,17 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       if (!canvas || !image) return;
 
       const newPixelArray = new Uint8ClampedArray(baseImage);
-      const { pixelsChanged } = useCanvasState.getState();
-      for (const pixelChanged of Object.values(pixelsChanged)) {
-        const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-        newPixelArray[index + 0] = pixelChanged.r; // R value
-        newPixelArray[index + 1] = pixelChanged.g; // G value
-        newPixelArray[index + 2] = pixelChanged.b; // B value
-        newPixelArray[index + 3] = 255; // A value
+      const { optimisticUpdates, pixelsChanged } = useCanvasState.getState();
+      const allImagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(pixelsChanged);
+
+      for (const imagePatch of allImagePatches) {
+        for (const pixelChanged of Object.values(imagePatch)) {
+          const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
+          newPixelArray[index + 0] = pixelChanged.r; // R value
+          newPixelArray[index + 1] = pixelChanged.g; // G value
+          newPixelArray[index + 2] = pixelChanged.b; // B value
+          newPixelArray[index + 3] = 255; // A value
+        }
       }
       pixelArrayRef.current = newPixelArray;
 
@@ -111,6 +119,8 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     },
     [baseImage],
   );
+
+  useOptimisticUpdateGarbageCollector();
 
   useEffect(
     function manageViewAndDrawModes() {

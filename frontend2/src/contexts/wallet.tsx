@@ -24,9 +24,9 @@ export type SupportedNetworkName = NetworkName.Mainnet | NetworkName.Testnet;
 
 export const useAptosNetworkState = create<AptosNetworkState>((set) => ({
   network: isServer()
-    ? NetworkName.Mainnet
+    ? NetworkName.Testnet
     : ((window.localStorage.getItem("aptos-network") ??
-        NetworkName.Mainnet) as SupportedNetworkName),
+        NetworkName.Testnet) as SupportedNetworkName),
   setNetwork: (network) => {
     set({ network });
     window.localStorage.setItem("aptos-network", network);
