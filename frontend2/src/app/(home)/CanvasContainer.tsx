@@ -26,9 +26,9 @@ export function CanvasContainer() {
     if (!CANVAS_IMAGE_URL) {
       throw new Error("NEXT_PUBLIC_CANVAS_IMAGE_URL is not set");
     }
-
     if (isServer()) return;
-    const interval = setInterval(() => {
+
+    const fetchBaseImage = () => {
       const img = new Image();
       img.src = CANVAS_IMAGE_URL;
       img.crossOrigin = "anonymous";
@@ -37,10 +37,15 @@ export function CanvasContainer() {
         if (pixelArray) setBaseImage(pixelArray);
         cleanUp();
       };
-    }, 3000);
+    };
+
+    // Immediately fetch base image
+    fetchBaseImage();
+    // Fetch base image every 3 seconds following the first call above
+    const interval = window.setInterval(fetchBaseImage, 3000);
 
     return () => {
-      clearInterval(interval);
+      window.clearInterval(interval);
     };
   }, []);
 
