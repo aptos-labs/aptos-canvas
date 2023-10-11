@@ -234,6 +234,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     const image = imageRef.current;
     if (!canvas || !image) return;
 
+    // Apply optimistic updates to base image
     const newPixelArray = new Uint8ClampedArray(baseImage);
     const { optimisticUpdates } = useCanvasState.getState();
     const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
