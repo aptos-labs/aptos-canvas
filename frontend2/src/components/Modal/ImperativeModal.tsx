@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useCallback, useRef, useState } from "react";
 import { token } from "styled-system/tokens";
 
+import { preventEventDefault } from "@/utils/event";
 import { createEventEmitter } from "@/utils/eventEmitter";
 
 import { BaseModalProps, contentStyles, overlayStyles } from "./helpers";
@@ -86,9 +87,9 @@ function ImperativeModal({ content, onDismiss, dismissible = true }: ImperativeM
         <Dialog.Overlay className={overlayStyles} />
         <Dialog.Content
           className={contentStyles}
-          onEscapeKeyDown={dismissible ? undefined : (e) => e.preventDefault}
-          onPointerDownOutside={dismissible ? undefined : (e) => e.preventDefault}
-          onInteractOutside={dismissible ? undefined : (e) => e.preventDefault}
+          onEscapeKeyDown={dismissible ? undefined : preventEventDefault}
+          onPointerDownOutside={dismissible ? undefined : preventEventDefault}
+          onInteractOutside={dismissible ? undefined : preventEventDefault}
           onCloseAutoFocus={(e) => {
             e.preventDefault();
             // Return focus back to the element that triggered the modal
