@@ -50,7 +50,7 @@ function WalletConnectButton({ wallet, connect }: WalletConnectButtonProps) {
   const mobileSupport = wallet.deeplinkProvider;
 
   if (!isWalletReady && isRedirectable()) {
-    if (!mobileSupport) {
+    if (mobileSupport) {
       return (
         <div
           className={flex({
