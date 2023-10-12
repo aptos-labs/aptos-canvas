@@ -23,13 +23,11 @@ module addr::canvas_token {
     use std::vector;
     use std::timestamp::now_seconds;
     use aptos_framework::chain_id::{get as get_chain_id};
-    use aptos_std::math64;
     use aptos_std::object::{Self, ExtendRef, Object};
     use aptos_std::string_utils;
     use aptos_std::smart_table::{Self, SmartTable};
     use aptos_token_objects::token::{Self, MutatorRef};
     use dport_std::simple_set::{Self, SimpleSet};
-    use addr::paint_fungible_asset;
 
     /// `default_color` was not in the palette.
     const E_CREATION_INITIAL_COLOR_NOT_IN_PALETTE: u64 = 1;
@@ -78,6 +76,9 @@ module addr::canvas_token {
     /// Cannot create canvas that is larger than the allowed dimesion set in canvas collection.
     const E_CANVAS_EXCEEDED_MAX_ALLOWED_DIMENSIONS: u64 = 13;
 
+    /// Color ID is invalid
+    const E_INVALID_COLOR_ID: u64 = 14;
+
     /// Based on the allowlist and/or blocklist (or lack thereof), the caller is
     /// allowed to contribute to the canvas.
     const STATUS_ALLOWED: u8 = 1;
@@ -89,13 +90,40 @@ module addr::canvas_token {
     /// to the canvas.
     const STATUS_NOT_IN_ALLOWLIST: u8 = 3;
 
+    // r: 0, g: 0, b: 0
+    const COLOR_ID_BLACK: u8 = 1;
+    //  r: 255, g: 255, b: 255
+    const COLOR_ID_WHITE: u8 = 2;
+    // r: 0, g: 158, b: 25
+    const COLOR_ID_BLUE: u8 = 3;
+    // r: 0, g: 197, b: 3
+    const COLOR_ID_GREEN: u8 = 4;
+    // r: 255, g: 198, b: 0
+    const COLOR_ID_YELLOW: u8 = 5;
+    //r: 255, g: 125, b: 0
+    const COLOR_ID_ORANGE: u8 = 6;
+    //r: 250, g: 0, b: 106
+    const COLOR_ID_RED: u8 = 7;
+    //r: 196, g: 0, b: 199
+    const COLOR_ID_VIOLET: u8 = 8;
+    const AVAILABLE_COLOR_IDS: vector<u8> = vector[
+        COLOR_ID_BLACK,
+        COLOR_ID_WHITE,
+        COLOR_ID_BLUE,
+        COLOR_ID_GREEN,
+        COLOR_ID_YELLOW,
+        COLOR_ID_ORANGE,
+        COLOR_ID_RED,
+        COLOR_ID_VIOLET
+    ];
+
     #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
     struct Canvas has key {
         /// The parameters used to configure default creation of the canvas.
         config: CanvasConfig,
 
         /// The pixels of the canvas.
-        pixels: SmartTable<u64, Pixel>,
+        pixels: SmartTable<u32, Pixel>,
 
         /// When each artist last contributed. Only tracked if
         /// per_account_timeout_s is non-zero.
@@ -127,21 +155,18 @@ module addr::canvas_token {
 
     struct CanvasConfig has store, drop {
         /// The width of the canvas.
-        width: u64,
+        width: u16,
 
         /// The width of the canvas.
-        height: u64,
+        height: u16,
 
         /// How long artists have to wait between contributions. If zero, when
         /// artists contribute is not tracked.
-        per_account_timeout_s: u64,
-
-        /// Allowed colors. If empty, all colors are allowed.
-        palette: vector<Color>,
+        per_account_timeout_s: u16,
 
         /// The default color of the pixels. If a paletter is set, this color must be a
         /// part of the palette.
-        default_color: Color,
+        default_color_id: u8,
 
         /// Whether the owner of the canvas has super admin privileges. Super admin
         /// powers are the same as normal admin powers but in addition you have the
@@ -150,7 +175,7 @@ module addr::canvas_token {
         owner_is_super_admin: bool,
 
         /// Max number of pixels can draw at one time
-        max_number_of_pixels_per_draw: u64,
+        max_number_of_pixels_per_draw: u16,
 
         /// Drawing is enabled or not
         draw_enabled_for_non_admin: bool,
@@ -158,16 +183,10 @@ module addr::canvas_token {
 
     struct Pixel has copy, drop, store {
         /// The color of the pixel.
-        color: Color,
+        color_id: u8,
 
         /// When the pixel was last drawn.
         drawn_at_s: u64,
-    }
-
-    struct Color has copy, drop, store {
-        r: u8,
-        g: u8,
-        b: u8,
     }
 
     /// Create a new canvas.
@@ -178,26 +197,19 @@ module addr::canvas_token {
         description: String,
         // Arguments for the canvas. For now we don't allow setting the palette
         // because it is a pain to express vector<Color> in an entry function.
-        width: u64,
-        height: u64,
-        per_account_timeout_s: u64,
-        default_color_r: u8,
-        default_color_g: u8,
-        default_color_b: u8,
+        width: u16,
+        height: u16,
+        per_account_timeout_s: u16,
+        default_color_id: u8,
         owner_is_super_admin: bool,
-        max_number_of_pixels_per_draw: u64,
+        max_number_of_pixels_per_draw: u16,
         draw_enabled_for_non_admin: bool,
     ) {
         let config = CanvasConfig {
             width,
             height,
             per_account_timeout_s,
-            palette: vector::empty(),
-            default_color: Color {
-                r: default_color_r,
-                g: default_color_g,
-                b: default_color_b,
-            },
+            default_color_id,
             owner_is_super_admin,
             max_number_of_pixels_per_draw,
             draw_enabled_for_non_admin,
@@ -217,14 +229,7 @@ module addr::canvas_token {
     ): Object<Canvas> {
         assert_caller_is_collection_owner(caller);
         assert_canvas_dimension_is_within_limit(config.width, config.height);
-
-        // If a palette is given, assert it contains the default color.
-        if (!vector::is_empty(&config.palette)) {
-            assert!(
-                vector::contains(&config.palette, &config.default_color),
-                error::invalid_argument(E_CREATION_INITIAL_COLOR_NOT_IN_PALETTE),
-            );
-        };
+        assert_color_is_allowed(config.default_color_id);
 
         // Create the token. This creates an ObjectCore and Token.
         // TODO: Use token::create when AUIDs are enabled.
@@ -292,11 +297,9 @@ module addr::canvas_token {
         canvas: Object<Canvas>,
         // If it was possible to have a vector of structs that'd be great but for now
         // we have to explode the items into separate vectors.
-        xs: vector<u64>,
-        ys: vector<u64>,
-        rs: vector<u8>,
-        gs: vector<u8>,
-        bs: vector<u8>,
+        xs: vector<u16>,
+        ys: vector<u16>,
+        color_ids: vector<u8>,
     ) acquires Canvas {
         let caller_addr = signer::address_of(caller);
 
@@ -313,21 +316,14 @@ module addr::canvas_token {
             vector::length(&xs) == vector::length(&ys),
             error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
         );
+
         assert!(
-            vector::length(&xs) == vector::length(&rs),
-            error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
-        );
-        assert!(
-            vector::length(&xs) == vector::length(&gs),
-            error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
-        );
-        assert!(
-            vector::length(&xs) == vector::length(&bs),
+            vector::length(&xs) == vector::length(&color_ids),
             error::invalid_argument(E_INVALID_VECTOR_LENGTHS),
         );
 
         assert!(
-            vector::length(&xs) <= canvas_.config.max_number_of_pixels_per_draw,
+            vector::length(&xs) <= (canvas_.config.max_number_of_pixels_per_draw as u64),
             error::invalid_argument(E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW),
         );
 
@@ -339,32 +335,35 @@ module addr::canvas_token {
         while (i < len) {
             let x = vector::pop_back(&mut xs);
             let y = vector::pop_back(&mut ys);
-            let r = vector::pop_back(&mut rs);
-            let g = vector::pop_back(&mut gs);
-            let b = vector::pop_back(&mut bs);
-            draw_one(canvas_, x, y, r, g, b);
+            let color_id = vector::pop_back(&mut color_ids);
+            draw_one(canvas_, x, y, color_id);
             i = i + 1;
         };
     }
 
     /// Draw a single pixel to the canvas. We consider the top left corner 0,0.
-    public fun draw_one(
+    fun draw_one(
         canvas_: &mut Canvas,
-        x: u64,
-        y: u64,
-        r: u8,
-        g: u8,
-        b: u8,
+        x: u16,
+        y: u16,
+        color_id: u8
     ) {
+        assert_color_is_allowed(color_id);
+
         // Confirm the coordinates are not out of bounds.
         assert!(x < canvas_.config.width, error::invalid_argument(E_COORDINATE_OUT_OF_BOUNDS));
         assert!(y < canvas_.config.height, error::invalid_argument(E_COORDINATE_OUT_OF_BOUNDS));
 
         // Write the pixel.
-        let color = Color { r, g, b };
-        let pixel = Pixel { color, drawn_at_s: now_seconds() };
+        let pixel = Pixel { color_id, drawn_at_s: now_seconds() };
         let index = y * canvas_.config.width + x;
-        smart_table::upsert(&mut canvas_.pixels, index, pixel);
+        smart_table::upsert(&mut canvas_.pixels, (index as u32), pixel);
+    }
+
+    fun assert_color_is_allowed(
+        color_id: u8
+    ) {
+        assert!(vector::contains(&AVAILABLE_COLOR_IDS, &color_id), error::invalid_argument(E_INVALID_COLOR_ID));
     }
 
     fun assert_timeout_and_update_last_contribution_time(
@@ -382,7 +381,7 @@ module addr::canvas_token {
                 // Admin is not restricted by timeout
                 if (!caller_is_admin) {
                     assert!(
-                        now >= (*last_contribution + canvas_.config.per_account_timeout_s),
+                        now >= (*last_contribution + (canvas_.config.per_account_timeout_s as u64)),
                         error::invalid_state(E_MUST_WAIT),
                     );
                 };
@@ -442,7 +441,7 @@ module addr::canvas_token {
         STATUS_ALLOWED
     }
 
-    fun assert_canvas_dimension_is_within_limit(width: u64, height: u64) {
+    fun assert_canvas_dimension_is_within_limit(width: u16, height: u16) {
         let (max_width, max_height) = get_max_canvas_dimension();
         assert!(
             width <= max_width && height <= max_height,
@@ -597,10 +596,10 @@ module addr::canvas_token {
         simple_set::remove(&mut canvas_.blocklisted_artists, &addr);
     }
 
-    public entry fun update_max_number_of_piexls_per_draw(
+    public entry fun update_max_number_of_pixels_per_draw(
         caller: &signer,
         canvas: Object<Canvas>,
-        updated_max_number_of_pixels_per_draw: u64,
+        updated_max_number_of_pixels_per_draw: u16,
     ) acquires Canvas {
         let caller_addr = signer::address_of(caller);
         assert_is_admin(canvas, caller_addr);
@@ -631,7 +630,7 @@ module addr::canvas_token {
     public entry fun update_per_account_timeout(
         caller: &signer,
         canvas: Object<Canvas>,
-        updated_per_account_timeout_s: u64,
+        updated_per_account_timeout_s: u16,
     ) acquires Canvas {
         let caller_addr = signer::address_of(caller);
         assert_is_admin(canvas, caller_addr);
@@ -712,8 +711,6 @@ module addr::canvas_token {
     #[test_only]
     use addr::canvas_collection::{init_module_for_test as collection_init_module_for_test};
     #[test_only]
-    use addr::paint_fungible_token;
-    #[test_only]
     use std::timestamp;
     #[test_only]
     use aptos_framework::aptos_coin::{Self, AptosCoin};
@@ -733,7 +730,6 @@ module addr::canvas_token {
     #[test_only]
     /// Create a test account with some funds.
     fun create_test_account(
-        caller: &signer,
         aptos_framework: &signer,
         account: &signer,
     ) {
@@ -751,9 +747,6 @@ module addr::canvas_token {
         account::create_account_for_test(signer::address_of(account));
         coin::register<AptosCoin>(account);
         aptos_coin::mint(aptos_framework, signer::address_of(account), STARTING_BALANCE);
-
-        // Mint some PNT too.
-        paint_fungible_asset::mint(caller, signer::address_of(account), 1000);
     }
 
     #[test_only]
@@ -766,32 +759,25 @@ module addr::canvas_token {
     }
 
     #[test_only]
-    fun init_test(caller: &signer, friend1: &signer, friend2: &signer, aptos_framework: &signer) {
+    fun init_test(caller: &signer, friend1: &signer, aptos_framework: &signer) {
         set_global_time(aptos_framework, 100);
         chain_id::initialize_for_test(aptos_framework, 3);
         collection_init_module_for_test(caller);
-        paint_fungible_token::test_init(caller);
-        create_test_account(caller, aptos_framework, caller);
-        create_test_account(caller, aptos_framework, friend1);
-        create_test_account(caller, aptos_framework, friend2);
+        create_test_account(aptos_framework, caller);
+        create_test_account(aptos_framework, friend1);
     }
 
     #[test_only]
     fun create_canvas(
         caller: &signer,
-        width: u64,
-        height: u64,
+        width: u16,
+        height: u16,
     ): Object<Canvas> {
         let config = CanvasConfig {
             width,
             height,
             per_account_timeout_s: 1,
-            palette: vector::empty(),
-            default_color: Color {
-                r: 0,
-                g: 0,
-                b: 0,
-            },
+            default_color_id: COLOR_ID_BLACK,
             owner_is_super_admin: true,
             max_number_of_pixels_per_draw: 1,
             draw_enabled_for_non_admin: true,
@@ -800,214 +786,202 @@ module addr::canvas_token {
         create_(caller, string::utf8(b"name"), string::utf8(b"description"), config)
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
-    fun test_create(caller: signer, friend1: signer, friend2: signer, aptos_framework: signer) {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
+    fun test_create(caller: signer, friend1: signer, aptos_framework: signer) {
+        init_test(&caller, &friend1, &aptos_framework);
         create_canvas(&caller, 50, 50);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196618, location = addr::canvas_token)]
     fun test_cannot_create_canvas_as_non_collection_owner(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         create_canvas(&friend1, 50, 50);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196621, location = addr::canvas_token)]
     fun test_cannot_create_canvas_larger_than_max_dimension_defined_in_collection(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Expect to fail cause default max canvas limit is 1000 x 1000
         create_canvas(&caller, 1001, 1001);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     fun test_admin_not_restricted_by_per_account_timeout(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Admin can draw consequently without restricted by the timeout
-        draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
-        draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
-        draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&caller, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
+        draw(&caller, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
+        draw(&caller, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 65547, location = addr::canvas_token)]
     fun test_max_number_of_pixels_per_draw(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially set max number of pixels can draw to 1
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Can draw 1 pixel
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Cannot draw 2 pixels
-        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[COLOR_ID_BLACK, COLOR_ID_BLACK]);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196612, location = addr::canvas_token)]
     fun test_only_admin_can_update_max_number_of_pixels_per_draw(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially set max number of pixels per draw to 1
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin cannot update max number of pixels per draw to 2
-        update_max_number_of_piexls_per_draw(&friend1, canvas, 2);
+        update_max_number_of_pixels_per_draw(&friend1, canvas, 2);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     fun test_admin_can_update_max_number_of_pixels_per_draw(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially set max number of pixels per draw to 1
         let canvas = create_canvas(&caller, 50, 50);
         // Can draw 1 pixel
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Update max number of pixels per draw to 2
-        update_max_number_of_piexls_per_draw(&caller, canvas, 2);
+        update_max_number_of_pixels_per_draw(&caller, canvas, 2);
         // Wait for 1 second
         timestamp::fast_forward_seconds(1);
         // Can draw 2 pixels now
-        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[COLOR_ID_BLACK, COLOR_ID_BLACK]);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196614, location = addr::canvas_token)]
     fun test_per_account_timeout(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Wait for 1 second
         timestamp::fast_forward_seconds(1);
         // Should be able to draw now since timeout already passed
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Cannot draw immediately
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     fun test_admin_can_update_per_account_timeout(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Update per account timeout to 2 seconds
         update_per_account_timeout(&caller, canvas, 2);
         // Wait for 2 second
         timestamp::fast_forward_seconds(2);
         // Should be able to draw now since timeout already passed
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196612, location = addr::canvas_token)]
     fun test_nonadmin_cannot_update_per_account_timeout(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin cannot update per account timeout to 2 seconds
         update_per_account_timeout(&friend1, canvas, 2);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 12, location = addr::canvas_token)]
     fun test_nonadmin_cannot_draw_after_drawing_disabled_by_admin(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin can draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Admin disable drawing
         disable_draw_for_non_admin(&caller, canvas);
         // Non admin cannot draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     #[expected_failure(abort_code = 196612, location = addr::canvas_token)]
     fun test_nonadmin_cannot_disable_drawing(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin cannot disable drawing
         disable_draw_for_non_admin(&friend1, canvas);
     }
 
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[test(caller = @addr, friend1 = @0x456, aptos_framework = @aptos_framework)]
     fun test_nonadmin_can_draw_after_drawing_enabled_by_admin(
         caller: signer,
         friend1: signer,
-        friend2: signer,
         aptos_framework: signer
     ) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        init_test(&caller, &friend1, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin can draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Admin disable drawing
         disable_draw_for_non_admin(&caller, canvas);
         // Admin can still draw after disabled
-        draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&caller, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
         // Admin re-enable drawing
         enable_draw_for_non_admin(&caller, canvas);
         // Wait for 1 second so non admin pass the timeout
         timestamp::fast_forward_seconds(1);
         // Non admin can draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1], vector[1], vector[COLOR_ID_BLACK]);
     }
 }
