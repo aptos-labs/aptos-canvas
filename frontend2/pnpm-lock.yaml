@@ -9,7 +9,7 @@ patchedDependencies:
     hash: 4qcck34a57pzwwc6crpaydnwkq
     path: patches/@types__fabric@5.3.4.patch
   fabric@5.3.0:
-    hash: vtf24ckeco2stdg37nzk36puw4
+    hash: 4dykullkoxscjzzjpb3t6ev3wq
     path: patches/fabric@5.3.0.patch
 
 dependencies:
@@ -17,8 +17,8 @@ dependencies:
     specifier: ^1.3.2
     version: 1.3.2
   '@identity-connect/wallet-adapter-plugin':
-    specifier: ^1.0.3
-    version: 1.0.3
+    specifier: ^1.0.4
+    version: 1.0.4
   '@martianwallet/aptos-wallet-adapter':
     specifier: ^0.0.4
     version: 0.0.4
@@ -42,7 +42,7 @@ dependencies:
     version: 1.20.0
   fabric:
     specifier: ^5.3.0
-    version: 5.3.0(patch_hash=vtf24ckeco2stdg37nzk36puw4)(encoding@0.1.13)
+    version: 5.3.0(patch_hash=4dykullkoxscjzzjpb3t6ev3wq)(encoding@0.1.13)
   fewcha-plugin-wallet-adapter:
     specifier: ^0.1.3
     version: 0.1.3(encoding@0.1.13)
@@ -1090,8 +1090,8 @@ packages:
       - debug
     dev: false
 
-  /@identity-connect/dapp-sdk@0.3.0:
-    resolution: {integrity: sha512-BPqRhFGMGtbAVi2Vvyu1Xq18dXztYSkuMv9e1G0s9dQJqaCyH91qIh2POvwTr4TQ1GxkFruaUAWX+LkMZ0Ig3w==}
+  /@identity-connect/dapp-sdk@0.3.1:
+    resolution: {integrity: sha512-o5CWgaw7vw2VVAUesPSACO/Ho0FjbuuSQzjduDRHny86DZH59oPaboSztgKl1bmGkDBsyxS2lYFrYZwnaQhtbg==}
     dependencies:
       '@identity-connect/api': 0.3.0
       '@identity-connect/crypto': 0.1.3
@@ -1101,12 +1101,12 @@ packages:
       - debug
     dev: false
 
-  /@identity-connect/wallet-adapter-plugin@1.0.3:
-    resolution: {integrity: sha512-xt7h/MxGARG4WDrA6FTPnwBhV5RR+2egN5Qq1FMPVP2Wka19oGI9m0wn+3ldcfDD/XaWa9UZVVd6hCwoLFsGXg==}
+  /@identity-connect/wallet-adapter-plugin@1.0.4:
+    resolution: {integrity: sha512-vYCl76FINBxBCjPvqd9ENSZbkBfqwQxPEBuuK+GWdDT+p8+da2M27WPJFVLdfBYe5UhUSZ1hADa1KWejgRCHhA==}
     dependencies:
       '@aptos-labs/wallet-adapter-core': 2.5.1
       '@identity-connect/api': 0.3.0
-      '@identity-connect/dapp-sdk': 0.3.0
+      '@identity-connect/dapp-sdk': 0.3.1
       aptos: 1.20.0
     transitivePeerDependencies:
       - debug
@@ -4662,7 +4662,7 @@ packages:
     engines: {node: '> 0.1.90'}
     dev: false
 
-  /fabric@5.3.0(patch_hash=vtf24ckeco2stdg37nzk36puw4)(encoding@0.1.13):
+  /fabric@5.3.0(patch_hash=4dykullkoxscjzzjpb3t6ev3wq)(encoding@0.1.13):
     resolution: {integrity: sha512-AVayKuzWoXM5cTn7iD3yNWBlfEa8r1tHaOe2g8NsZrmWKAHjryTxT/j6f9ncRfOWOF0I1Ci1AId3y78cC+GExQ==}
     engines: {node: '>=14.0.0'}
     optionalDependencies:
