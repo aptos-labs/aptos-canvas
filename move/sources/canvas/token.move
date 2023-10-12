@@ -136,33 +136,12 @@ module addr::canvas_token {
         /// artists contribute is not tracked.
         per_account_timeout_s: u64,
 
-        /// If non-zero, it will only be possible to draw on the canvas for this long,
-        /// after which the canvas will be irrevocably locked forever.
-        can_draw_for_s: u64,
-
         /// Allowed colors. If empty, all colors are allowed.
         palette: vector<Color>,
-
-        /// How much it costs in PNT to draw a single pixel. This is the base cost, which
-        /// can be modified by some factor based on how recently the pixel was drawn.
-        /// If zero, there is no cost. PNT has two decimal places, so to spend "1 PNT"
-        /// you would specify 100 here.
-        cost: u64,
-
-        /// The most the cost of a pixel should be multipled by, e.g. if a pixel was
-        /// just drawn.
-        cost_multiplier: u64,
-
-        /// How long it takes for the cost multiplier to decay back to 1 after a pixel
-        /// was just drawn.
-        cost_multiplier_decay_s: u64,
 
         /// The default color of the pixels. If a paletter is set, this color must be a
         /// part of the palette.
         default_color: Color,
-
-        /// Whether it is possible to draw multiple pixels at once.
-        can_draw_multiple_pixels_at_once: bool,
 
         /// Whether the owner of the canvas has super admin privileges. Super admin
         /// powers are the same as normal admin powers but in addition you have the
@@ -195,21 +174,16 @@ module addr::canvas_token {
     public entry fun create(
         caller: &signer,
         // Arguments for the token + object.
-        description: String,
         name: String,
+        description: String,
         // Arguments for the canvas. For now we don't allow setting the palette
         // because it is a pain to express vector<Color> in an entry function.
         width: u64,
         height: u64,
         per_account_timeout_s: u64,
-        can_draw_for_s: u64,
-        cost: u64,
-        cost_multiplier: u64,
-        cost_multiplier_decay_s: u64,
         default_color_r: u8,
         default_color_g: u8,
         default_color_b: u8,
-        can_draw_multiple_pixels_at_once: bool,
         owner_is_super_admin: bool,
         max_number_of_pixels_per_draw: u64,
         draw_enabled_for_non_admin: bool,
@@ -218,17 +192,12 @@ module addr::canvas_token {
             width,
             height,
             per_account_timeout_s,
-            can_draw_for_s,
             palette: vector::empty(),
-            cost,
-            cost_multiplier,
-            cost_multiplier_decay_s,
             default_color: Color {
                 r: default_color_r,
                 g: default_color_g,
                 b: default_color_b,
             },
-            can_draw_multiple_pixels_at_once,
             owner_is_super_admin,
             max_number_of_pixels_per_draw,
             draw_enabled_for_non_admin,
@@ -242,8 +211,8 @@ module addr::canvas_token {
     /// cannot take in struct arguments, which again is convenient for testing.
     public fun create_(
         caller: &signer,
-        description: String,
         name: String,
+        description: String,
         config: CanvasConfig,
     ): Object<Canvas> {
         assert_caller_is_collection_owner(caller);
@@ -256,12 +225,6 @@ module addr::canvas_token {
                 error::invalid_argument(E_CREATION_INITIAL_COLOR_NOT_IN_PALETTE),
             );
         };
-
-        // Assert the cost values are correct.
-        assert!(
-            config.cost_multiplier >= 1,
-            error::invalid_argument(E_CREATION_COST_MULTIPLIER_TOO_LOW),
-        );
 
         // Create the token. This creates an ObjectCore and Token.
         // TODO: Use token::create when AUIDs are enabled.
@@ -345,16 +308,6 @@ module addr::canvas_token {
 
         let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
 
-        // If `can_draw_for_s` is non-zero, confirm that the canvas is still open.
-        // This is a more granular control than draw_enabled_for_non_admin as it checks open for a certain time
-        if (canvas_.config.can_draw_for_s > 0) {
-            let now = now_seconds();
-            assert!(
-                now <= (canvas_.created_at_s + canvas_.config.can_draw_for_s),
-                error::invalid_state(E_CANVAS_CLOSED),
-            );
-        };
-
         // Assert the vectors are all the same length.
         assert!(
             vector::length(&xs) == vector::length(&ys),
@@ -379,6 +332,7 @@ module addr::canvas_token {
         );
 
         assert_timeout_and_update_last_contribution_time(signer::address_of(caller), canvas);
+        let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
 
         let i = 0;
         let len = vector::length(&xs);
@@ -388,33 +342,23 @@ module addr::canvas_token {
             let r = vector::pop_back(&mut rs);
             let g = vector::pop_back(&mut gs);
             let b = vector::pop_back(&mut bs);
-            draw_one(caller_addr, canvas, x, y, r, g, b);
+            draw_one(canvas_, x, y, r, g, b);
             i = i + 1;
         };
     }
 
     /// Draw a single pixel to the canvas. We consider the top left corner 0,0.
     public fun draw_one(
-        caller_addr: address,
-        canvas: Object<Canvas>,
+        canvas_: &mut Canvas,
         x: u64,
         y: u64,
         r: u8,
         g: u8,
         b: u8,
-    ) acquires Canvas {
-        let cost = determine_cost(canvas, x, y);
-
-        let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
-
+    ) {
         // Confirm the coordinates are not out of bounds.
         assert!(x < canvas_.config.width, error::invalid_argument(E_COORDINATE_OUT_OF_BOUNDS));
         assert!(y < canvas_.config.height, error::invalid_argument(E_COORDINATE_OUT_OF_BOUNDS));
-
-        // If there is a cost, take the PNT and burn it.
-        if (cost > 0) {
-            paint_fungible_asset::burn(caller_addr, cost);
-        };
 
         // Write the pixel.
         let color = Color { r, g, b };
@@ -461,36 +405,6 @@ module addr::canvas_token {
                 E_DRAW_DISABLED_FOR_NON_ADMIN
             )
         }
-    }
-
-    #[view]
-    /// Determine the cost to draw a single pixel.
-    public fun determine_cost(canvas: Object<Canvas>, x: u64, y: u64): u64 acquires Canvas {
-        let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
-
-        // Exit early if there is no cost / decay.
-        if (canvas_.config.cost == 0 || canvas_.config.cost_multiplier_decay_s == 0) {
-            return 0
-        };
-
-        // Determine when the pixel was last drawn.
-        let index = y * canvas_.config.width + x;
-        let drawn_at_s = if (smart_table::contains(&canvas_.pixels, index)) {
-            let pixel = smart_table::borrow(&canvas_.pixels, index);
-            pixel.drawn_at_s
-        } else {
-            0
-        };
-
-        let seconds_since_last_drawn = now_seconds() - drawn_at_s;
-        let override_cost = if (seconds_since_last_drawn >= canvas_.config.cost_multiplier_decay_s) {
-            0
-        } else {
-            let seconds_remaining = canvas_.config.cost_multiplier_decay_s - seconds_since_last_drawn;
-            let cost_differential = canvas_.config.cost * canvas_.config.cost_multiplier - canvas_.config.cost;
-            math64::mul_div(cost_differential, seconds_remaining, canvas_.config.cost_multiplier_decay_s)
-        };
-        canvas_.config.cost + override_cost
     }
 
     fun assert_allowlisted_to_draw(canvas: Object<Canvas>, caller_addr: address) acquires Canvas {
@@ -867,37 +781,29 @@ module addr::canvas_token {
         caller: &signer,
         width: u64,
         height: u64,
-        cost: u64,
-        cost_multiplier: u64,
-        cost_multiplier_decay_s: u64,
     ): Object<Canvas> {
         let config = CanvasConfig {
             width,
             height,
             per_account_timeout_s: 1,
-            can_draw_for_s: 0,
             palette: vector::empty(),
-            cost,
-            cost_multiplier,
-            cost_multiplier_decay_s,
             default_color: Color {
                 r: 0,
                 g: 0,
                 b: 0,
             },
-            can_draw_multiple_pixels_at_once: false,
             owner_is_super_admin: true,
             max_number_of_pixels_per_draw: 1,
             draw_enabled_for_non_admin: true,
         };
 
-        create_(caller, string::utf8(b"description"), string::utf8(b"name"), config)
+        create_(caller, string::utf8(b"name"), string::utf8(b"description"), config)
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
     fun test_create(caller: signer, friend1: signer, friend2: signer, aptos_framework: signer) {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
-        create_canvas(&caller, 50, 50, 1, 1, 0);
+        create_canvas(&caller, 50, 50);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -909,7 +815,7 @@ module addr::canvas_token {
         aptos_framework: signer
     ) {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
-        create_canvas(&friend1, 50, 50, 1, 1, 0);
+        create_canvas(&friend1, 50, 50);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -922,48 +828,7 @@ module addr::canvas_token {
     ) {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Expect to fail cause default max canvas limit is 1000 x 1000
-        create_canvas(&caller, 1001, 1001, 1, 1, 0);
-    }
-
-    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
-    fun test_determine_cost(caller: signer, friend1: signer, friend2: signer, aptos_framework: signer) acquires Canvas {
-        init_test(&caller, &friend1, &friend2, &aptos_framework);
-
-        // See that when `cost` is zero, the draw cost is zero.
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
-        assert!(determine_cost(canvas, 0, 0) == 0, 1);
-
-        // See that when `cost` is one and the multiplier is one, the draw cost is one.
-        let canvas = create_canvas(&caller, 50, 50, 1, 1, 60);
-        assert!(determine_cost(canvas, 0, 0) == 1, 1);
-
-        // See that when `cost` is five and the multiplier is one, the draw cost is five.
-        let canvas = create_canvas(&caller, 50, 50, 5, 1, 60);
-        assert!(determine_cost(canvas, 0, 0) == 5, 1);
-
-        // See that when `cost` is five and the multiplier is three, the draw cost is
-        // still five for the first draw.
-        let canvas = create_canvas(&caller, 50, 50, 5, 3, 60);
-        assert!(determine_cost(canvas, 0, 0) == 5, 1);
-
-        // See that when `cost` is five and the multiplier is four, after drawing a
-        // pixel, drawing that same pixel costs four times as much.
-        let canvas = create_canvas(&caller, 50, 50, 5, 4, 60);
-        draw_one(signer::address_of(&caller), canvas, 0, 0, 255, 255, 255);
-        assert!(determine_cost(canvas, 0, 0) == 20, 1);
-
-        // See that after passing half of the delay time, the cost is half of what it
-        // was at its peak.
-        set_global_time(&aptos_framework, 130);
-        assert!(determine_cost(canvas, 0, 0) == 12, 1);
-
-        // Check the cost after passing 3/4 of the delay time. The value is rounded.
-        set_global_time(&aptos_framework, 145);
-        assert!(determine_cost(canvas, 0, 0) == 8, 1);
-
-        // See that after passing the full delay time, the cost is back to the lowest.
-        set_global_time(&aptos_framework, 160);
-        assert!(determine_cost(canvas, 0, 0) == 5, 1);
+        create_canvas(&caller, 1001, 1001);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -975,7 +840,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Admin can draw consequently without restricted by the timeout
         draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         draw(&caller, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
@@ -1009,7 +874,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially set max number of pixels per draw to 1
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Non admin cannot update max number of pixels per draw to 2
         update_max_number_of_piexls_per_draw(&friend1, canvas, 2);
     }
@@ -1023,7 +888,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially set max number of pixels per draw to 1
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Can draw 1 pixel
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Update max number of pixels per draw to 2
@@ -1044,7 +909,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Wait for 1 second
         timestamp::fast_forward_seconds(1);
@@ -1063,7 +928,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Update per account timeout to 2 seconds
         update_per_account_timeout(&caller, canvas, 2);
@@ -1083,7 +948,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Non admin cannot update per account timeout to 2 seconds
         update_per_account_timeout(&friend1, canvas, 2);
     }
@@ -1098,7 +963,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin disable drawing
@@ -1117,7 +982,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Non admin cannot disable drawing
         disable_draw_for_non_admin(&friend1, canvas);
     }
@@ -1131,7 +996,7 @@ module addr::canvas_token {
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
-        let canvas = create_canvas(&caller, 50, 50, 0, 1, 60);
+        let canvas = create_canvas(&caller, 50, 50);
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1], vector[1], vector[1]);
         // Admin disable drawing
