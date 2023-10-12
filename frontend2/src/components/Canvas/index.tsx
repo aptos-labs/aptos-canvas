@@ -4,7 +4,7 @@
 import { fabric } from "fabric";
 import { useEffect, useRef } from "react";
 
-import { PIXELS_PER_SIDE } from "@/constants/canvas";
+import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, VIEW_MODE_ZOOM } from "@/constants/canvas";
 import {
   useCanvasCommandListener,
   useCanvasState,
@@ -13,7 +13,7 @@ import {
 import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { alterImagePixels, createSquareImage } from "./drawImage";
-import { mousePan, pinchZoom, wheelPan, wheelZoom } from "./gestures";
+import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
 import { EventCanvas, Point } from "./types";
 
 export interface CanvasProps {
@@ -52,7 +52,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     });
 
     // Zoom into the center of the image
-    const initialZoom = 10;
+    const initialZoom = VIEW_MODE_ZOOM;
     const minCanvas = Math.min(height, width);
     const zoomedHeight = minCanvas * initialZoom;
     const zoomedWidth = minCanvas * initialZoom;
@@ -125,9 +125,11 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       if (!canvas) return;
 
       if (isViewOnly) {
+        smoothZoom(canvas, VIEW_MODE_ZOOM);
         canvas.defaultCursor = "grab";
         canvas.hoverCursor = "grab";
       } else {
+        smoothZoom(canvas, DRAW_MODE_ZOOM);
         canvas.defaultCursor = "crosshair";
         canvas.hoverCursor = "crosshair";
       }

@@ -17,6 +17,19 @@ export function pinchZoom(canvas: EventCanvas, x: number, y: number, newZoom: nu
   canvas.zoomToPoint(new fabric.Point(x, y), zoom);
 }
 
+export function smoothZoom(canvas: fabric.Canvas, newZoom: number) {
+  const center = canvas.getCenter();
+  fabric.util.animate({
+    startValue: canvas.getZoom(),
+    endValue: newZoom,
+    duration: 500,
+    easing: fabric.util.ease.easeOutQuad,
+    onChange: (nextZoomValue) => {
+      canvas.zoomToPoint(new fabric.Point(center.left, center.top), nextZoomValue);
+    },
+  });
+}
+
 export function wheelPan(canvas: EventCanvas, deltaX: number, deltaY: number) {
   const vpt = canvas.viewportTransform;
   if (vpt?.[4] !== undefined) vpt[4] -= deltaX;

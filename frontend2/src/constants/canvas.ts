@@ -4,6 +4,9 @@ export const PIXELS_PER_SIDE = 1000;
 
 export const MAX_PIXELS_PER_TXN = 800;
 
+export const VIEW_MODE_ZOOM = 1;
+export const DRAW_MODE_ZOOM = 10;
+
 export const STROKE_COLORS = [
   rgba({ name: "black", r: 0, g: 0, b: 0 }),
   rgba({ name: "white", r: 255, g: 255, b: 255 }),
