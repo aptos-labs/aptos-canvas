@@ -85,7 +85,7 @@ export function CanvasActions() {
       })}
     >
       {changedPixelsCount ? (
-        <Button variant="secondary" onClick={clear}>
+        <Button variant="secondary" onClick={clear} disabled={isSubmitting}>
           Clear
         </Button>
       ) : (

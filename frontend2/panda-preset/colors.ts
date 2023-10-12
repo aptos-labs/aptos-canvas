@@ -102,7 +102,7 @@ export const semanticColors = {
       DEFAULT: { value: "{colors.white}" },
       hovered: { value: "{colors.navy.50}" },
       pressed: { value: "{colors.navy.100}" },
-      disabled: { value: "{colors.transparent}" },
+      disabled: { value: "{colors.white}" },
     },
     danger: {
       DEFAULT: { value: "{colors.error}" },

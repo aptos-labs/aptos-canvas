@@ -85,15 +85,18 @@ const buttonStyles = cva({
         color: "interactive.primary",
         "&:hover:not(:disabled)": {
           bg: "interactive.secondary.hovered",
+          color: "interactive.primary.hovered",
           borderColor: "interactive.primary.hovered",
         },
         "&:active:not(:disabled)": {
           bg: "interactive.secondary.pressed",
+          color: "interactive.primary.pressed",
           borderColor: "interactive.primary.pressed",
         },
         "&:disabled:not([data-loading=true])": {
           bg: "interactive.secondary.disabled",
-          borderColor: "border.disabled",
+          color: "border.pressed",
+          borderColor: "border.pressed",
         },
       },
       danger: {
