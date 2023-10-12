@@ -1,5 +1,6 @@
 "use client";
 
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { css } from "styled-system/css";
 import { stack } from "styled-system/patterns";
 
@@ -10,6 +11,7 @@ import { EditBoxIcon } from "../Icons/EditBoxIcon";
 import { EyeIcon } from "../Icons/EyeIcon";
 
 export function DrawModeToggle() {
+  const { connected } = useWallet();
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
 
@@ -18,6 +20,7 @@ export function DrawModeToggle() {
       <Button
         iconOnly
         aria-label={isViewOnly ? "Go to Draw Mode" : "Back to View Only"}
+        disabled={isViewOnly && !connected}
         onClick={() => {
           setViewOnly(!isViewOnly);
         }}

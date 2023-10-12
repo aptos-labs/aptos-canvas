@@ -16,9 +16,11 @@ export default function HomePage() {
       <main className={main}>
         <DesktopCanvasHeader />
         <MobileCanvasHeader />
-        <div className={canvasWrapper}>
+        <div className={css({ position: "relative", h: "100%", w: "100%" })}>
           <MobileCanvasSidePanel />
-          <CanvasContainer />
+          <div className={css({ position: "absolute", inset: 0, h: "100%", w: "100%" })}>
+            <CanvasContainer />
+          </div>
         </div>
         <MobileCanvasFooter />
       </main>
@@ -52,11 +54,4 @@ const main = css({
     p: 32,
     gap: 24,
   },
-});
-
-const canvasWrapper = css({
-  h: "100%",
-  w: "100%",
-  overflow: "hidden",
-  position: "relative",
 });

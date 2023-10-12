@@ -16,9 +16,6 @@ import { alterImagePixels, createSquareImage } from "./drawImage";
 import { mousePan, pinchZoom, wheelPan, wheelZoom } from "./gestures";
 import { EventCanvas, Point } from "./types";
 
-// TODO: Consider reversing wheel events for mouse users
-// TODO: Add grid lines when zoom reaches ~50x
-
 export interface CanvasProps {
   height: number;
   width: number;

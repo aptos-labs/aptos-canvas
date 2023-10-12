@@ -1,5 +1,6 @@
 "use client";
 
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { css } from "styled-system/css";
 import { flex, stack } from "styled-system/patterns";
@@ -11,6 +12,7 @@ import { EyeIcon } from "@/components/Icons/EyeIcon";
 import { useCanvasState } from "@/contexts/canvas";
 
 export function MobileCanvasFooter() {
+  const { connected } = useWallet();
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
 
@@ -41,6 +43,7 @@ export function MobileCanvasFooter() {
               onClick={() => {
                 setViewOnly(false);
               }}
+              disabled={!connected}
               className={css({ w: "100%" })}
             >
               Go to Draw Mode
