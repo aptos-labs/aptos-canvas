@@ -37,7 +37,7 @@ export interface OptimisticUpdate {
 export interface CanvasState {
   isInitialized: boolean;
   isViewOnly: boolean;
-  setViewOnly: (isViewOnly: boolean) => void;
+  setViewOnly: (isViewOnly: boolean) => boolean;
   strokeColor: RgbaColor;
   strokeWidth: number;
   optimisticUpdates: Array<OptimisticUpdate>;
@@ -52,10 +52,11 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
       const hasConfirmed = window.confirm(
         "You have unsaved changes on the board. Are you sure you want to discard them?",
       );
-      if (hasConfirmed) emitCanvasCommand("clearChangedPixels");
-      else return;
+      if (!hasConfirmed) return false;
+      emitCanvasCommand("clearChangedPixels");
     }
     set({ isViewOnly });
+    return true;
   },
   strokeColor: STROKE_COLORS[0],
   strokeWidth: STROKE_WIDTH_CONFIG.min,

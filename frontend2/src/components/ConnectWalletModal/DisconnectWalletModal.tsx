@@ -1,6 +1,6 @@
 "use client";
 
-import { emitCanvasCommand, useCanvasState } from "@/contexts/canvas";
+import { useCanvasState } from "@/contexts/canvas";
 
 import { DeleteModalContent, openModal } from "../Modal";
 
@@ -23,9 +23,9 @@ function DisconnectWalletModal(props: DisconnectWalletModalProps) {
       content="Are you sure you want to disconnect your wallet?"
       deleteLabel="Disconnect"
       onConfirm={() => {
+        const hasToggled = useCanvasState.getState().setViewOnly(true);
+        if (!hasToggled) return;
         props.disconnect();
-        useCanvasState.setState({ isViewOnly: true });
-        emitCanvasCommand("clearChangedPixels");
         props.hide();
       }}
       hide={props.hide}
