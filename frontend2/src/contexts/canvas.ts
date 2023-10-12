@@ -25,7 +25,7 @@ export interface PixelData {
 }
 
 /** Format: { "x-y": PixelData } */
-export type ImagePatch = Record<`${number}-${number}`, PixelData>;
+export type ImagePatch = Map<`${number}-${number}`, PixelData>;
 
 export interface OptimisticUpdate {
   /** Collection of pixels that changed */
@@ -48,7 +48,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   isInitialized: false,
   isViewOnly: true,
   setViewOnly: (isViewOnly) => {
-    if (isViewOnly && Object.keys(get().pixelsChanged).length) {
+    if (isViewOnly && get().pixelsChanged.size) {
       const hasConfirmed = window.confirm(
         "You have unsaved changes on the board. Are you sure you want to discard them?",
       );
@@ -61,7 +61,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   strokeColor: STROKE_COLORS[0],
   strokeWidth: STROKE_WIDTH_CONFIG.min,
   optimisticUpdates: [],
-  pixelsChanged: {},
+  pixelsChanged: new Map(),
 }));
 
 /**

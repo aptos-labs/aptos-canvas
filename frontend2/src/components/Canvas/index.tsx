@@ -96,7 +96,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       const allImagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(pixelsChanged);
 
       for (const imagePatch of allImagePatches) {
-        for (const pixelChanged of Object.values(imagePatch)) {
+        for (const pixelChanged of imagePatch.values()) {
           const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
           newPixelArray[index + 0] = pixelChanged.r; // R value
           newPixelArray[index + 1] = pixelChanged.g; // G value
@@ -236,7 +236,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     const { optimisticUpdates } = useCanvasState.getState();
     const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
     for (const imagePatch of imagePatches) {
-      for (const pixelChanged of Object.values(imagePatch)) {
+      for (const pixelChanged of imagePatch.values()) {
         const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
         newPixelArray[index + 0] = pixelChanged.r; // R value
         newPixelArray[index + 1] = pixelChanged.g; // G value
@@ -253,7 +253,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       cleanUp();
     });
 
-    useCanvasState.setState({ pixelsChanged: {} });
+    useCanvasState.setState({ pixelsChanged: new Map() });
     pixelArrayRef.current = new Uint8ClampedArray(newPixelArray);
   });
 

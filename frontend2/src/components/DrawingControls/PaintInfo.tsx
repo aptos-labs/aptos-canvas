@@ -16,7 +16,7 @@ export interface PaintInfoProps {
 
 export function PaintInfo({ direction }: PaintInfoProps) {
   const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
-  const changedPixelsCount = Object.keys(pixelsChanged).length;
+  const changedPixelsCount = pixelsChanged.size;
   const limitReached = changedPixelsCount >= MAX_PIXELS_PER_TXN;
 
   useEffect(() => {

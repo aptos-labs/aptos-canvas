@@ -92,16 +92,16 @@ export function alterImagePixels({
   // Filter out out-of-bounds points
   points = points.filter(({ x, y }) => x >= 0 && x < size && y >= 0 && y < size);
 
-  const nextPixelsChanged = { ...pixelsChanged };
+  const nextPixelsChanged = new Map(pixelsChanged);
   for (const point of points) {
-    if (Object.keys(nextPixelsChanged).length >= MAX_PIXELS_PER_TXN) break;
-    nextPixelsChanged[`${point.x}-${point.y}`] = {
+    if (nextPixelsChanged.size >= MAX_PIXELS_PER_TXN) break;
+    nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
       r: strokeColor.red,
       g: strokeColor.green,
       b: strokeColor.blue,
-    };
+    });
     const index = (point.y * size + point.x) * 4;
     pixelArray[index + 0] = strokeColor.red; // R value
     pixelArray[index + 1] = strokeColor.green; // G value

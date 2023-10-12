@@ -18,7 +18,7 @@ export function CanvasActions() {
   const { signAndSubmitTransaction } = useWallet();
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
   const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
-  const changedPixelsCount = Object.keys(pixelsChanged).length;
+  const changedPixelsCount = pixelsChanged.size;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const cancel = () => {
@@ -37,7 +37,7 @@ export function CanvasActions() {
     const rs = [];
     const gs = [];
     const bs = [];
-    for (const pixelChanged of Object.values(pixelsChanged)) {
+    for (const pixelChanged of pixelsChanged.values()) {
       xs.push(pixelChanged.x);
       ys.push(pixelChanged.y);
       rs.push(pixelChanged.r);
@@ -60,7 +60,10 @@ export function CanvasActions() {
         imagePatch: pixelsChanged,
         committedAt: Date.now(),
       });
-      useCanvasState.setState({ pixelsChanged: {}, optimisticUpdates: newOptimisticUpdates });
+      useCanvasState.setState({
+        pixelsChanged: new Map(),
+        optimisticUpdates: newOptimisticUpdates,
+      });
       toast({ id: "add-success", variant: "success", content: "Added!" });
     } catch {
       toast({
