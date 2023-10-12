@@ -1,5 +1,6 @@
 import { fabric } from "fabric";
 
+import { MAX_PIXELS_PER_TXN } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
@@ -93,6 +94,7 @@ export function alterImagePixels({
 
   const nextPixelsChanged = { ...pixelsChanged };
   for (const point of points) {
+    if (Object.keys(nextPixelsChanged).length >= MAX_PIXELS_PER_TXN) break;
     nextPixelsChanged[`${point.x}-${point.y}`] = {
       x: point.x,
       y: point.y,
