@@ -25,7 +25,7 @@ export function PaintInfo({ direction }: PaintInfoProps) {
       toast({
         id: TOAST_ID,
         variant: "warning",
-        content: "Pixel limit per transaction reached",
+        content: "Pixel limit per transaction reached. Submit your work to continue drawing.",
         duration: null,
       });
     } else {

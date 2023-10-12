@@ -36,6 +36,7 @@ export function Toast(props: ToastProps) {
             align: "center",
             gap: 12,
             w: "100%",
+            "& svg": { flexShrink: 0 },
           })}
         >
           {icon}
