@@ -38,6 +38,10 @@ export function WalletProvider({ children }: React.PropsWithChildren) {
 
   const identityConnectWalletConfig: IdentityConnectWalletConfig = {
     networkName: network,
+    axiosConfig: {
+      baseURL: "https://identity-connect.staging.gcp.aptosdev.com",
+    },
+    frontendBaseURL: "https://identity-connect.staging.gcp.aptosdev.com",
   };
 
   if (!IC_DAPP_ID) {
