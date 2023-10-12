@@ -99,7 +99,7 @@ export function CanvasActions() {
         loading={isSubmitting}
         onClick={finishDrawing}
       >
-        Finish Drawing
+        Submit Drawing
       </Button>
     </div>
   );

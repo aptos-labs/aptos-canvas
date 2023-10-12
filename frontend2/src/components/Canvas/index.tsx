@@ -52,7 +52,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     });
 
     // Zoom into the center of the image
-    const initialZoom = 3;
+    const initialZoom = 10;
     const minCanvas = Math.min(height, width);
     const zoomedHeight = minCanvas * initialZoom;
     const zoomedWidth = minCanvas * initialZoom;
