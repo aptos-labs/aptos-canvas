@@ -1,6 +1,6 @@
 import { css } from "styled-system/css";
-import { stack } from "styled-system/patterns";
 
+import { Countdown } from "@/components/Countdown";
 import { PaintInfo } from "@/components/DrawingControls/PaintInfo";
 
 export function MobileCanvasHeader() {
@@ -13,12 +13,7 @@ export function MobileCanvasHeader() {
         alignItems: "center",
       })}
     >
-      <p className={stack({ gap: 0, textStyle: "body.sm.regular" })}>
-        <strong className={css({ textStyle: "body.sm.bold" })}>
-          XX days XX hours and XX minutes
-        </strong>{" "}
-        left before we&apos;re minting this as an NFT.
-      </p>
+      <Countdown />
       <PaintInfo direction="row" />
     </div>
   );
