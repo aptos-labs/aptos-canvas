@@ -10,6 +10,7 @@ import {
   useCanvasState,
   useOptimisticUpdateGarbageCollector,
 } from "@/contexts/canvas";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { alterImagePixels, createSquareImage } from "./drawImage";
@@ -31,6 +32,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
   const prevPointRef = useRef<Point>();
   const isGesturingRef = useRef<boolean>(false);
   const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
+  const isAdmin = useIsAdmin();
 
   useEffect(function initializeCanvas() {
     // Initialize canvas
@@ -164,6 +166,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             canvas: this,
             point1: prevPointRef.current,
             point2: { x: e.offsetX, y: e.offsetY },
+            isAdmin,
           });
         }
       }
@@ -182,6 +185,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             canvas: this,
             point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
             point2: { x: e.offsetX, y: e.offsetY },
+            isAdmin,
           });
           prevPointRef.current = { x: e.offsetX, y: e.offsetY };
         }
@@ -240,6 +244,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
               canvas: this,
               point1: prevPointRef.current,
               point2: { x, y },
+              isAdmin,
             });
           } else if (state === "move") {
             if (!imageRef.current) return;
@@ -250,6 +255,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
               canvas: this,
               point1: prevPointRef.current ?? { x, y },
               point2: { x, y },
+              isAdmin,
             });
             prevPointRef.current = { x, y };
           } else if (state === "up") {
@@ -283,7 +289,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
         }
       };
     },
-    [isViewOnly],
+    [isAdmin, isViewOnly],
   );
 
   useCanvasCommandListener(() => {
