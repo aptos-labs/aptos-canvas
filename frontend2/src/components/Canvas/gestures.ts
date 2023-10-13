@@ -3,8 +3,9 @@ import { fabric } from "fabric";
 import { EventCanvas } from "./types";
 
 export function wheelZoom(canvas: EventCanvas, x: number, y: number, delta: number) {
+  const sensitivity = 3;
   let zoom = canvas.getZoom();
-  zoom *= 0.999 ** delta;
+  zoom *= 0.999 ** (delta * sensitivity);
   if (zoom > 100) zoom = 100;
   if (zoom < 0.01) zoom = 0.01;
   canvas.zoomToPoint(new fabric.Point(x, y), zoom);
