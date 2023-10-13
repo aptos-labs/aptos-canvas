@@ -6,7 +6,6 @@ import { flex } from "styled-system/patterns";
 
 import { MAX_PIXELS_PER_TXN } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 import { PaintIcon } from "../Icons/PaintIcon";
 import { removeToast, toast } from "../Toast";
@@ -18,9 +17,7 @@ export interface PaintInfoProps {
 export function PaintInfo({ direction }: PaintInfoProps) {
   const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
   const changedPixelsCount = pixelsChanged.size;
-  const isAdmin = useIsAdmin();
-  // Admins can submit as many pixels as they want
-  const limitReached = !isAdmin && changedPixelsCount >= MAX_PIXELS_PER_TXN;
+  const limitReached = changedPixelsCount >= MAX_PIXELS_PER_TXN;
 
   useEffect(() => {
     const TOAST_ID = "pixel-limit-reached";

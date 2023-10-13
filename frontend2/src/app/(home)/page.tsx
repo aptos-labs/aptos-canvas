@@ -1,6 +1,3 @@
-"use client";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { css } from "styled-system/css";
 
 import { CanvasContainer } from "./CanvasContainer";
@@ -11,27 +8,23 @@ import { MobileCanvasHeader } from "./MobileCanvasHeader";
 import { MobileCanvasSidePanel } from "./MobileCanvasSidePanel";
 import { MobileHeader } from "./MobileHeader";
 
-const queryClient = new QueryClient();
-
 export default function HomePage() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className={wrapper}>
-        <DesktopSidePanel />
-        <MobileHeader />
-        <main className={main}>
-          <DesktopCanvasHeader />
-          <MobileCanvasHeader />
-          <div className={css({ position: "relative", h: "100%", w: "100%" })}>
-            <MobileCanvasSidePanel />
-            <div className={css({ position: "absolute", inset: 0, h: "100%", w: "100%" })}>
-              <CanvasContainer />
-            </div>
+    <div className={wrapper}>
+      <DesktopSidePanel />
+      <MobileHeader />
+      <main className={main}>
+        <DesktopCanvasHeader />
+        <MobileCanvasHeader />
+        <div className={css({ position: "relative", h: "100%", w: "100%" })}>
+          <MobileCanvasSidePanel />
+          <div className={css({ position: "absolute", inset: 0, h: "100%", w: "100%" })}>
+            <CanvasContainer />
           </div>
-          <MobileCanvasFooter />
-        </main>
-      </div>
-    </QueryClientProvider>
+        </div>
+        <MobileCanvasFooter />
+      </main>
+    </div>
   );
 }
 
