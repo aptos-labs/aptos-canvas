@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
-const END_DATE = new Date("October 18, 2023 12:00:00 PDT");
+const END_DATE = new Date("October 18, 2023 10:00:00 PDT");
 
 const getSecondsLeft = () => {
   const seconds = Math.round((END_DATE.valueOf() - Date.now()) / 1000);
@@ -13,9 +13,11 @@ const getSecondsLeft = () => {
 };
 
 export function Countdown() {
-  const [secondsLeft, setSecondsLeft] = useState(getSecondsLeft());
+  const [secondsLeft, setSecondsLeft] = useState<number>();
 
   useEffect(() => {
+    setSecondsLeft(getSecondsLeft());
+
     // Update counter once a minute since we're only displaying down to the minute
     const interval = window.setInterval(() => {
       setSecondsLeft(getSecondsLeft());
@@ -26,20 +28,20 @@ export function Countdown() {
     };
   }, []);
 
-  const days = secondsLeft / 60 / 60 / 24;
+  const days = secondsLeft !== undefined ? secondsLeft / 60 / 60 / 24 : 0;
   const hours = (days % 1) * 24;
   const minutes = (hours % 1) * 60;
 
-  const formattedDays = Math.floor(days);
-  const formattedHours = Math.floor(hours);
-  const formattedMinutes = Math.floor(minutes);
+  const formattedDays = secondsLeft !== undefined ? Math.floor(days) : "X";
+  const formattedHours = secondsLeft !== undefined ? Math.floor(hours) : "X";
+  const formattedMinutes = secondsLeft !== undefined ? Math.floor(minutes) : "X";
 
   return (
-    <p className={wrapper}>
-      <strong className={strongText}>
+    <div className={wrapper}>
+      <p className={strongText}>
         {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until launch.
-      </strong>{" "}
-      <div className={css({ opacity: 0.4 })}>
+      </p>{" "}
+      <p className={css({ opacity: 0.4 })}>
         The Aptos Foundation reserves the right to moderate, edit, or clear the canvas.{" "}
         <Link
           href="https://aptoslabs.com/terms"
@@ -49,8 +51,8 @@ export function Countdown() {
         >
           See terms.
         </Link>
-      </div>
-    </p>
+      </p>
+    </div>
   );
 }
 
