@@ -1,8 +1,12 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 patchedDependencies:
   '@types/fabric@5.3.4':
-    hash: 4qcck34a57pzwwc6crpaydnwkq
+    hash: pnuuxcwmzuwll5ajd4rgc52xmm
     path: patches/@types__fabric@5.3.4.patch
   fabric@5.3.0:
     hash: 4dykullkoxscjzzjpb3t6ev3wq
@@ -73,7 +77,7 @@ devDependencies:
     version: 0.15.5(@internationalized/date@3.5.0)(@types/node@18.17.9)(@types/react-dom@18.2.13)(@types/react@18.2.28)(typescript@5.2.2)
   '@types/fabric':
     specifier: ^5.3.4
-    version: 5.3.4(patch_hash=4qcck34a57pzwwc6crpaydnwkq)
+    version: 5.3.4(patch_hash=pnuuxcwmzuwll5ajd4rgc52xmm)
   '@types/node':
     specifier: 18.17.9
     version: 18.17.9
@@ -3243,7 +3247,7 @@ packages:
   /@types/estree@1.0.2:
     resolution: {integrity: sha512-VeiPZ9MMwXjO32/Xu7+OwflfmeoRwkE/qzndw42gGtgJwZopBnzy2gD//NN1+go1mADzkDcqf/KnFRSjTJ8xJA==}
 
-  /@types/fabric@5.3.4(patch_hash=4qcck34a57pzwwc6crpaydnwkq):
+  /@types/fabric@5.3.4(patch_hash=pnuuxcwmzuwll5ajd4rgc52xmm):
     resolution: {integrity: sha512-tunniULcy73pbFbH7W8vtNF6MbOBxL40DNWjT2CrBPe+MJ9Wb8qIpbNAFB7eIpDZkmzYySnIZnxrDMSg8iPNvA==}
     dev: true
     patched: true
@@ -10446,7 +10450,3 @@ packages:
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false

@@ -29,6 +29,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
   const imageRef = useRef<fabric.Image>();
   const isDrawingRef = useRef<boolean>(false);
   const prevPointRef = useRef<Point>();
+  const isPinchingRef = useRef<boolean>(false);
   const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
 
   useEffect(function initializeCanvas() {
@@ -187,9 +188,6 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       }
 
       function handleMouseUp(this: EventCanvas) {
-        // On mouse up we want to recalculate new interaction
-        // for all objects, so we call setViewportTransform
-        if (this.viewportTransform) this.setViewportTransform(this.viewportTransform);
         this.isDragging = false;
         this.hoverCursor = isViewOnly ? "grab" : "crosshair";
         isDrawingRef.current = false;
@@ -197,31 +195,92 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       }
 
       let zoomStartScale = fabricRef.current?.getZoom() ?? 1;
-      function handleTouchGesture(this: EventCanvas, event: fabric.IGestureEvent) {
-        // Disable touch gestures while drawing
-        if (isDrawingRef.current) return;
+      let gestureTimeout: number | null = null;
+      function handleTouchGesture(this: EventCanvas, event: fabric.ITouchEvent) {
         const { fingers, state, x, y, scale } = event.self;
         if (fingers === 2) {
-          if (state == "start") {
+          if (state === "start") {
+            isPinchingRef.current = true;
             zoomStartScale = this.getZoom();
-          } else {
+            this.lastPosX = x;
+            this.lastPosY = y;
+          } else if (state === "change") {
             pinchZoom(this, x, y, zoomStartScale * scale);
+            mousePan(this, x, y);
+            // There's no "end" event for touch:gesture so we'll leave the canvas in its
+            // gesture state for a bit of time after the last gesture event to prevent
+            // accidental touch:drag events.
+            if (gestureTimeout) window.clearTimeout(gestureTimeout);
+            gestureTimeout = window.setTimeout(() => (isPinchingRef.current = false), 250);
           }
         }
       }
 
-      canvas.on("mouse:wheel", handleMouseWheel);
-      canvas.on("touch:gesture", handleTouchGesture);
-      canvas.on("mouse:down", handleMouseDown);
-      canvas.on("mouse:move", handleMouseMove);
-      canvas.on("mouse:up", handleMouseUp);
+      function handleTouchDrag(this: EventCanvas, event: fabric.ITouchEvent) {
+        const { fingers, state, x, y } = event.self;
+        if (fingers !== 1 || isPinchingRef.current) return;
+        if (isViewOnly) {
+          // Pan canvas
+          if (state === "down") {
+            this.lastPosX = x;
+            this.lastPosY = y;
+          } else if (state === "move") {
+            mousePan(this, x, y);
+          }
+        } else {
+          // Draw on canvas
+          if (state === "down") {
+            isDrawingRef.current = true;
+            if (!imageRef.current) return;
+            prevPointRef.current = { x, y };
+            alterImagePixels({
+              image: imageRef.current,
+              size: PIXELS_PER_SIDE,
+              pixelArray: pixelArrayRef.current,
+              canvas: this,
+              point1: prevPointRef.current,
+              point2: { x, y },
+            });
+          } else if (state === "move") {
+            if (!imageRef.current) return;
+            alterImagePixels({
+              image: imageRef.current,
+              size: PIXELS_PER_SIDE,
+              pixelArray: pixelArrayRef.current,
+              canvas: this,
+              point1: prevPointRef.current ?? { x, y },
+              point2: { x, y },
+            });
+            prevPointRef.current = { x, y };
+          } else if (state === "up") {
+            isDrawingRef.current = false;
+            prevPointRef.current = undefined;
+          }
+        }
+      }
+
+      const supportsTouch = "ontouchstart" in document.documentElement;
+
+      if (supportsTouch) {
+        canvas.on("touch:gesture", handleTouchGesture);
+        canvas.on("touch:drag", handleTouchDrag);
+      } else {
+        canvas.on("mouse:wheel", handleMouseWheel);
+        canvas.on("mouse:down", handleMouseDown);
+        canvas.on("mouse:move", handleMouseMove);
+        canvas.on("mouse:up", handleMouseUp);
+      }
 
       return () => {
-        canvas.off("mouse:wheel", handleMouseWheel);
-        canvas.on("touch:gesture", handleTouchGesture);
-        canvas.off("mouse:down", handleMouseDown);
-        canvas.off("mouse:move", handleMouseMove);
-        canvas.off("mouse:up", handleMouseUp);
+        if (supportsTouch) {
+          canvas.off("touch:gesture", handleTouchGesture);
+          canvas.off("touch:drag", handleTouchDrag);
+        } else {
+          canvas.off("mouse:wheel", handleMouseWheel);
+          canvas.off("mouse:down", handleMouseDown);
+          canvas.off("mouse:move", handleMouseMove);
+          canvas.off("mouse:up", handleMouseUp);
+        }
       };
     },
     [isViewOnly],
