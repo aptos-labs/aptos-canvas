@@ -21,7 +21,7 @@ export function CanvasActions() {
   const changedPixelsCount = pixelsChanged.size;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const cancel = () => {
+  const goToViewMode = () => {
     setViewOnly(true);
   };
 
@@ -89,8 +89,8 @@ export function CanvasActions() {
           Clear
         </Button>
       ) : (
-        <Button variant="secondary" onClick={cancel}>
-          Cancel
+        <Button variant="secondary" onClick={goToViewMode}>
+          View Mode
         </Button>
       )}
       <Button

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
@@ -29,16 +30,26 @@ export function Countdown() {
   const hours = (days % 1) * 24;
   const minutes = (hours % 1) * 60;
 
-  const formattedDays = Math.floor(days).toString().padStart(2, "0");
-  const formattedHours = Math.floor(hours).toString().padStart(2, "0");
-  const formattedMinutes = Math.floor(minutes).toString().padStart(2, "0");
+  const formattedDays = Math.floor(days);
+  const formattedHours = Math.floor(hours);
+  const formattedMinutes = Math.floor(minutes);
 
   return (
     <p className={wrapper}>
       <strong className={strongText}>
-        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes
+        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until launch.
       </strong>{" "}
-      left before we&apos;re going public!
+      <div className={css({ opacity: 0.4 })}>
+        The Aptos Foundation reserves the right to moderate, edit, or clear the canvas.{" "}
+        <Link
+          href="https://aptoslabs.com/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
+        >
+          See terms.
+        </Link>
+      </div>
     </p>
   );
 }
@@ -50,7 +61,6 @@ const wrapper = css({
   md: {
     display: "block",
     textStyle: "body.md.regular",
-    opacity: 0.4,
   },
 });
 
