@@ -7,6 +7,8 @@ import { css } from "styled-system/css";
 import { ModalContainer } from "@/components/Modal";
 import { WalletProvider } from "@/contexts/wallet";
 
+import { GoogleAnalytics } from "./GoogleAnalytics";
+
 const dmSans = DM_Sans({
   weight: ["400", "500", "700"],
   subsets: ["latin"],
@@ -66,6 +68,9 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
           <ModalContainer />
         </WalletProvider>
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID ? (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      ) : null}
     </html>
   );
 }
