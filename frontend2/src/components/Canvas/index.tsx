@@ -29,7 +29,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
   const imageRef = useRef<fabric.Image>();
   const isDrawingRef = useRef<boolean>(false);
   const prevPointRef = useRef<Point>();
-  const isPinchingRef = useRef<boolean>(false);
+  const isGesturingRef = useRef<boolean>(false);
   const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
 
   useEffect(function initializeCanvas() {
@@ -200,7 +200,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
         const { fingers, state, x, y, scale } = event.self;
         if (fingers === 2) {
           if (state === "start") {
-            isPinchingRef.current = true;
+            isGesturingRef.current = true;
             zoomStartScale = this.getZoom();
             this.lastPosX = x;
             this.lastPosY = y;
@@ -211,14 +211,14 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             // gesture state for a bit of time after the last gesture event to prevent
             // accidental touch:drag events.
             if (gestureTimeout) window.clearTimeout(gestureTimeout);
-            gestureTimeout = window.setTimeout(() => (isPinchingRef.current = false), 250);
+            gestureTimeout = window.setTimeout(() => (isGesturingRef.current = false), 250);
           }
         }
       }
 
       function handleTouchDrag(this: EventCanvas, event: fabric.ITouchEvent) {
         const { fingers, state, x, y } = event.self;
-        if (fingers !== 1 || isPinchingRef.current) return;
+        if (fingers !== 1 || isGesturingRef.current) return;
         if (isViewOnly) {
           // Pan canvas
           if (state === "down") {
