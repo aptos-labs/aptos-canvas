@@ -46,7 +46,7 @@ export function PaintInfo({ direction }: PaintInfoProps) {
     >
       <PaintIcon />
       <div className={css({ textStyle: "body.sm.regular", textAlign: "center" })}>
-        {changedPixelsCount.toLocaleString()} <br /> Pixels
+        {(pixelLimit - changedPixelsCount).toLocaleString()} <br /> Pixels
       </div>
     </div>
   );
