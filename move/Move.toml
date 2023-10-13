@@ -12,9 +12,8 @@ git = "https://github.com/aptos-labs/aptos-core.git"
 rev = "main"
 subdir = "aptos-move/framework/aptos-token-objects"
 
-[dependencies.DportStdlib]
-git = 'https://github.com/banool/aptos-dport-std.git'
-rev = 'main'
-
 [addresses]
 addr = "_"
+
+[dev-addresses]
+addr = "0x12345"
