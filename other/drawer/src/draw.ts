@@ -7,16 +7,11 @@ import {
   RawTransaction,
   TransactionPayloadEntryFunction,
 } from "./canvas_type";
-import { API_GATEWAY_URL, API_TOKEN, CANVAS_CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE } from "./const";
+import { CANVAS_CONTRACT_ADDRESS, GAS_LIMIT, GAS_PRICE } from "./const";
 import { serializeVectorU64, serializeVectorU8 } from "./util";
 
-const CLIENT = new AptosClient(API_GATEWAY_URL, {
-  HEADERS: {
-    authorization: `Bearer ${API_TOKEN}`,
-  },
-});
-
 export const drawPoint = async (
+  aptosClient: AptosClient,
   account: AptosAccount,
   tokenAddress: string,
   rgbaxyArr: RGBAXY[]
@@ -40,8 +35,8 @@ export const drawPoint = async (
   );
 
   const [{ sequence_number: sequenceNumber }, chainId] = await Promise.all([
-    CLIENT.getAccount(account.address()),
-    CLIENT.getChainId(),
+    aptosClient.getAccount(account.address()),
+    aptosClient.getChainId(),
   ]);
 
   const rawTxn = new RawTransaction(
@@ -61,8 +56,10 @@ export const drawPoint = async (
   // Sign the raw transaction with account1's private key
   const bcsTxn = AptosClient.generateBCSTransaction(account, rawTxn);
 
-  const transactionRes = await CLIENT.submitSignedBCSTransaction(bcsTxn);
-  await CLIENT.waitForTransaction(transactionRes.hash, { checkSuccess: true });
+  const transactionRes = await aptosClient.submitSignedBCSTransaction(bcsTxn);
+  await aptosClient.waitForTransaction(transactionRes.hash, {
+    checkSuccess: true,
+  });
   console.log(
     "put dot:",
     `${tokenAddress.slice(0, 5)}...`,

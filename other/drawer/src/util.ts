@@ -1,12 +1,5 @@
-import { BCS } from "aptos";
-import { RGB, RGBA, RGBAXY } from "./canvas_type";
-
-export const shuffleArray = (array: RGBAXY[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-};
+import { AptosAccount, AptosClient, BCS, CoinClient, HexString } from "aptos";
+import { API_GATEWAY_URL, API_TOKEN } from "./const";
 
 export const serializeVectorU64 = (arr: Array<number>) => {
   const serializer = new BCS.Serializer();
@@ -22,21 +15,25 @@ export const serializeVectorU8 = (arr: Array<number>) => {
   return serializer.getBytes();
 };
 
-export const convertExistingPixelsTo2DArray = (
-  pixels: RGB[],
-  width: number,
-  height: number
-): RGBA[][] => {
-  const dataArray = [];
+export const getAptosClient = () => {
+  return new AptosClient(API_GATEWAY_URL, {
+    HEADERS: {
+      authorization: `Bearer ${API_TOKEN}`,
+    },
+  });
+};
 
-  for (let y = 0; y < height; y++) {
-    const row = [];
-    for (let x = 0; x < width; x++) {
-      const pixel = pixels[y * width + x];
-      row.push({ ...pixel, a: 255 });
-    }
-    dataArray.push(row);
-  }
+export const getAptosAccount = (privateKey: string) => {
+  return new AptosAccount(new HexString(privateKey).toUint8Array());
+};
 
-  return dataArray;
+export const getCoinClient = () => {
+  return new CoinClient(getAptosClient());
+};
+
+export const getSequenceNumber = async (account: AptosAccount) => {
+  const { sequence_number: sequenceNumber } = await getAptosClient().getAccount(
+    account.address()
+  );
+  return sequenceNumber;
 };

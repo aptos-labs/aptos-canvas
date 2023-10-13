@@ -2,7 +2,7 @@
 *.swp
 .env
 .aptos
-temp
+preview
 
 # Mac stuff
 .DS_Store

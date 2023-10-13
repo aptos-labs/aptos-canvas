@@ -1,150 +1,65 @@
-import axios from "axios";
-import { RGBA, RGBAXY } from "./canvas_type";
-import { convertExistingPixelsTo2DArray } from "./util";
-
 import Jimp from "jimp";
+
+import { RGBAXY } from "./canvas_type";
 
 type LoadImageOptions = {
   scaleTo?: { width: number; height: number };
   centerImage?: boolean;
 };
 
-export const imageFromRGBAArray = (
-  rgbaArray: RGBA[][],
-  width: number,
-  height: number
+export const loadImageDiffBetweenOverlayAndCurrent = async (
+  currentImgPath: string,
+  overlayImagePath: string,
+  opt: LoadImageOptions = {},
+  leftPos: number,
+  topPos: number
 ) => {
-  const image = new Jimp(width, height, 0x00000000);
+  const currentImage = await Jimp.read(currentImgPath);
+  const currentImageWidth = currentImage.getWidth();
+  const currentImageHeight = currentImage.getHeight();
 
-  image.scan(
-    0,
-    0,
-    image.bitmap.width,
-    image.bitmap.height,
-    (x: number, y: number, idx: number) => {
-      const pixel = rgbaArray[y][x];
-      // Set the color and alpha values for each pixel in the image
-      image.bitmap.data[idx + 0] = pixel.r; // R
-      image.bitmap.data[idx + 1] = pixel.g; // G
-      image.bitmap.data[idx + 2] = pixel.b; // B
-      image.bitmap.data[idx + 3] = pixel.a; // Alpha (0 to 255)
-    }
-  );
-
-  return image;
-};
-
-// Get the current pixels
-export const getExistingPixels = async (tokenAddress: string) => {
-  const res = await axios.get(
-    `https://fullnode.testnet.aptoslabs.com/v1/accounts/${tokenAddress}/resources?limit=9999`,
-    {
-      headers: {
-        accept: "application/json, text/plain, */*",
-        Referer: "https://canvas.dport.me/",
-      },
-      method: "GET",
-    }
-  );
-
-  const body = await res.data;
-
-  // @ts-ignore
-  const allCanvas = body.filter((r: any) =>
-    (r.type as string).includes("canvas_token::Canvas")
-  );
-  console.log(`there are ${allCanvas.length} canvas`);
-  const dataItem = allCanvas[0];
-  const pixels: { r: number; g: number; b: number }[] = dataItem.data.pixels;
-
-  const canvasWidth = parseInt(dataItem.data.config.width);
-  const canvasHeight = parseInt(dataItem.data.config.height);
-  const existingPixels = convertExistingPixelsTo2DArray(
-    pixels,
-    canvasWidth,
-    canvasHeight
-  );
-  const canvasImage = imageFromRGBAArray(
-    existingPixels,
-    canvasWidth,
-    canvasHeight
-  );
-  return { existingPixels, canvasWidth, canvasHeight, canvasImage };
-};
-
-export const loadImageDiffBetweenSnapshotAndLatest = async (
-  snapshotImagePath: string,
-  latestImgPath: string,
-  opt: LoadImageOptions = {}
-) => {
-  const snapshotImage = await Jimp.read(snapshotImagePath);
-  const latestImage = await Jimp.read(latestImgPath);
-
-  let width = snapshotImage.getWidth();
-  let height = snapshotImage.getHeight();
-
-  const scaleToWidth = opt.scaleTo?.width || latestImage.getWidth();
-  const scaleToHeight = opt.scaleTo?.height || latestImage.getHeight();
-
-  if (scaleToWidth < width || scaleToHeight < height) {
-    latestImage.scaleToFit(
-      opt.scaleTo?.width || snapshotImage.getWidth(),
-      opt.scaleTo?.height || snapshotImage.getHeight()
-    );
-    console.log(
-      `Loaded image ${latestImgPath} with dimensions ${width}x${height} and scaled to ${latestImage.getWidth()}x${latestImage.getHeight()}`
-    );
-    width = latestImage.getWidth();
-    height = latestImage.getHeight();
-  }
-
-  let leftPos = 0;
-  let topPos = 0;
+  const overlayImage = await Jimp.read(overlayImagePath);
+  const overlayImageWidth = overlayImage.getWidth();
+  const overlayImageHeight = overlayImage.getHeight();
 
   if (opt.centerImage) {
-    leftPos = Math.floor((snapshotImage.getWidth() - width) / 2);
-    topPos = Math.floor((snapshotImage.getHeight() - height) / 2);
+    leftPos = (currentImageWidth - overlayImageWidth) / 2;
+    topPos = (currentImageHeight - overlayImageHeight) / 2;
   }
 
-  const newImage = snapshotImage
-    .clone()
-    .composite(latestImage, leftPos, topPos);
-
-  const previewImage = snapshotImage.clone();
-
   const toDraw: RGBAXY[] = [];
+  const diffImage = currentImage.clone();
 
-  for (let x = 0; x < snapshotImage.getWidth(); x++) {
-    for (let y = 0; y < snapshotImage.getHeight(); y++) {
-      const canvasColor = snapshotImage.getPixelColor(x, y);
-      const canvasRgba = Jimp.intToRGBA(canvasColor);
+  for (let x = leftPos; x < overlayImageWidth; x++) {
+    for (let y = topPos; y < overlayImageHeight; y++) {
+      const overlayImageColor = overlayImage.getPixelColor(x, y);
+      const overlayImageRgba = Jimp.intToRGBA(overlayImageColor);
 
-      const color = newImage.getPixelColor(x, y);
-      const rgba = Jimp.intToRGBA(color);
+      const currentImageColor = currentImage.getPixelColor(x, y);
+      const currentImageRgba = Jimp.intToRGBA(currentImageColor);
 
       // filter out unchanged pixels
       if (
-        rgba.r != canvasRgba.r ||
-        rgba.g != canvasRgba.g ||
-        rgba.b != canvasRgba.b ||
-        rgba.a != canvasRgba.a
+        overlayImageRgba.r != currentImageRgba.r ||
+        overlayImageRgba.g != currentImageRgba.g ||
+        overlayImageRgba.b != currentImageRgba.b ||
+        overlayImageRgba.a != currentImageRgba.a
       ) {
-        previewImage.setPixelColor(color, x, y);
-        toDraw.push({ ...rgba, x, y });
+        diffImage.setPixelColor(overlayImageColor, x, y);
+        toDraw.push({ ...overlayImageRgba, x, y });
       }
     }
   }
 
   console.log(
     "Filtered existing pixels from",
-    newImage.bitmap.width * newImage.bitmap.height,
+    currentImageWidth * currentImageHeight,
     "to",
     toDraw.length
   );
 
   // write the image to a file
-  const previewPath = "../temp/canvas_preview.png";
-  await previewImage.writeAsync(previewPath);
-
-  return { toDraw, width, height, previewPath };
+  const previewPath = "./preview/canvas_preview.png";
+  await diffImage.writeAsync(previewPath);
+  return toDraw;
 };
