@@ -1,3 +1,5 @@
+"use client";
+
 import { css } from "styled-system/css";
 
 import { CanvasContainer } from "./CanvasContainer";
