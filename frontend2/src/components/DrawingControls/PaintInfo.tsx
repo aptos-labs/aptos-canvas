@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
-import { MAX_PIXELS_PER_TXN } from "@/constants/canvas";
+import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
 
 import { PaintIcon } from "../Icons/PaintIcon";
@@ -17,7 +17,9 @@ export interface PaintInfoProps {
 export function PaintInfo({ direction }: PaintInfoProps) {
   const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
   const changedPixelsCount = pixelsChanged.size;
-  const limitReached = changedPixelsCount >= MAX_PIXELS_PER_TXN;
+  const isAdmin = useCanvasState((s) => s.isAdmin);
+  const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
+  const limitReached = changedPixelsCount >= pixelLimit;
 
   useEffect(() => {
     const TOAST_ID = "pixel-limit-reached";

@@ -1,6 +1,6 @@
 import { fabric } from "fabric";
 
-import { MAX_PIXELS_PER_TXN } from "@/constants/canvas";
+import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
@@ -82,7 +82,7 @@ export function alterImagePixels({
 
   let points = getContinuousPoints(scalePoint(point1), scalePoint(point2));
 
-  const { strokeColor, strokeWidth, pixelsChanged } = useCanvasState.getState();
+  const { isAdmin, strokeColor, strokeWidth, pixelsChanged } = useCanvasState.getState();
 
   if (strokeWidth > 1) {
     // Multiply points by stroke width if it's greater than 1
@@ -93,8 +93,9 @@ export function alterImagePixels({
   points = points.filter(({ x, y }) => x >= 0 && x < size && y >= 0 && y < size);
 
   const nextPixelsChanged = new Map(pixelsChanged);
+  const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
   for (const point of points) {
-    if (nextPixelsChanged.size >= MAX_PIXELS_PER_TXN) break;
+    if (nextPixelsChanged.size >= pixelLimit) break;
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
