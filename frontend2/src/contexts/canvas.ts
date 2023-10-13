@@ -35,6 +35,7 @@ export interface OptimisticUpdate {
 }
 
 export interface CanvasState {
+  isAdmin: boolean;
   isInitialized: boolean;
   isViewOnly: boolean;
   setViewOnly: (isViewOnly: boolean) => boolean;
@@ -45,6 +46,7 @@ export interface CanvasState {
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
+  isAdmin: false,
   isInitialized: false,
   isViewOnly: true,
   setViewOnly: (isViewOnly) => {
