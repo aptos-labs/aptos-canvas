@@ -52,6 +52,7 @@ export interface AlterImagePixelsArgs {
   canvas: EventCanvas;
   point1: Point;
   point2: Point;
+  isAdmin: boolean;
 }
 
 export function alterImagePixels({
@@ -61,6 +62,7 @@ export function alterImagePixels({
   canvas,
   point1,
   point2,
+  isAdmin,
 }: AlterImagePixelsArgs) {
   // Get the initial current scaling of the image. It doesn't matter if we use scaleX or scaleY
   // since the image is a square
@@ -94,7 +96,7 @@ export function alterImagePixels({
 
   const nextPixelsChanged = new Map(pixelsChanged);
   for (const point of points) {
-    if (nextPixelsChanged.size >= MAX_PIXELS_PER_TXN) break;
+    if (!isAdmin && nextPixelsChanged.size >= MAX_PIXELS_PER_TXN) break;
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
