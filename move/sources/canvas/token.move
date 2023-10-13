@@ -90,31 +90,23 @@ module addr::canvas_token {
     /// to the canvas.
     const STATUS_NOT_IN_ALLOWLIST: u8 = 3;
 
-    // r: 0, g: 0, b: 0
-    const COLOR_ID_BLACK: u8 = 1;
-    //  r: 255, g: 255, b: 255
-    const COLOR_ID_WHITE: u8 = 2;
-    // r: 0, g: 158, b: 25
-    const COLOR_ID_BLUE: u8 = 3;
-    // r: 0, g: 197, b: 3
-    const COLOR_ID_GREEN: u8 = 4;
-    // r: 255, g: 198, b: 0
-    const COLOR_ID_YELLOW: u8 = 5;
-    //r: 255, g: 125, b: 0
-    const COLOR_ID_ORANGE: u8 = 6;
-    //r: 250, g: 0, b: 106
-    const COLOR_ID_RED: u8 = 7;
-    //r: 196, g: 0, b: 199
-    const COLOR_ID_VIOLET: u8 = 8;
     const AVAILABLE_COLOR_IDS: vector<u8> = vector[
-        COLOR_ID_BLACK,
-        COLOR_ID_WHITE,
-        COLOR_ID_BLUE,
-        COLOR_ID_GREEN,
-        COLOR_ID_YELLOW,
-        COLOR_ID_ORANGE,
-        COLOR_ID_RED,
-        COLOR_ID_VIOLET
+        // black, r: 0, g: 0, b: 0
+        1,
+        // white, r: 255, g: 255, b: 255
+        2,
+        // blue, r: 0, g: 158, b: 25
+        3,
+        // green, r: 0, g: 197, b: 3
+        4,
+        // yellow, r: 255, g: 198, b: 0
+        5,
+        // orange, r: 255, g: 125, b: 0
+        6,
+        // red, r: 250, g: 0, b: 106
+        7,
+        // violet, r: 196, g: 0, b: 199
+        8
     ];
 
     #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
@@ -726,6 +718,9 @@ module addr::canvas_token {
 
     #[test_only]
     const STARTING_BALANCE: u64 = 50 * 100000000;
+
+    #[test_only]
+    const COLOR_ID_BLACK: u8 = 1;
 
     #[test_only]
     /// Create a test account with some funds.
