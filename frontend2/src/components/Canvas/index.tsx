@@ -10,9 +10,9 @@ import {
   useCanvasState,
   useOptimisticUpdateGarbageCollector,
 } from "@/contexts/canvas";
-import { createTempCanvas } from "@/utils/tempCanvas";
+import { assertUnreachable } from "@/utils/assertUnreachable";
 
-import { alterImagePixels, createSquareImage } from "./drawImage";
+import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
 import { EventCanvas, Point } from "./types";
 
@@ -92,27 +92,16 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       const image = imageRef.current;
       if (!canvas || !image) return;
 
-      const newPixelArray = new Uint8ClampedArray(baseImage);
-      const { optimisticUpdates, pixelsChanged } = useCanvasState.getState();
-      const allImagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(pixelsChanged);
+      const { optimisticUpdates, currentChanges } = useCanvasState.getState();
+      const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(...currentChanges);
 
-      for (const imagePatch of allImagePatches) {
-        for (const pixelChanged of imagePatch.values()) {
-          const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-          newPixelArray[index + 0] = pixelChanged.r; // R value
-          newPixelArray[index + 1] = pixelChanged.g; // G value
-          newPixelArray[index + 2] = pixelChanged.b; // B value
-          newPixelArray[index + 3] = 255; // A value
-        }
-      }
-      pixelArrayRef.current = newPixelArray;
-
-      const [tempCanvas, cleanUp] = createTempCanvas(newPixelArray, PIXELS_PER_SIDE);
-
-      // Update fabric image with data from temporary canvas and clean up when done
-      image.setSrc(tempCanvas.toDataURL(), () => {
-        canvas.renderAll();
-        cleanUp();
+      applyImagePatches({
+        canvas,
+        image,
+        size: PIXELS_PER_SIDE,
+        pixelArrayRef,
+        basePixelArray: baseImage,
+        imagePatches,
       });
     },
     [baseImage],
@@ -164,6 +153,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             canvas: this,
             point1: prevPointRef.current,
             point2: { x: e.offsetX, y: e.offsetY },
+            isNewLine: true,
           });
         }
       }
@@ -182,6 +172,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             canvas: this,
             point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
             point2: { x: e.offsetX, y: e.offsetY },
+            isNewLine: false,
           });
           prevPointRef.current = { x: e.offsetX, y: e.offsetY };
         }
@@ -240,6 +231,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
               canvas: this,
               point1: prevPointRef.current,
               point2: { x, y },
+              isNewLine: true,
             });
           } else if (state === "move") {
             if (!imageRef.current) return;
@@ -250,6 +242,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
               canvas: this,
               point1: prevPointRef.current ?? { x, y },
               point2: { x, y },
+              isNewLine: false,
             });
             prevPointRef.current = { x, y };
           } else if (state === "up") {
@@ -286,36 +279,50 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     [isViewOnly],
   );
 
-  useCanvasCommandListener(() => {
-    // Handle clear changed pixels command
+  useCanvasCommandListener((command) => {
     const canvas = fabricRef.current;
     const image = imageRef.current;
     if (!canvas || !image) return;
 
-    // Apply optimistic updates to base image
-    const newPixelArray = new Uint8ClampedArray(baseImage);
-    const { optimisticUpdates } = useCanvasState.getState();
-    const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
-    for (const imagePatch of imagePatches) {
-      for (const pixelChanged of imagePatch.values()) {
-        const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-        newPixelArray[index + 0] = pixelChanged.r; // R value
-        newPixelArray[index + 1] = pixelChanged.g; // G value
-        newPixelArray[index + 2] = pixelChanged.b; // B value
-        newPixelArray[index + 3] = 255; // A value
+    switch (command) {
+      case "clearChangedPixels": {
+        const { optimisticUpdates } = useCanvasState.getState();
+        const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
+
+        applyImagePatches({
+          canvas,
+          image,
+          size: PIXELS_PER_SIDE,
+          pixelArrayRef,
+          basePixelArray: baseImage,
+          imagePatches,
+        });
+
+        useCanvasState.setState({ currentChanges: [] });
+        return;
+      }
+      case "undoLastChange": {
+        const { optimisticUpdates, currentChanges } = useCanvasState.getState();
+        const newChanges = [...currentChanges];
+        newChanges.pop(); // Remove last change
+        const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(...newChanges);
+
+        applyImagePatches({
+          canvas,
+          image,
+          size: PIXELS_PER_SIDE,
+          pixelArrayRef,
+          basePixelArray: baseImage,
+          imagePatches,
+        });
+
+        useCanvasState.setState({ currentChanges: newChanges });
+        return;
+      }
+      default: {
+        return assertUnreachable(command, "Unknown canvas command received");
       }
     }
-
-    const [tempCanvas, cleanUp] = createTempCanvas(newPixelArray, PIXELS_PER_SIDE);
-
-    // Update fabric image with data from temporary canvas and clean up when done
-    image.setSrc(tempCanvas.toDataURL(), () => {
-      canvas.renderAll();
-      cleanUp();
-    });
-
-    useCanvasState.setState({ pixelsChanged: new Map() });
-    pixelArrayRef.current = new Uint8ClampedArray(newPixelArray);
   });
 
   return <canvas ref={canvasRef} />;

@@ -19,6 +19,7 @@ export function DrawModeToggle() {
     <div className={stack({ gap: 16, align: "center" })}>
       <Button
         iconOnly
+        rounded
         aria-label={isViewOnly ? "Go to Draw Mode" : "Back to View Only"}
         disabled={isViewOnly && !connected}
         onClick={() => {
