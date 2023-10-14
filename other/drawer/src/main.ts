@@ -29,8 +29,8 @@ async function main() {
 
   // =================== Calculate diff ===================
 
-  // toDraw is the diff between latest image and snapshot image
-  // Drawing it will reset latest back to snapshot
+  // toDraw is the diff between overlay image and current image
+  // Drawing it will place overlay image on top of current image
   let toDraw = await loadImageDiffBetweenOverlayAndCurrent(
     CURRENT_IMAGE_PATH,
     OVERLAY_IMAGE_PATH,
@@ -45,7 +45,7 @@ async function main() {
     return;
   }
 
-  // =================== Make some accounts ===================
+  // =================== Fund drawer accounts ===================
 
   const accounts = [];
   const coinClient = getCoinClient();
