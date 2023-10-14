@@ -15,13 +15,16 @@ export interface ButtonProps extends ButtonAttributes, ButtonVariants {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size, iconOnly, loading, disabled, className, ...props }, ref) => {
+  (
+    { variant = "primary", size, iconOnly, rounded, loading, disabled, className, ...props },
+    ref,
+  ) => {
     return (
       <button
         ref={ref}
         data-loading={loading || undefined}
         disabled={disabled || loading}
-        className={cx(buttonStyles({ variant, size, iconOnly }), className)}
+        className={cx(buttonStyles({ variant, size, iconOnly, rounded }), className)}
         {...props}
       >
         <div className={center({ visibility: loading ? "hidden" : "visible", gap: 8 })}>
@@ -122,7 +125,8 @@ const buttonStyles = cva({
       sm: { textStyle: "body.sm.medium", px: 20, h: 40, rounded: "md" },
       md: { textStyle: "body.md.medium", px: 20, h: 48, rounded: "md" },
     },
-    iconOnly: { true: { px: 0, rounded: "full" } },
+    iconOnly: { true: { px: 0 } },
+    rounded: { true: { rounded: "full" } },
   },
 
   compoundVariants: [

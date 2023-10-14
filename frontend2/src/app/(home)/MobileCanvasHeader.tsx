@@ -9,6 +9,7 @@ export function MobileCanvasHeader() {
       className={css({
         display: "flex",
         md: { display: "none" },
+        gap: 8,
         justifyContent: "space-between",
         alignItems: "center",
       })}

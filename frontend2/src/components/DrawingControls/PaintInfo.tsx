@@ -5,7 +5,7 @@ import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
 import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
-import { useCanvasState } from "@/contexts/canvas";
+import { useAggregatedPixelsChanged, useCanvasState } from "@/contexts/canvas";
 
 import { PaintIcon } from "../Icons/PaintIcon";
 import { removeToast, toast } from "../Toast";
@@ -15,7 +15,8 @@ export interface PaintInfoProps {
 }
 
 export function PaintInfo({ direction }: PaintInfoProps) {
-  const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
+  const currentChanges = useCanvasState((s) => s.currentChanges);
+  const pixelsChanged = useAggregatedPixelsChanged(currentChanges);
   const changedPixelsCount = pixelsChanged.size;
   const isAdmin = useCanvasState((s) => s.isAdmin);
   const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
