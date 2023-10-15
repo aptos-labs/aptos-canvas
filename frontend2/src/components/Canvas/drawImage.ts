@@ -2,7 +2,7 @@ import { fabric } from "fabric";
 import { MutableRefObject } from "react";
 
 import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
-import { ImagePatch, useCanvasState } from "@/contexts/canvas";
+import { aggregatePixelsChanged, ImagePatch, useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { EventCanvas, Point } from "./types";
@@ -82,7 +82,7 @@ export function applyImagePatches({
 
   // Update fabric image with data from temporary canvas and clean up when done
   image.setSrc(tempCanvas.toDataURL(), () => {
-    canvas.renderAll();
+    canvas.requestRenderAll();
     cleanUp();
   });
 }
@@ -146,7 +146,9 @@ export function alterImagePixels({
 
   const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
   for (const point of points) {
-    if (nextPixelsChanged.size >= pixelLimit) break;
+    // Break out of loop to stop adding pixels once we hit the limit
+    if (aggregatePixelsChanged(newChanges).size >= pixelLimit) break;
+
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
@@ -154,18 +156,23 @@ export function alterImagePixels({
       g: strokeColor.green,
       b: strokeColor.blue,
     });
-    const index = (point.y * size + point.x) * 4;
-    pixelArray[index + 0] = strokeColor.red; // R value
-    pixelArray[index + 1] = strokeColor.green; // G value
-    pixelArray[index + 2] = strokeColor.blue; // B value
-    pixelArray[index + 3] = 255; // A value
+    const pixelIndex = (point.y * size + point.x) * 4;
+    pixelArray[pixelIndex + 0] = strokeColor.red; // R value
+    pixelArray[pixelIndex + 1] = strokeColor.green; // G value
+    pixelArray[pixelIndex + 2] = strokeColor.blue; // B value
+    pixelArray[pixelIndex + 3] = 255; // A value
+  }
+
+  if (!nextPixelsChanged.size) {
+    // Bail out if we didn't change any pixels because we hit the pixel limit
+    return;
   }
 
   const [tempCanvas, cleanUp] = createTempCanvas(pixelArray, size);
 
   // Update fabric image with data from temporary canvas and clean up when done
   image.setSrc(tempCanvas.toDataURL(), () => {
-    canvas.renderAll();
+    canvas.requestRenderAll();
     cleanUp();
   });
   useCanvasState.setState({ currentChanges: newChanges });

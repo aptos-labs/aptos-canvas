@@ -2,7 +2,7 @@
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { createEntryPayload } from "@thalalabs/surf";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
@@ -21,6 +21,23 @@ export function CanvasActions() {
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
   const currentChanges = useCanvasState((s) => s.currentChanges);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coolDownLeft, setCoolDownLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (coolDownLeft === null) return;
+
+    const interval = window.setInterval(() => {
+      setCoolDownLeft((prev) => {
+        if (prev === null) return null;
+        const next = prev - 1;
+        return next === 0 ? null : next;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [coolDownLeft]);
 
   const goToViewMode = () => {
     setViewOnly(true);
@@ -69,6 +86,7 @@ export function CanvasActions() {
         optimisticUpdates: newOptimisticUpdates,
       });
       toast({ id: "add-success", variant: "success", content: "Added!" });
+      if (!useCanvasState.getState().isAdmin) setCoolDownLeft(5);
     } catch {
       toast({
         id: "add-failure",
@@ -100,12 +118,12 @@ export function CanvasActions() {
       </Button>
       <Button
         variant="primary"
-        disabled={!currentChanges.length}
+        disabled={!currentChanges.length || coolDownLeft !== null}
         loading={isSubmitting}
         onClick={finishDrawing}
         className={css({ flex: 1, textWrap: "nowrap" })}
       >
-        Submit Drawing
+        {coolDownLeft !== null ? `Wait ${coolDownLeft}s` : "Submit Drawing"}
       </Button>
     </div>
   );
