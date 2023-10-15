@@ -156,11 +156,11 @@ export function alterImagePixels({
       g: strokeColor.green,
       b: strokeColor.blue,
     });
-    const pixelIndex = (point.y * size + point.x) * 4;
-    pixelArray[pixelIndex + 0] = strokeColor.red; // R value
-    pixelArray[pixelIndex + 1] = strokeColor.green; // G value
-    pixelArray[pixelIndex + 2] = strokeColor.blue; // B value
-    pixelArray[pixelIndex + 3] = 255; // A value
+    const index = (point.y * size + point.x) * 4;
+    pixelArray[index + 0] = strokeColor.red; // R value
+    pixelArray[index + 1] = strokeColor.green; // G value
+    pixelArray[index + 2] = strokeColor.blue; // B value
+    pixelArray[index + 3] = 255; // A value
   }
 
   if (!nextPixelsChanged.size) {
