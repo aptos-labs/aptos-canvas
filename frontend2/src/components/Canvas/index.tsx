@@ -81,7 +81,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
 
       canvas.setDimensions({ height, width });
       canvas.calcOffset();
-      canvas.renderAll();
+      canvas.requestRenderAll();
     },
     [height, width],
   );
