@@ -1,6 +1,6 @@
 import { fabric } from "fabric";
 
-import { MAX_PIXELS_PER_TXN } from "@/constants/canvas";
+import { MAX_PIXELS_PER_TXN, STROKE_COLORS } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
@@ -98,15 +98,13 @@ export function alterImagePixels({
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
-      r: strokeColor.red,
-      g: strokeColor.green,
-      b: strokeColor.blue,
-      color: strokeColor.colorEnum,
+      color: strokeColor,
     });
+    const color = STROKE_COLORS[strokeColor];
     const index = (point.y * size + point.x) * 4;
-    pixelArray[index + 0] = strokeColor.red; // R value
-    pixelArray[index + 1] = strokeColor.green; // G value
-    pixelArray[index + 2] = strokeColor.blue; // B value
+    pixelArray[index + 0] = color.red; // R value
+    pixelArray[index + 1] = color.green; // G value
+    pixelArray[index + 2] = color.blue; // B value
     pixelArray[index + 3] = 255; // A value
   }
 

@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { create } from "zustand";
 
 import { STROKE_COLORS, STROKE_WIDTH_CONFIG } from "@/constants/canvas";
-import { RgbaColor } from "@/utils/color";
 import { createEventEmitter } from "@/utils/eventEmitter";
 import { isServer } from "@/utils/isServer";
+import { TupleIndices } from "@/utils/types";
 
 export type CanvasCommand = "clearChangedPixels";
 
@@ -16,14 +16,8 @@ export interface PixelData {
   x: number;
   /** y coordinate */
   y: number;
-  /** red value */
-  r: number;
-  /** green value */
-  g: number;
-  /** blue value */
-  b: number;
-  /** color enum value */
-  color: number;
+  /** color index */
+  color: TupleIndices<typeof STROKE_COLORS>;
 }
 
 /** Format: { "x-y": PixelData } */
@@ -40,7 +34,7 @@ export interface CanvasState {
   isInitialized: boolean;
   isViewOnly: boolean;
   setViewOnly: (isViewOnly: boolean) => boolean;
-  strokeColor: RgbaColor;
+  strokeColor: TupleIndices<typeof STROKE_COLORS>;
   strokeWidth: number;
   optimisticUpdates: Array<OptimisticUpdate>;
   pixelsChanged: ImagePatch;
@@ -60,7 +54,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
     set({ isViewOnly });
     return true;
   },
-  strokeColor: STROKE_COLORS[0],
+  strokeColor: 0,
   strokeWidth: STROKE_WIDTH_CONFIG.min,
   optimisticUpdates: [],
   pixelsChanged: new Map(),

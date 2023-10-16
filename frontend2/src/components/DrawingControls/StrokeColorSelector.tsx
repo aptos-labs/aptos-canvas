@@ -6,6 +6,7 @@ import { flex } from "styled-system/patterns";
 import { STROKE_COLORS } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
 import { RgbaColor } from "@/utils/color";
+import { TupleIndices } from "@/utils/types";
 
 export interface StrokeColorSelectorProps {
   direction: "row" | "column";
@@ -17,11 +18,12 @@ export function StrokeColorSelector({ direction, className }: StrokeColorSelecto
 
   return (
     <div className={cx(flex({ direction, align: "center", gap: 16 }), className)}>
-      {STROKE_COLORS.map((color) => (
+      {STROKE_COLORS.map((color, i) => (
         <ColorButton
           key={color.value}
           color={color}
-          isSelected={strokeColor.value === color.value}
+          index={i as TupleIndices<typeof STROKE_COLORS>}
+          isSelected={strokeColor === i}
           size={direction === "row" ? "md" : "sm"}
         />
       ))}
@@ -31,11 +33,12 @@ export function StrokeColorSelector({ direction, className }: StrokeColorSelecto
 
 interface ColorButtonProps {
   color: RgbaColor;
+  index: TupleIndices<typeof STROKE_COLORS>;
   isSelected: boolean;
   size: "sm" | "md";
 }
 
-function ColorButton({ color, isSelected, size }: ColorButtonProps) {
+function ColorButton({ color, index, isSelected, size }: ColorButtonProps) {
   return (
     <button
       className={css({
@@ -51,7 +54,7 @@ function ColorButton({ color, isSelected, size }: ColorButtonProps) {
       aria-label={`Select ${color.name ?? "color"}`}
       title={color.name}
       onClick={() => {
-        useCanvasState.setState({ strokeColor: color });
+        useCanvasState.setState({ strokeColor: index });
       }}
     />
   );

@@ -4,7 +4,7 @@
 import { fabric } from "fabric";
 import { useEffect, useRef } from "react";
 
-import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, VIEW_MODE_ZOOM } from "@/constants/canvas";
+import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, STROKE_COLORS, VIEW_MODE_ZOOM } from "@/constants/canvas";
 import {
   useCanvasCommandListener,
   useCanvasState,
@@ -98,10 +98,11 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
 
       for (const imagePatch of allImagePatches) {
         for (const pixelChanged of imagePatch.values()) {
+          const color = STROKE_COLORS[pixelChanged.color];
           const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-          newPixelArray[index + 0] = pixelChanged.r; // R value
-          newPixelArray[index + 1] = pixelChanged.g; // G value
-          newPixelArray[index + 2] = pixelChanged.b; // B value
+          newPixelArray[index + 0] = color.red; // R value
+          newPixelArray[index + 1] = color.green; // G value
+          newPixelArray[index + 2] = color.blue; // B value
           newPixelArray[index + 3] = 255; // A value
         }
       }
@@ -298,10 +299,11 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
     for (const imagePatch of imagePatches) {
       for (const pixelChanged of imagePatch.values()) {
+        const color = STROKE_COLORS[pixelChanged.color];
         const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-        newPixelArray[index + 0] = pixelChanged.r; // R value
-        newPixelArray[index + 1] = pixelChanged.g; // G value
-        newPixelArray[index + 2] = pixelChanged.b; // B value
+        newPixelArray[index + 0] = color.red; // R value
+        newPixelArray[index + 1] = color.green; // G value
+        newPixelArray[index + 2] = color.blue; // B value
         newPixelArray[index + 3] = 255; // A value
       }
     }
