@@ -134,11 +134,6 @@ const ExampleCanvasMoveResource = {
     cost: "0",
     cost_multiplier: "2",
     cost_multiplier_decay_s: "300",
-    default_color: {
-      b: 255,
-      g: 255,
-      r: 255,
-    },
     draw_enabled_for_non_admin: true,
     height: "1000",
     max_number_of_pixels_per_draw: "3000",
