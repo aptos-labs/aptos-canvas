@@ -82,7 +82,7 @@ export function CanvasActions() {
         optimisticUpdates: newOptimisticUpdates,
       });
       toast({ id: "add-success", variant: "success", content: "Added!" });
-      if (!useCanvasState.getState().isAdmin) setCoolDownLeft(5);
+      if (!useCanvasState.getState().canDrawUnlimited) setCoolDownLeft(5);
     } catch {
       toast({
         id: "add-failure",

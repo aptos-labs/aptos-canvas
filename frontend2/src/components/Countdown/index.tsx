@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
-const END_DATE = new Date("October 18, 2023 10:00:00 PDT");
+const END_DATE = new Date("October 19, 2023 10:00:00 PDT");
 
 const getSecondsLeft = () => {
   const seconds = Math.round((END_DATE.valueOf() - Date.now()) / 1000);
@@ -39,7 +39,7 @@ export function Countdown() {
   return (
     <div className={wrapper}>
       <p className={strongText}>
-        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until launch.
+        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until close.
       </p>{" "}
       <p className={css({ opacity: 0.4 })}>
         Graffio moderators reserve the right to edit or clear the canvas.{" "}

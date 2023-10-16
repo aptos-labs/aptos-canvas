@@ -11,10 +11,10 @@ interface AppConfig {
 
 export const APP_CONFIG: Record<SupportedNetworkName, AppConfig> = {
   [NetworkName.Mainnet]: {
-    // TODO: Mainnet
-    canvasAddr: "0x",
-    canvasTokenAddr: "0x",
-    canvasImageUrl: "",
+    canvasAddr: "0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23",
+    canvasTokenAddr: "0x5d45bb2a6f391440ba10444c7734559bd5ef9053930e3ef53d05be332518522b",
+    canvasImageUrl:
+      "https://storage.googleapis.com/images.mainnet.graffio.art/images/0x5d45bb2a6f391440ba10444c7734559bd5ef9053930e3ef53d05be332518522b.png",
     rpcUrl: "https://fullnode.mainnet.aptoslabs.com/",
   },
   [NetworkName.Testnet]: {
