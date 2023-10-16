@@ -15,6 +15,7 @@ import { useThemeChange } from "@/utils/useThemeChange";
 
 import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
+import { useKeyboardShortcuts } from "./keyboardShortcuts";
 import { EventCanvas, Point } from "./types";
 
 export interface CanvasProps {
@@ -32,6 +33,8 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
   const prevPointRef = useRef<Point>();
   const isGesturingRef = useRef<boolean>(false);
   const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
+
+  useKeyboardShortcuts();
 
   useEffect(function initializeCanvas() {
     // Initialize canvas
