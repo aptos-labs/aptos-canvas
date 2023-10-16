@@ -1,7 +1,7 @@
 import { fabric } from "fabric";
 import { MutableRefObject } from "react";
 
-import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
+import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN, STROKE_COLORS } from "@/constants/canvas";
 import { aggregatePixelsChanged, ImagePatch, useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
@@ -67,10 +67,11 @@ export function applyImagePatches({
   const newPixelArray = new Uint8ClampedArray(basePixelArray);
   for (const imagePatch of imagePatches) {
     for (const pixelChanged of imagePatch.values()) {
+      const color = STROKE_COLORS[pixelChanged.color];
       const index = (pixelChanged.y * size + pixelChanged.x) * 4;
-      newPixelArray[index + 0] = pixelChanged.r; // R value
-      newPixelArray[index + 1] = pixelChanged.g; // G value
-      newPixelArray[index + 2] = pixelChanged.b; // B value
+      newPixelArray[index + 0] = color.red; // R value
+      newPixelArray[index + 1] = color.green; // G value
+      newPixelArray[index + 2] = color.blue; // B value
       newPixelArray[index + 3] = 255; // A value
     }
   }
@@ -152,14 +153,13 @@ export function alterImagePixels({
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
-      r: strokeColor.red,
-      g: strokeColor.green,
-      b: strokeColor.blue,
+      color: strokeColor,
     });
+    const color = STROKE_COLORS[strokeColor];
     const index = (point.y * size + point.x) * 4;
-    pixelArray[index + 0] = strokeColor.red; // R value
-    pixelArray[index + 1] = strokeColor.green; // G value
-    pixelArray[index + 2] = strokeColor.blue; // B value
+    pixelArray[index + 0] = color.red; // R value
+    pixelArray[index + 1] = color.green; // G value
+    pixelArray[index + 2] = color.blue; // B value
     pixelArray[index + 3] = 255; // A value
   }
 
