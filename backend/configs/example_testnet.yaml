@@ -5,9 +5,9 @@ processor_config:
     auth_token: replace_me
   dispatcher_config: {}
   common_storage_config:
-    initial_starting_version: 709391160
+    initial_starting_version: 713919450
   processor_config:
-    canvas_contract_address: "0xbb71ff0f8e8780c0e8a53cf003116ab96dc877394cf2cf4d54e71c1667373146"
+    canvas_contract_address: "0x6b8169be66d9579ba9ad1192708edcf52de713d3513a431df6cb045f425d3d91"
     disable_metadata_processing: true
 pixel_storage_config:
   storage_directory: /tmp/canvases

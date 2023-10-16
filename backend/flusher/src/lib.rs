@@ -39,6 +39,7 @@ pub trait FlusherTrait: Send + Sync + 'static {
                                 "Failed to flush data too many times ({}), bailing out!",
                                 num_consecutive_failures
                             );
+                            return;
                         }
                     },
                 }
