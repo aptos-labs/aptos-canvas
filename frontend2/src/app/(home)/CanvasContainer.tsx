@@ -47,9 +47,17 @@ export function CanvasContainer() {
     };
   }, [network]);
 
+  const [isCursorInBounds, setIsCursorInBounds] = useState(false);
+
   return (
     <div
       ref={canvasContainer}
+      onMouseEnter={() => {
+        setIsCursorInBounds(true);
+      }}
+      onMouseLeave={() => {
+        setIsCursorInBounds(false);
+      }}
       className={flex({
         position: "relative",
         height: "100%",
@@ -60,7 +68,12 @@ export function CanvasContainer() {
       })}
     >
       {hasSize && baseImage ? (
-        <Canvas height={height} width={width} baseImage={baseImage} />
+        <Canvas
+          height={height}
+          width={width}
+          baseImage={baseImage}
+          isCursorInBounds={isCursorInBounds}
+        />
       ) : (
         canvasSkeleton
       )}
