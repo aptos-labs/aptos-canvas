@@ -188,10 +188,12 @@ impl CanvasProcessor {
         }
 
         let txn_data = transaction.txn_data.as_ref().context("No txn_data")?;
+
         let user_transaction = match txn_data {
             TxnData::User(user_transaction) => user_transaction,
             _ => return nothing,
         };
+
         let request = user_transaction.request.as_ref().context("No request")?;
         let payload = request.payload.as_ref().unwrap();
         let entry_function_payload = match payload.payload.as_ref().context("No payload")? {
@@ -207,10 +209,11 @@ impl CanvasProcessor {
         let obj: Object = serde_json::from_value(first_arg).context("Failed to parse as Object")?;
         let canvas_address = obj.inner;
 
-        // TODO: THis is a bit flaky.
+        // TODO: This is a bit flaky.
         let draw_value_type = "vector<0x1::smart_table::Entry<u32, u8>>".to_string();
 
         let info = transaction.info.as_ref().context("No info")?;
+
         // let sender =
         //    Address::from_str(&request.sender).context("Failed to parse sender address")?;
 
@@ -258,6 +261,7 @@ impl CanvasProcessor {
     }
 
     fn process_create(&self, transaction: &Transaction) -> Result<Option<CreateCanvasIntent>> {
+        // TODO: This check doesn't handle account addresses with leading zeroes.
         // Skip this transaction if this wasn't a create transaction.
         let create_function_id = EntryFunctionId {
             module: Some(MoveModuleId {
