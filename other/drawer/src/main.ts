@@ -22,6 +22,7 @@ import {
   getCoinClient,
   getSequenceNumber,
 } from "./util";
+import { AptosAccount } from "aptos";
 
 async function main() {
   const beginTime = new Date();
@@ -47,7 +48,7 @@ async function main() {
 
   // =================== Fund drawer accounts ===================
 
-  const accounts = [];
+  const accounts: AptosAccount[] = [];
   const coinClient = getCoinClient();
   const myFaucetAccount = getAptosAccount(MY_OWN_FAUCET_PRIVATE_KEY);
   let faucetSequenceNumber = await getSequenceNumber(myFaucetAccount);
@@ -81,7 +82,7 @@ async function main() {
   // convert toDraw to array of RGBAXY array
   let toDrawArr: RGBAXY[][] = [];
   for (let i = 0; i < toDraw.length; i += LIMIT_PER_DRAW) {
-    let tmp = [];
+    let tmp: RGBAXY[] = [];
     for (let j = 0; j < LIMIT_PER_DRAW; j++) {
       tmp.push(toDraw[i + j]);
     }
