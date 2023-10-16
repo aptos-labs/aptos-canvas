@@ -14,6 +14,7 @@ import { assertUnreachable } from "@/utils/assertUnreachable";
 import { useThemeChange } from "@/utils/useThemeChange";
 
 import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
+import { DrawingCursor } from "./DrawingCursor";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
 import { useKeyboardShortcuts } from "./keyboardShortcuts";
 import { EventCanvas, Point } from "./types";
@@ -22,9 +23,11 @@ export interface CanvasProps {
   height: number;
   width: number;
   baseImage: Uint8ClampedArray;
+  isCursorInBounds: boolean;
 }
 
-export function Canvas({ height, width, baseImage }: CanvasProps) {
+export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasProps) {
+  const isInitialized = useCanvasState((s) => s.isInitialized);
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas>();
@@ -43,8 +46,8 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       width,
       backgroundColor: getCanvasBackgroundColor(),
       selection: false,
-      defaultCursor: "crosshair",
-      hoverCursor: "crosshair",
+      defaultCursor: "none",
+      hoverCursor: "none",
       enablePointerEvents: true,
     });
 
@@ -132,8 +135,8 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
         canvas.hoverCursor = "grab";
       } else {
         smoothZoom(canvas, DRAW_MODE_ZOOM);
-        canvas.defaultCursor = "crosshair";
-        canvas.hoverCursor = "crosshair";
+        canvas.defaultCursor = "none";
+        canvas.hoverCursor = "none";
       }
 
       function handleMouseWheel(this: EventCanvas, { e }: fabric.IEvent<WheelEvent>) {
@@ -155,7 +158,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
           this.lastPosY = e.clientY;
         } else {
           isDrawingRef.current = true;
-          this.hoverCursor = "crosshair";
+          this.hoverCursor = "none";
           if (!imageRef.current) return;
           prevPointRef.current = { x: e.offsetX, y: e.offsetY };
           alterImagePixels({
@@ -192,7 +195,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
 
       function handleMouseUp(this: EventCanvas) {
         this.isDragging = false;
-        this.hoverCursor = isViewOnly ? "grab" : "crosshair";
+        this.hoverCursor = isViewOnly ? "grab" : "none";
         isDrawingRef.current = false;
         prevPointRef.current = undefined;
       }
@@ -337,7 +340,14 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     }
   });
 
-  return <canvas ref={canvasRef} />;
+  return (
+    <>
+      <canvas ref={canvasRef} />
+      {isInitialized && !isViewOnly && isCursorInBounds && fabricRef.current && (
+        <DrawingCursor canvas={fabricRef.current} />
+      )}
+    </>
+  );
 }
 
 function getCanvasBackgroundColor() {
