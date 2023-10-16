@@ -83,12 +83,20 @@ export function CanvasActions() {
       });
       toast({ id: "add-success", variant: "success", content: "Added!" });
       if (!useCanvasState.getState().canDrawUnlimited) setCoolDownLeft(5);
-    } catch {
-      toast({
-        id: "add-failure",
-        variant: "error",
-        content: "Error occurred. Please check your wallet connection and try again.",
-      });
+    } catch (e) {
+      if (typeof e === 'string') {
+        toast({
+          id: "add-failure",
+          variant: "error",
+          content: `Wallet Error: ${e}.`,
+        });
+      } else {
+        toast({
+          id: "add-failure",
+          variant: "error",
+          content: "Error occurred. Please check your wallet connection and try again.",
+        });
+      }
     }
 
     setIsSubmitting(false);
