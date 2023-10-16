@@ -18,6 +18,7 @@ import { DrawingCursor } from "./DrawingCursor";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
 import { useKeyboardShortcuts } from "./keyboardShortcuts";
 import { EventCanvas, Point } from "./types";
+import { getCanvasBackgroundColor } from "./utils";
 
 export interface CanvasProps {
   height: number;
@@ -348,9 +349,4 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
       )}
     </>
   );
-}
-
-function getCanvasBackgroundColor() {
-  // This maps to colors.canvas.bg from /panda-preset/colors.ts
-  return window.getComputedStyle(document.documentElement).getPropertyValue("--colors-canvas-bg");
 }
