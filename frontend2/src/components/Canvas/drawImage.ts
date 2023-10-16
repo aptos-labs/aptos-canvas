@@ -101,6 +101,7 @@ export function alterImagePixels({
       r: strokeColor.red,
       g: strokeColor.green,
       b: strokeColor.blue,
+      color: strokeColor.colorEnum,
     });
     const index = (point.y * size + point.x) * 4;
     pixelArray[index + 0] = strokeColor.red; // R value

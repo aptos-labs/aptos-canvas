@@ -756,6 +756,8 @@ module addr::canvas_token {
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         assert!(is_super_admin(canvas, signer::address_of(&caller)), 0);
+        assert!(!is_super_admin(canvas, signer::address_of(&friend1)), 1);
+        assert!(!is_super_admin(canvas, signer::address_of(&friend2)), 2);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -920,5 +922,7 @@ module addr::canvas_token {
         timestamp::fast_forward_seconds(1);
         // Non admin can draw
         draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        // Admin can still draw after enabled
+        draw(&caller, canvas, vector[1], vector[1], vector[1]);
     }
 }

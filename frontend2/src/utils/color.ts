@@ -11,6 +11,8 @@ export interface RgbaColor {
   name?: string;
   /** The CSS value of the color */
   value: string;
+  /** The color enum value */
+  colorEnum: number;
 }
 
 export function rgba(args: {
@@ -19,8 +21,9 @@ export function rgba(args: {
   b: number;
   a?: number;
   name?: string;
+  colorEnum: number;
 }): RgbaColor {
-  const { r: red, g: green, b: blue, name } = args;
+  const { r: red, g: green, b: blue, name, colorEnum } = args;
   const alpha = args.a ?? 1;
 
   return {
@@ -30,5 +33,6 @@ export function rgba(args: {
     alpha,
     name,
     value: `rgba(${red}, ${green}, ${blue}, ${alpha})`,
+    colorEnum,
   };
 }

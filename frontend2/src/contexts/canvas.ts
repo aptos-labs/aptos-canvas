@@ -22,6 +22,8 @@ export interface PixelData {
   g: number;
   /** blue value */
   b: number;
+  /** color enum value */
+  color: number;
 }
 
 /** Format: { "x-y": PixelData } */
