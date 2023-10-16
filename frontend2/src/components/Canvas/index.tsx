@@ -38,6 +38,8 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
   const isGesturingRef = useRef<boolean>(false);
   const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
 
+  const supportsTouch = "ontouchstart" in document.documentElement;
+
   useKeyboardShortcuts();
 
   useEffect(function initializeCanvas() {
@@ -269,8 +271,6 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
         }
       }
 
-      const supportsTouch = "ontouchstart" in document.documentElement;
-
       if (supportsTouch) {
         canvas.on("touch:gesture", handleTouchGesture);
         canvas.on("touch:drag", handleTouchDrag);
@@ -293,7 +293,7 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
         }
       };
     },
-    [isViewOnly],
+    [isViewOnly, supportsTouch],
   );
 
   useCanvasCommandListener((command) => {
@@ -345,7 +345,7 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
   return (
     <>
       <canvas ref={canvasRef} />
-      {isInitialized && !isViewOnly && isCursorInBounds && fabricRef.current && (
+      {!supportsTouch && isInitialized && !isViewOnly && isCursorInBounds && fabricRef.current && (
         <DrawingCursor canvas={fabricRef.current} />
       )}
     </>

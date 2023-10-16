@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
-const END_DATE = new Date("October 18, 2023 10:00:00 PDT");
+const END_DATE = new Date("October 19, 2023 10:00:00 PDT");
 
 const getSecondsLeft = () => {
   const seconds = Math.round((END_DATE.valueOf() - Date.now()) / 1000);
@@ -39,17 +39,35 @@ export function Countdown() {
   return (
     <div className={wrapper}>
       <p className={strongText}>
-        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until launch.
+        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until close.
       </p>{" "}
       <p className={css({ opacity: 0.4 })}>
-        The Aptos Foundation reserves the right to moderate, edit, or clear the canvas.{" "}
+        Graffio moderators reserve the right to edit or clear the canvas.{" "}
+        <Link
+          href="https://aptoslabs.notion.site/Graffio-How-to-Draw-Rules-of-Play-88b5b2e7702448fabf54edeab5e107ab"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
+        >
+          Rules
+        </Link>
+        {", "}
         <Link
           href="https://aptoslabs.com/terms"
           target="_blank"
           rel="noopener noreferrer"
           className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
         >
-          See terms.
+          Terms
+        </Link>
+        {", "}
+        <Link
+          href="https://aptoslabs.com/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
+        >
+          Privacy
         </Link>
       </p>
     </div>

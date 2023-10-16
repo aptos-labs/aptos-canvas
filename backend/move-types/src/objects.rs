@@ -84,7 +84,7 @@ pub struct AllowedValidators {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApprovedExecutionHashes {
-    pub hashes: _0x1__simple_map__SimpleMap,
+    pub hashes: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AptosCoin {
@@ -149,27 +149,19 @@ pub struct BurnEvent {
 pub struct Canvas {
     pub config: CanvasConfig,
     pub pixels: SmartTable,
-    pub last_contribution_s: SmartTable,
-    pub allowlisted_artists: SimpleSet,
-    pub blocklisted_artists: SimpleSet,
-    pub admins: SimpleSet,
+    pub last_contribution_s: Table,
+    pub unlimited_artists: Table,
+    pub admins: Table,
     pub created_at_s: U64,
     pub extend_ref: ExtendRef,
     pub mutator_ref: _0x4__token__MutatorRef,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CanvasConfig {
-    pub width: U64,
-    pub height: U64,
+    pub width: U16,
+    pub height: U16,
     pub per_account_timeout_s: U64,
-    pub can_draw_for_s: U64,
-    pub palette: Vec<Color>,
-    pub cost: U64,
-    pub cost_multiplier: U64,
-    pub cost_multiplier_decay_s: U64,
-    pub default_color: Color,
-    pub can_draw_multiple_pixels_at_once: bool,
-    pub owner_is_super_admin: bool,
+    pub default_color: U8,
     pub max_number_of_pixels_per_draw: U64,
     pub draw_enabled_for_non_admin: bool,
 }
@@ -242,19 +234,13 @@ pub struct Collection {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CollectionConfig {
-    pub max_width: U64,
-    pub max_height: U64,
+    pub max_width: U16,
+    pub max_height: U16,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CollectionRefs {
     pub transfer_ref: _0x1__object__TransferRef,
     pub mutator_ref: _0x4__collection__MutatorRef,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Color {
-    pub r: U8,
-    pub g: U8,
-    pub b: U8,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Commitment {
@@ -296,7 +282,7 @@ pub struct ConstructorRef {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Container {
-    pub store: _0x1__simple_map__SimpleMap,
+    pub store: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateStakingContractEvent {
@@ -624,7 +610,7 @@ pub struct GovernanceRecords {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GovernanceResponsbility {
-    pub signer_caps: _0x1__simple_map__SimpleMap,
+    pub signer_caps: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Gt {
@@ -687,8 +673,8 @@ pub struct Metadata {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MetadataUpdatedEvent {
-    pub old_metadata: _0x1__simple_map__SimpleMap,
-    pub new_metadata: _0x1__simple_map__SimpleMap,
+    pub old_metadata: SimpleMap,
+    pub new_metadata: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MintCapStore {
@@ -722,7 +708,7 @@ pub struct MultisigAccount {
     pub last_executed_sequence_number: U64,
     pub next_sequence_number: U64,
     pub signer_cap: Option,
-    pub metadata: _0x1__simple_map__SimpleMap,
+    pub metadata: SimpleMap,
     pub add_owners_events: EventHandle,
     pub remove_owners_events: EventHandle,
     pub update_signature_required_events: EventHandle,
@@ -753,7 +739,7 @@ pub struct MultisigAccountCreationWithAuthKeyRevocationMessage {
 pub struct MultisigTransaction {
     pub payload: Option,
     pub payload_hash: Option,
-    pub votes: _0x1__simple_map__SimpleMap,
+    pub votes: SimpleMap,
     pub creator: Address,
     pub creation_time_secs: U64,
 }
@@ -833,11 +819,6 @@ pub struct PackageRegistry {
     pub packages: Vec<PackageMetadata>,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Pixel {
-    pub color: Color,
-    pub drawn_at_s: U64,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Point {
     pub x: U64,
     pub y: U64,
@@ -848,7 +829,7 @@ pub struct ProofOfPossession {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PropertyMap {
-    pub inner: _0x1__simple_map__SimpleMap,
+    pub inner: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PropertyValue {
@@ -859,7 +840,7 @@ pub struct PropertyValue {
 pub struct Proposal {
     pub proposer: Address,
     pub execution_content: Option,
-    pub metadata: _0x1__simple_map__SimpleMap,
+    pub metadata: SimpleMap,
     pub creation_time_secs: U64,
     pub execution_hash: Vec<U8>,
     pub min_vote_threshold: U128,
@@ -1000,8 +981,8 @@ pub struct SignerCapabilityOfferProofChallengeV2 {
     pub recipient_address: Address,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SimpleSet {
-    pub data: Vec<Any>,
+pub struct SimpleMap {
+    pub data: Vec<_0x1__simple_map__Element>,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SmartTable {
@@ -1104,7 +1085,7 @@ pub struct StorageGasConfig {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Store {
-    pub staking_contracts: _0x1__simple_map__SimpleMap,
+    pub staking_contracts: SimpleMap,
     pub create_staking_contract_events: EventHandle,
     pub update_voter_events: EventHandle,
     pub reset_lockup_events: EventHandle,
@@ -1133,6 +1114,10 @@ pub struct SwitchOperatorEvent {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Table {
     pub handle: Address,
+}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct TableHolder {
+    pub table: Table,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TableWithLength {
@@ -1324,14 +1309,14 @@ pub struct VestEvent {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct VestingAccountManagement {
-    pub roles: _0x1__simple_map__SimpleMap,
+    pub roles: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct VestingContract {
     pub state: U64,
     pub admin: Address,
     pub grant_pool: _0x1__pool_u64__Pool,
-    pub beneficiaries: _0x1__simple_map__SimpleMap,
+    pub beneficiaries: SimpleMap,
     pub vesting_schedule: VestingSchedule,
     pub withdrawal_address: Address,
     pub staking: StakingInfo,
@@ -1397,7 +1382,7 @@ pub struct _0x1__aptos_governance__CreateProposalEvent {
     pub stake_pool: Address,
     pub proposal_id: U64,
     pub execution_hash: Vec<U8>,
-    pub proposal_metadata: _0x1__simple_map__SimpleMap,
+    pub proposal_metadata: SimpleMap,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct _0x1__aptos_governance__VoteEvent {
@@ -1528,7 +1513,7 @@ pub struct _0x1__pool_u64__Pool {
     pub shareholders_limit: U64,
     pub total_coins: U64,
     pub total_shares: U64,
-    pub shares: _0x1__simple_map__SimpleMap,
+    pub shares: SimpleMap,
     pub shareholders: Vec<Address>,
     pub scaling_factor: U64,
 }
@@ -1543,10 +1528,6 @@ pub struct _0x1__pool_u64_unbound__Pool {
 pub struct _0x1__simple_map__Element {
     pub key: Any,
     pub value: Any,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct _0x1__simple_map__SimpleMap {
-    pub data: Vec<_0x1__simple_map__Element>,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct _0x1__stake__AddStakeEvent {
@@ -1639,7 +1620,7 @@ pub struct _0x1__voting__CreateProposalEvent {
     pub early_resolution_vote_threshold: Option,
     pub execution_hash: Vec<U8>,
     pub expiration_secs: U64,
-    pub metadata: _0x1__simple_map__SimpleMap,
+    pub metadata: SimpleMap,
     pub min_vote_threshold: U128,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -1681,17 +1662,4 @@ pub struct _0x4__token__MutationEvent {
 pub struct _0x4__token__MutatorRef {
     #[serde(rename = "self")]
     pub self_: Address,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct _0x626b96faa14f38242ec223e214101791920325665f4f7fc25f8865d6338b0053__simple_map__Element
-{
-    pub key: Any,
-    pub value: Any,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct _0x626b96faa14f38242ec223e214101791920325665f4f7fc25f8865d6338b0053__simple_map__SimpleMap
-{
-    pub data: Vec<
-        _0x626b96faa14f38242ec223e214101791920325665f4f7fc25f8865d6338b0053__simple_map__Element,
-    >,
 }

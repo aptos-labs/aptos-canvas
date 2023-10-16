@@ -10,7 +10,7 @@ import { truncateAddress } from "@/utils/wallet";
 import { removeToast, toast } from "../Toast";
 import { openConnectWalletModal } from "./ConnectWalletModal";
 import { openDisconnectWalletModal } from "./DisconnectWalletModal";
-import { useIsAdmin } from "./useIsAdmin";
+import { useCanDrawUnlimited } from "./useCanDrawUnlimited";
 
 const TOAST_ID = "connect-wallet";
 
@@ -18,7 +18,7 @@ export function ConnectWalletButton() {
   const isCanvasInitialized = useCanvasState((s) => s.isInitialized);
   const { disconnect, account, connected } = useWallet();
 
-  useIsAdmin(account?.address);
+  useCanDrawUnlimited(account?.address);
 
   useEffect(
     function manageConnectWalletToast() {

@@ -54,21 +54,17 @@ export function CanvasActions() {
 
     const xs = [];
     const ys = [];
-    const rs = [];
-    const gs = [];
-    const bs = [];
+    const colors = [];
     for (const pixelChanged of pixelsChanged.values()) {
       xs.push(pixelChanged.x);
       ys.push(pixelChanged.y);
-      rs.push(pixelChanged.r);
-      gs.push(pixelChanged.g);
-      bs.push(pixelChanged.b);
+      colors.push(pixelChanged.color);
     }
 
     const payload = createEntryPayload(ABI, {
       function: "draw",
       type_arguments: [],
-      arguments: [APP_CONFIG[network].canvasTokenAddr, xs, ys, rs, gs, bs],
+      arguments: [APP_CONFIG[network].canvasTokenAddr, xs, ys, colors],
     }).rawPayload;
 
     try {
@@ -86,7 +82,7 @@ export function CanvasActions() {
         optimisticUpdates: newOptimisticUpdates,
       });
       toast({ id: "add-success", variant: "success", content: "Added!" });
-      if (!useCanvasState.getState().isAdmin) setCoolDownLeft(5);
+      if (!useCanvasState.getState().canDrawUnlimited) setCoolDownLeft(5);
     } catch {
       toast({
         id: "add-failure",

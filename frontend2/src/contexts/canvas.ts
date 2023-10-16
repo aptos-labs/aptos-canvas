@@ -4,9 +4,9 @@ import { create } from "zustand";
 
 import { STROKE_COLORS, STROKE_WIDTH_CONFIG } from "@/constants/canvas";
 import { APP_CONFIG } from "@/constants/config";
-import { RgbaColor } from "@/utils/color";
 import { createEventEmitter } from "@/utils/eventEmitter";
 import { isServer } from "@/utils/isServer";
+import { TupleIndices } from "@/utils/types";
 
 import { useAptosNetworkState } from "./wallet";
 
@@ -20,12 +20,8 @@ export interface PixelData {
   x: number;
   /** y coordinate */
   y: number;
-  /** red value */
-  r: number;
-  /** green value */
-  g: number;
-  /** blue value */
-  b: number;
+  /** color index */
+  color: TupleIndices<typeof STROKE_COLORS>;
 }
 
 /** Format: { "x-y": PixelData } */
@@ -39,11 +35,11 @@ export interface OptimisticUpdate {
 }
 
 export interface CanvasState {
-  isAdmin: boolean;
+  canDrawUnlimited: boolean;
   isInitialized: boolean;
   isViewOnly: boolean;
   setViewOnly: (isViewOnly: boolean) => boolean;
-  strokeColor: RgbaColor;
+  strokeColor: TupleIndices<typeof STROKE_COLORS>;
   strokeWidth: number;
   currentChanges: Array<ImagePatch>;
   optimisticUpdates: Array<OptimisticUpdate>;
@@ -51,7 +47,7 @@ export interface CanvasState {
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
-  isAdmin: false,
+  canDrawUnlimited: false,
   isInitialized: false,
   isViewOnly: true,
   setViewOnly: (isViewOnly) => {
@@ -65,7 +61,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
     set({ isViewOnly });
     return true;
   },
-  strokeColor: STROKE_COLORS[0],
+  strokeColor: 0,
   strokeWidth: STROKE_WIDTH_CONFIG.min,
   currentChanges: [],
   optimisticUpdates: [],
@@ -118,7 +114,36 @@ export function useOptimisticUpdateGarbageCollector() {
   }, []);
 }
 
-const ExampleCanvasMoveResource = {
+export function useLatestDrawEnabledForNonAdmin() {
+  const REFETCH_MS = 10_000;
+  const { network } = useAptosNetworkState();
+  const aptosClient = useMemo(() => new AptosClient(APP_CONFIG[network].rpcUrl), [network]);
+
+  useEffect(() => {
+    if (isServer()) return;
+
+    const fetch = async () => {
+      const canvas = (
+        await aptosClient.getAccountResource(
+          APP_CONFIG[network].canvasTokenAddr,
+          `${APP_CONFIG[network].canvasAddr}::canvas_token::Canvas`,
+        )
+      ).data as unknown as CanvasMoveResource;
+      useCanvasState.setState({ drawEnabledForNonAdmin: canvas.config.draw_enabled_for_non_admin });
+    };
+
+    fetch().catch(console.error);
+    const interval = window.setInterval(fetch, REFETCH_MS);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [aptosClient, network]);
+}
+
+type CanvasMoveResource = typeof exampleCanvasMoveResource;
+
+const exampleCanvasMoveResource = {
   admins: {
     data: [] as Array<string>,
   },
@@ -176,32 +201,3 @@ const ExampleCanvasMoveResource = {
     target_bucket_size: "37",
   },
 };
-
-type CanvasMoveResource = typeof ExampleCanvasMoveResource;
-
-export function useLatestDrawEnabledForNonAdmin() {
-  const REFETCH_MS = 10_000;
-  const { network } = useAptosNetworkState();
-  const aptosClient = useMemo(() => new AptosClient(APP_CONFIG[network].rpcUrl), [network]);
-
-  useEffect(() => {
-    if (isServer()) return;
-
-    const fetch = async () => {
-      const canvas = (
-        await aptosClient.getAccountResource(
-          APP_CONFIG[network].canvasTokenAddr,
-          `${APP_CONFIG[network].canvasAddr}::canvas_token::Canvas`,
-        )
-      ).data as unknown as CanvasMoveResource;
-      useCanvasState.setState({ drawEnabledForNonAdmin: canvas.config.draw_enabled_for_non_admin });
-    };
-
-    fetch().catch(console.error);
-    const interval = window.setInterval(fetch, REFETCH_MS);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [aptosClient, network]);
-}

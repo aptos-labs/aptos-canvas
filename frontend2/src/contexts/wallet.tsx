@@ -24,9 +24,9 @@ export type SupportedNetworkName = NetworkName.Mainnet | NetworkName.Testnet;
 
 export const useAptosNetworkState = create<AptosNetworkState>((set) => ({
   network: isServer()
-    ? NetworkName.Testnet
+    ? NetworkName.Mainnet
     : ((window.localStorage.getItem("aptos-network") ??
-        NetworkName.Testnet) as SupportedNetworkName),
+        NetworkName.Mainnet) as SupportedNetworkName),
   setNetwork: (network) => {
     set({ network });
     window.localStorage.setItem("aptos-network", network);
@@ -38,10 +38,6 @@ export function WalletProvider({ children }: React.PropsWithChildren) {
 
   const identityConnectWalletConfig: IdentityConnectWalletConfig = {
     networkName: network,
-    axiosConfig: {
-      baseURL: "https://identity-connect.staging.gcp.aptosdev.com",
-    },
-    frontendBaseURL: "https://identity-connect.staging.gcp.aptosdev.com",
   };
 
   if (!IC_DAPP_ID) {

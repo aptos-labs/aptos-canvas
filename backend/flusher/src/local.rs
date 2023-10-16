@@ -42,8 +42,10 @@ impl LocalFlusher {
         let extension = "png";
         let filename = format!("{}.{}", canvas_address, extension);
 
-        std::fs::write(self.config.flush_dir.join(filename), png_data)
-            .context("Failed to write image to disk")?;
+        std::fs::write(self.config.flush_dir.join(filename), png_data).context(format!(
+            "Failed to write image for {} to disk",
+            canvas_address
+        ))?;
 
         Ok(())
     }
