@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   reportUnusedDisableDirectives: true,
-  ignorePatterns: ["/*", "!/panda-preset", "!/src"],
+  ignorePatterns: ["/*", "!/panda-preset", "!/src", "/src/utils/getTheme.js"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",

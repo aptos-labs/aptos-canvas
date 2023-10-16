@@ -2,7 +2,7 @@
 // @refresh reset
 
 import { fabric } from "fabric";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, VIEW_MODE_ZOOM } from "@/constants/canvas";
 import {
@@ -11,6 +11,7 @@ import {
   useOptimisticUpdateGarbageCollector,
 } from "@/contexts/canvas";
 import { assertUnreachable } from "@/utils/assertUnreachable";
+import { useThemeChange } from "@/utils/useThemeChange";
 
 import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
@@ -37,7 +38,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     const newCanvas = new fabric.Canvas(canvasRef.current, {
       height,
       width,
-      backgroundColor: "#ddd",
+      backgroundColor: getCanvasBackgroundColor(),
       selection: false,
       defaultCursor: "crosshair",
       hoverCursor: "crosshair",
@@ -73,6 +74,14 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     // This initialization effect should only be run once so we shouldn't provide any effect deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleThemeChange = useCallback(() => {
+    const canvas = fabricRef.current;
+    if (!canvas) return;
+
+    canvas.setBackgroundColor(getCanvasBackgroundColor(), () => canvas.requestRenderAll());
+  }, []);
+  useThemeChange(handleThemeChange);
 
   useEffect(
     function updateCanvasSize() {
@@ -326,4 +335,9 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
   });
 
   return <canvas ref={canvasRef} />;
+}
+
+function getCanvasBackgroundColor() {
+  // This maps to colors.canvas.bg from /panda-preset/colors.ts
+  return window.getComputedStyle(document.documentElement).getPropertyValue("--colors-canvas-bg");
 }

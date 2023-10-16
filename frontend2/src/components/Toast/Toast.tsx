@@ -69,7 +69,7 @@ const toastStyles = cva({
       success: { bg: "success", color: "text.onInteractive.primary" },
       warning: { bg: "warning", color: "text.onInteractive.primary" },
       error: { bg: "error", color: "text.onInteractive.primary" },
-      info: { bg: "surface", color: "text" },
+      info: { bg: "toast", color: "text" },
     },
   },
 });

@@ -84,22 +84,22 @@ const buttonStyles = cva({
       },
       secondary: {
         bg: "interactive.secondary",
-        borderColor: "interactive.primary",
-        color: "interactive.primary",
+        borderColor: "interactive.secondary.accent",
+        color: "interactive.secondary.accent",
         "&:hover:not(:disabled)": {
           bg: "interactive.secondary.hovered",
-          color: "interactive.primary.hovered",
-          borderColor: "interactive.primary.hovered",
+          color: "interactive.secondary.accent.hovered",
+          borderColor: "interactive.secondary.accent.hovered",
         },
         "&:active:not(:disabled)": {
           bg: "interactive.secondary.pressed",
-          color: "interactive.primary.pressed",
-          borderColor: "interactive.primary.pressed",
+          color: "interactive.secondary.accent.pressed",
+          borderColor: "interactive.secondary.accent.pressed",
         },
         "&:disabled:not([data-loading=true])": {
           bg: "interactive.secondary.disabled",
-          color: "border.pressed",
-          borderColor: "border.pressed",
+          color: "interactive.secondary.accent.disabled",
+          borderColor: "interactive.secondary.accent.disabled",
         },
       },
       danger: {

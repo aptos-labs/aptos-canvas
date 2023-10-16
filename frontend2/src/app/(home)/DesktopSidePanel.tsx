@@ -15,9 +15,7 @@ import { useCanvasState } from "@/contexts/canvas";
 export function DesktopSidePanel() {
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
 
-  const divider = (
-    <div className={css({ w: 48, h: 1, bg: "rgba(0, 0, 0, 0.2)", rounded: "full" })} />
-  );
+  const divider = <div className={css({ w: 48, h: 1, bg: "border", rounded: "full" })} />;
 
   return (
     <aside className={wrapper}>

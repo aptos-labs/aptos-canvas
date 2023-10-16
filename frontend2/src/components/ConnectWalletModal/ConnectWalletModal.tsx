@@ -81,7 +81,6 @@ function WalletConnectButton({ wallet, connect }: WalletConnectButtonProps) {
             px: 16,
             py: 12,
             gap: 16,
-            bg: "interactive.secondary.disabled",
             rounded: "lg",
           })}
         >

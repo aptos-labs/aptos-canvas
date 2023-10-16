@@ -53,7 +53,7 @@ const track = css({
   flexGrow: 1,
   alignSelf: "center",
   rounded: "full",
-  bg: "border",
+  bg: "slider.track",
   "&[data-orientation='horizontal']": {
     h: 3,
   },
@@ -64,7 +64,7 @@ const track = css({
 
 const range = css({
   position: "absolute",
-  bg: "black",
+  bg: "slider.range",
   rounded: "full",
   "&[data-orientation='horizontal']": {
     h: "100%",
@@ -80,8 +80,8 @@ const thumb = flex({
   rounded: "full",
   h: 20,
   w: 20,
-  bg: "surface",
-  color: "text",
+  bg: "slider.thumb.bg",
+  color: "slider.thumb.text",
   filter: "drop-shadow(0px 3px 3px rgba(0, 0, 0, 0.3))",
   cursor: "grab",
   _active: {
