@@ -8,6 +8,7 @@ import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, VIEW_MODE_ZOOM } from "@/constants/can
 import {
   useCanvasCommandListener,
   useCanvasState,
+  useLatestDrawEnabledForNonAdmin,
   useOptimisticUpdateGarbageCollector,
 } from "@/contexts/canvas";
 import { assertUnreachable } from "@/utils/assertUnreachable";
@@ -123,6 +124,7 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
   );
 
   useOptimisticUpdateGarbageCollector();
+  useLatestDrawEnabledForNonAdmin();
 
   useEffect(
     function manageViewAndDrawModes() {
