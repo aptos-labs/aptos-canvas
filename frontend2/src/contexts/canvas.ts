@@ -69,7 +69,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   strokeWidth: STROKE_WIDTH_CONFIG.min,
   currentChanges: [],
   optimisticUpdates: [],
-  drawEnabledForNonAdmin: false,
+  drawEnabledForNonAdmin: true,
 }));
 
 /** This function rolls up every collection of changed pixels into one deduplicated Map. */
