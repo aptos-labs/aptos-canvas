@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
-const END_DATE = new Date("October 18, 2023 12:00:00 PDT");
+const END_DATE = new Date("October 18, 2023 10:00:00 PDT");
 
 const getSecondsLeft = () => {
   const seconds = Math.round((END_DATE.valueOf() - Date.now()) / 1000);
@@ -12,9 +13,11 @@ const getSecondsLeft = () => {
 };
 
 export function Countdown() {
-  const [secondsLeft, setSecondsLeft] = useState(getSecondsLeft());
+  const [secondsLeft, setSecondsLeft] = useState<number>();
 
   useEffect(() => {
+    setSecondsLeft(getSecondsLeft());
+
     // Update counter once a minute since we're only displaying down to the minute
     const interval = window.setInterval(() => {
       setSecondsLeft(getSecondsLeft());
@@ -25,21 +28,49 @@ export function Countdown() {
     };
   }, []);
 
-  const days = secondsLeft / 60 / 60 / 24;
+  const days = secondsLeft !== undefined ? secondsLeft / 60 / 60 / 24 : 0;
   const hours = (days % 1) * 24;
   const minutes = (hours % 1) * 60;
 
-  const formattedDays = Math.floor(days).toString().padStart(2, "0");
-  const formattedHours = Math.floor(hours).toString().padStart(2, "0");
-  const formattedMinutes = Math.floor(minutes).toString().padStart(2, "0");
+  const formattedDays = secondsLeft !== undefined ? Math.floor(days) : "X";
+  const formattedHours = secondsLeft !== undefined ? Math.floor(hours) : "X";
+  const formattedMinutes = secondsLeft !== undefined ? Math.floor(minutes) : "X";
 
   return (
-    <p className={wrapper}>
-      <strong className={strongText}>
-        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes
-      </strong>{" "}
-      left before we&apos;re going public!
-    </p>
+    <div className={wrapper}>
+      <p className={strongText}>
+        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until launch.
+      </p>{" "}
+      <p className={css({ opacity: 0.4 })}>
+        Graffio moderators reserve the right to edit or clear the canvas.{" "}
+        <Link
+          href="https://aptoslabs.notion.site/Graffio-How-to-Draw-Rules-of-Play-88b5b2e7702448fabf54edeab5e107ab"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
+        >
+          Rules
+        </Link>
+        {", "}
+        <Link
+          href="https://aptoslabs.com/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
+        >
+          Terms
+        </Link>
+        {", "}
+        <Link
+          href="https://aptoslabs.com/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={css({ textDecoration: "underline", textUnderlineOffset: 2 })}
+        >
+          Privacy
+        </Link>
+      </p>
+    </div>
   );
 }
 
@@ -50,7 +81,6 @@ const wrapper = css({
   md: {
     display: "block",
     textStyle: "body.md.regular",
-    opacity: 0.4,
   },
 });
 

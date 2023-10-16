@@ -16,4 +16,10 @@ export default defineConfig({
 
   // The output directory for your css system
   outdir: "styled-system",
+
+  // Additional conditions to be available to our CSS
+  conditions: {
+    light: "[data-theme=light] &",
+    dark: "[data-theme=dark] &",
+  },
 });

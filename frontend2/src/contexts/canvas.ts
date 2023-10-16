@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { create } from "zustand";
 
 import { STROKE_COLORS, STROKE_WIDTH_CONFIG } from "@/constants/canvas";
@@ -6,7 +6,7 @@ import { createEventEmitter } from "@/utils/eventEmitter";
 import { isServer } from "@/utils/isServer";
 import { TupleIndices } from "@/utils/types";
 
-export type CanvasCommand = "clearChangedPixels";
+export type CanvasCommand = "clearChangedPixels" | "undoLastChange";
 
 export const [emitCanvasCommand, useCanvasCommandListener] =
   createEventEmitter<CanvasCommand>("canvasCommand");
@@ -31,20 +31,22 @@ export interface OptimisticUpdate {
 }
 
 export interface CanvasState {
+  isAdmin: boolean;
   isInitialized: boolean;
   isViewOnly: boolean;
   setViewOnly: (isViewOnly: boolean) => boolean;
   strokeColor: TupleIndices<typeof STROKE_COLORS>;
   strokeWidth: number;
+  currentChanges: Array<ImagePatch>;
   optimisticUpdates: Array<OptimisticUpdate>;
-  pixelsChanged: ImagePatch;
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
+  isAdmin: false,
   isInitialized: false,
   isViewOnly: true,
   setViewOnly: (isViewOnly) => {
-    if (isViewOnly && get().pixelsChanged.size) {
+    if (isViewOnly && get().currentChanges.length) {
       const hasConfirmed = window.confirm(
         "You have unsaved changes on the board. Are you sure you want to discard them?",
       );
@@ -56,9 +58,27 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   },
   strokeColor: 0,
   strokeWidth: STROKE_WIDTH_CONFIG.min,
+  currentChanges: [],
   optimisticUpdates: [],
-  pixelsChanged: new Map(),
 }));
+
+/** This function rolls up every collection of changed pixels into one deduplicated Map. */
+export function aggregatePixelsChanged(currentChanges: CanvasState["currentChanges"]) {
+  const pixelsChanged: ImagePatch = new Map();
+
+  for (const change of currentChanges) {
+    for (const [point, pixel] of change) {
+      pixelsChanged.set(point, pixel);
+    }
+  }
+
+  return pixelsChanged;
+}
+
+/** This hook rolls up every collection of changed pixels into one deduplicated Map. */
+export function useAggregatedPixelsChanged(currentChanges: CanvasState["currentChanges"]) {
+  return useMemo(() => aggregatePixelsChanged(currentChanges), [currentChanges]);
+}
 
 /**
  * Since transactions should be reflected in the aggregated canvas after only a few seconds,

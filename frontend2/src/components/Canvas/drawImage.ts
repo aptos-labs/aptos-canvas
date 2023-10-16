@@ -1,7 +1,8 @@
 import { fabric } from "fabric";
+import { MutableRefObject } from "react";
 
-import { MAX_PIXELS_PER_TXN, STROKE_COLORS } from "@/constants/canvas";
-import { useCanvasState } from "@/contexts/canvas";
+import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN, STROKE_COLORS } from "@/constants/canvas";
+import { aggregatePixelsChanged, ImagePatch, useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { EventCanvas, Point } from "./types";
@@ -45,6 +46,48 @@ export function createSquareImage({ size, pixelArray, canvas, imageRef }: Create
   );
 }
 
+export interface ApplyImagePatchesArgs {
+  canvas: fabric.Canvas;
+  image: fabric.Image;
+  size: number;
+  basePixelArray: Uint8ClampedArray;
+  imagePatches: Array<ImagePatch>;
+  pixelArrayRef: MutableRefObject<Uint8ClampedArray>;
+}
+
+export function applyImagePatches({
+  canvas,
+  image,
+  size,
+  pixelArrayRef,
+  basePixelArray,
+  imagePatches,
+}: ApplyImagePatchesArgs) {
+  // Create new pixel array with the image patches applied
+  const newPixelArray = new Uint8ClampedArray(basePixelArray);
+  for (const imagePatch of imagePatches) {
+    for (const pixelChanged of imagePatch.values()) {
+      const color = STROKE_COLORS[pixelChanged.color];
+      const index = (pixelChanged.y * size + pixelChanged.x) * 4;
+      newPixelArray[index + 0] = color.red; // R value
+      newPixelArray[index + 1] = color.green; // G value
+      newPixelArray[index + 2] = color.blue; // B value
+      newPixelArray[index + 3] = 255; // A value
+    }
+  }
+
+  // Save new pixel array to the ref
+  pixelArrayRef.current = newPixelArray;
+
+  const [tempCanvas, cleanUp] = createTempCanvas(newPixelArray, size);
+
+  // Update fabric image with data from temporary canvas and clean up when done
+  image.setSrc(tempCanvas.toDataURL(), () => {
+    canvas.requestRenderAll();
+    cleanUp();
+  });
+}
+
 export interface AlterImagePixelsArgs {
   image: fabric.Image;
   size: number;
@@ -52,6 +95,7 @@ export interface AlterImagePixelsArgs {
   canvas: EventCanvas;
   point1: Point;
   point2: Point;
+  isNewLine: boolean;
 }
 
 export function alterImagePixels({
@@ -61,6 +105,7 @@ export function alterImagePixels({
   canvas,
   point1,
   point2,
+  isNewLine,
 }: AlterImagePixelsArgs) {
   // Get the initial current scaling of the image. It doesn't matter if we use scaleX or scaleY
   // since the image is a square
@@ -82,7 +127,7 @@ export function alterImagePixels({
 
   let points = getContinuousPoints(scalePoint(point1), scalePoint(point2));
 
-  const { strokeColor, strokeWidth, pixelsChanged } = useCanvasState.getState();
+  const { isAdmin, strokeColor, strokeWidth, currentChanges } = useCanvasState.getState();
 
   if (strokeWidth > 1) {
     // Multiply points by stroke width if it's greater than 1
@@ -92,9 +137,19 @@ export function alterImagePixels({
   // Filter out out-of-bounds points
   points = points.filter(({ x, y }) => x >= 0 && x < size && y >= 0 && y < size);
 
-  const nextPixelsChanged = new Map(pixelsChanged);
+  const newChanges = [...currentChanges];
+  if (isNewLine || !newChanges[newChanges.length - 1]) {
+    newChanges.push(new Map());
+  }
+  // The line above ensures newChanges always has a last element, but tsc disagrees :/
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const nextPixelsChanged = newChanges[newChanges.length - 1]!;
+
+  const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
   for (const point of points) {
-    if (nextPixelsChanged.size >= MAX_PIXELS_PER_TXN) break;
+    // Break out of loop to stop adding pixels once we hit the limit
+    if (aggregatePixelsChanged(newChanges).size >= pixelLimit) break;
+
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,
       y: point.y,
@@ -108,14 +163,19 @@ export function alterImagePixels({
     pixelArray[index + 3] = 255; // A value
   }
 
+  if (!nextPixelsChanged.size) {
+    // Bail out if we didn't change any pixels because we hit the pixel limit
+    return;
+  }
+
   const [tempCanvas, cleanUp] = createTempCanvas(pixelArray, size);
 
   // Update fabric image with data from temporary canvas and clean up when done
   image.setSrc(tempCanvas.toDataURL(), () => {
-    canvas.renderAll();
+    canvas.requestRenderAll();
     cleanUp();
   });
-  useCanvasState.setState({ pixelsChanged: nextPixelsChanged });
+  useCanvasState.setState({ currentChanges: newChanges });
 }
 
 /**

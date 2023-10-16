@@ -6,6 +6,9 @@ import { css } from "styled-system/css";
 
 import { ModalContainer } from "@/components/Modal";
 import { WalletProvider } from "@/contexts/wallet";
+import { getTheme } from "@/utils/getTheme";
+
+import { GoogleAnalytics } from "./GoogleAnalytics";
 
 const dmSans = DM_Sans({
   weight: ["400", "500", "700"],
@@ -27,7 +30,10 @@ export const metadata: Metadata = {
   },
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
-  themeColor: "#FFFFFF",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#1F1F23" },
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+  ],
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -59,13 +65,21 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
-    <html lang="en" className={dmSans.variable}>
+    // Very unfortunately our theme detection code causes a hydration warning because we add
+    // a data-theme attribute to the document that cannot possibly be known from the server
+    <html lang="en" className={dmSans.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: getTheme }} />
+      </head>
       <body className={css({ color: "text", bg: "surface", fontFamily: "sans" })}>
         <WalletProvider>
           {children}
           <ModalContainer />
         </WalletProvider>
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID ? (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      ) : null}
     </html>
   );
 }

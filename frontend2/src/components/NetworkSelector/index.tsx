@@ -11,6 +11,7 @@ export function NetworkSelector() {
 
   return (
     <select
+      aria-label="Network"
       className={select}
       value={network}
       onChange={(e) => {

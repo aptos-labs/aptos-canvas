@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
-import { MAX_PIXELS_PER_TXN } from "@/constants/canvas";
-import { useCanvasState } from "@/contexts/canvas";
+import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
+import { useAggregatedPixelsChanged, useCanvasState } from "@/contexts/canvas";
 
 import { PaintIcon } from "../Icons/PaintIcon";
 import { removeToast, toast } from "../Toast";
@@ -15,9 +15,12 @@ export interface PaintInfoProps {
 }
 
 export function PaintInfo({ direction }: PaintInfoProps) {
-  const pixelsChanged = useCanvasState((s) => s.pixelsChanged);
+  const currentChanges = useCanvasState((s) => s.currentChanges);
+  const pixelsChanged = useAggregatedPixelsChanged(currentChanges);
   const changedPixelsCount = pixelsChanged.size;
-  const limitReached = changedPixelsCount >= MAX_PIXELS_PER_TXN;
+  const isAdmin = useCanvasState((s) => s.isAdmin);
+  const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
+  const limitReached = changedPixelsCount >= pixelLimit;
 
   useEffect(() => {
     const TOAST_ID = "pixel-limit-reached";
@@ -44,7 +47,7 @@ export function PaintInfo({ direction }: PaintInfoProps) {
     >
       <PaintIcon />
       <div className={css({ textStyle: "body.sm.regular", textAlign: "center" })}>
-        {changedPixelsCount.toLocaleString()} <br /> Pixels
+        {(pixelLimit - changedPixelsCount).toLocaleString()} <br /> Pixels
       </div>
     </div>
   );

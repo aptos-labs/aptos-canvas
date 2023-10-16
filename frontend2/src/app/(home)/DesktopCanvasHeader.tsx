@@ -1,8 +1,9 @@
-import Image from "next/image";
+import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
 import { ConnectWalletButton } from "@/components/ConnectWalletModal";
 import { Countdown } from "@/components/Countdown";
+import { AptosIcon } from "@/components/Icons/AptosIcon";
 import { NetworkSelector } from "@/components/NetworkSelector";
 
 export function DesktopCanvasHeader() {
@@ -17,7 +18,7 @@ export function DesktopCanvasHeader() {
       })}
     >
       <div className={flex({ gap: 16, align: "center" })}>
-        <Image src="/images/aptos-logo.svg" alt="Aptos Logo" height={32} width={32} />
+        <AptosIcon className={css({ color: "brand.logo" })} />
         <Countdown />
       </div>
       <div className={flex({ gap: 16, align: "center" })}>

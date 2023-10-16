@@ -2,27 +2,32 @@
 // @refresh reset
 
 import { fabric } from "fabric";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
-import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, STROKE_COLORS, VIEW_MODE_ZOOM } from "@/constants/canvas";
+import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, VIEW_MODE_ZOOM } from "@/constants/canvas";
 import {
   useCanvasCommandListener,
   useCanvasState,
   useOptimisticUpdateGarbageCollector,
 } from "@/contexts/canvas";
-import { createTempCanvas } from "@/utils/tempCanvas";
+import { assertUnreachable } from "@/utils/assertUnreachable";
+import { useThemeChange } from "@/utils/useThemeChange";
 
-import { alterImagePixels, createSquareImage } from "./drawImage";
+import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
+import { DrawingCursor } from "./DrawingCursor";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
+import { useKeyboardShortcuts } from "./keyboardShortcuts";
 import { EventCanvas, Point } from "./types";
 
 export interface CanvasProps {
   height: number;
   width: number;
   baseImage: Uint8ClampedArray;
+  isCursorInBounds: boolean;
 }
 
-export function Canvas({ height, width, baseImage }: CanvasProps) {
+export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasProps) {
+  const isInitialized = useCanvasState((s) => s.isInitialized);
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas>();
@@ -32,15 +37,19 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
   const isGesturingRef = useRef<boolean>(false);
   const pixelArrayRef = useRef(new Uint8ClampedArray(baseImage));
 
+  const supportsTouch = "ontouchstart" in document.documentElement;
+
+  useKeyboardShortcuts();
+
   useEffect(function initializeCanvas() {
     // Initialize canvas
     const newCanvas = new fabric.Canvas(canvasRef.current, {
       height,
       width,
-      backgroundColor: "#ddd",
+      backgroundColor: getCanvasBackgroundColor(),
       selection: false,
-      defaultCursor: "crosshair",
-      hoverCursor: "crosshair",
+      defaultCursor: "none",
+      hoverCursor: "none",
       enablePointerEvents: true,
     });
 
@@ -74,6 +83,14 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleThemeChange = useCallback(() => {
+    const canvas = fabricRef.current;
+    if (!canvas) return;
+
+    canvas.setBackgroundColor(getCanvasBackgroundColor(), () => canvas.requestRenderAll());
+  }, []);
+  useThemeChange(handleThemeChange);
+
   useEffect(
     function updateCanvasSize() {
       const canvas = fabricRef.current;
@@ -81,7 +98,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
 
       canvas.setDimensions({ height, width });
       canvas.calcOffset();
-      canvas.renderAll();
+      canvas.requestRenderAll();
     },
     [height, width],
   );
@@ -92,28 +109,16 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
       const image = imageRef.current;
       if (!canvas || !image) return;
 
-      const newPixelArray = new Uint8ClampedArray(baseImage);
-      const { optimisticUpdates, pixelsChanged } = useCanvasState.getState();
-      const allImagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(pixelsChanged);
+      const { optimisticUpdates, currentChanges } = useCanvasState.getState();
+      const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(...currentChanges);
 
-      for (const imagePatch of allImagePatches) {
-        for (const pixelChanged of imagePatch.values()) {
-          const color = STROKE_COLORS[pixelChanged.color];
-          const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-          newPixelArray[index + 0] = color.red; // R value
-          newPixelArray[index + 1] = color.green; // G value
-          newPixelArray[index + 2] = color.blue; // B value
-          newPixelArray[index + 3] = 255; // A value
-        }
-      }
-      pixelArrayRef.current = newPixelArray;
-
-      const [tempCanvas, cleanUp] = createTempCanvas(newPixelArray, PIXELS_PER_SIDE);
-
-      // Update fabric image with data from temporary canvas and clean up when done
-      image.setSrc(tempCanvas.toDataURL(), () => {
-        canvas.renderAll();
-        cleanUp();
+      applyImagePatches({
+        canvas,
+        image,
+        size: PIXELS_PER_SIDE,
+        pixelArrayRef,
+        basePixelArray: baseImage,
+        imagePatches,
       });
     },
     [baseImage],
@@ -132,8 +137,8 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
         canvas.hoverCursor = "grab";
       } else {
         smoothZoom(canvas, DRAW_MODE_ZOOM);
-        canvas.defaultCursor = "crosshair";
-        canvas.hoverCursor = "crosshair";
+        canvas.defaultCursor = "none";
+        canvas.hoverCursor = "none";
       }
 
       function handleMouseWheel(this: EventCanvas, { e }: fabric.IEvent<WheelEvent>) {
@@ -155,7 +160,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
           this.lastPosY = e.clientY;
         } else {
           isDrawingRef.current = true;
-          this.hoverCursor = "crosshair";
+          this.hoverCursor = "none";
           if (!imageRef.current) return;
           prevPointRef.current = { x: e.offsetX, y: e.offsetY };
           alterImagePixels({
@@ -165,6 +170,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             canvas: this,
             point1: prevPointRef.current,
             point2: { x: e.offsetX, y: e.offsetY },
+            isNewLine: true,
           });
         }
       }
@@ -183,6 +189,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
             canvas: this,
             point1: prevPointRef.current ?? { x: e.offsetX, y: e.offsetY },
             point2: { x: e.offsetX, y: e.offsetY },
+            isNewLine: false,
           });
           prevPointRef.current = { x: e.offsetX, y: e.offsetY };
         }
@@ -190,7 +197,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
 
       function handleMouseUp(this: EventCanvas) {
         this.isDragging = false;
-        this.hoverCursor = isViewOnly ? "grab" : "crosshair";
+        this.hoverCursor = isViewOnly ? "grab" : "none";
         isDrawingRef.current = false;
         prevPointRef.current = undefined;
       }
@@ -241,6 +248,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
               canvas: this,
               point1: prevPointRef.current,
               point2: { x, y },
+              isNewLine: true,
             });
           } else if (state === "move") {
             if (!imageRef.current) return;
@@ -251,6 +259,7 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
               canvas: this,
               point1: prevPointRef.current ?? { x, y },
               point2: { x, y },
+              isNewLine: false,
             });
             prevPointRef.current = { x, y };
           } else if (state === "up") {
@@ -259,8 +268,6 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
           }
         }
       }
-
-      const supportsTouch = "ontouchstart" in document.documentElement;
 
       if (supportsTouch) {
         canvas.on("touch:gesture", handleTouchGesture);
@@ -284,41 +291,66 @@ export function Canvas({ height, width, baseImage }: CanvasProps) {
         }
       };
     },
-    [isViewOnly],
+    [isViewOnly, supportsTouch],
   );
 
-  useCanvasCommandListener(() => {
-    // Handle clear changed pixels command
+  useCanvasCommandListener((command) => {
     const canvas = fabricRef.current;
     const image = imageRef.current;
     if (!canvas || !image) return;
 
-    // Apply optimistic updates to base image
-    const newPixelArray = new Uint8ClampedArray(baseImage);
-    const { optimisticUpdates } = useCanvasState.getState();
-    const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
-    for (const imagePatch of imagePatches) {
-      for (const pixelChanged of imagePatch.values()) {
-        const color = STROKE_COLORS[pixelChanged.color];
-        const index = (pixelChanged.y * PIXELS_PER_SIDE + pixelChanged.x) * 4;
-        newPixelArray[index + 0] = color.red; // R value
-        newPixelArray[index + 1] = color.green; // G value
-        newPixelArray[index + 2] = color.blue; // B value
-        newPixelArray[index + 3] = 255; // A value
+    switch (command) {
+      case "clearChangedPixels": {
+        const { optimisticUpdates } = useCanvasState.getState();
+        const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch);
+
+        applyImagePatches({
+          canvas,
+          image,
+          size: PIXELS_PER_SIDE,
+          pixelArrayRef,
+          basePixelArray: baseImage,
+          imagePatches,
+        });
+
+        useCanvasState.setState({ currentChanges: [] });
+        return;
+      }
+      case "undoLastChange": {
+        const { optimisticUpdates, currentChanges } = useCanvasState.getState();
+        const newChanges = [...currentChanges];
+        newChanges.pop(); // Remove last change
+        const imagePatches = optimisticUpdates.map((ou) => ou.imagePatch).concat(...newChanges);
+
+        applyImagePatches({
+          canvas,
+          image,
+          size: PIXELS_PER_SIDE,
+          pixelArrayRef,
+          basePixelArray: baseImage,
+          imagePatches,
+        });
+
+        useCanvasState.setState({ currentChanges: newChanges });
+        return;
+      }
+      default: {
+        return assertUnreachable(command, "Unknown canvas command received");
       }
     }
-
-    const [tempCanvas, cleanUp] = createTempCanvas(newPixelArray, PIXELS_PER_SIDE);
-
-    // Update fabric image with data from temporary canvas and clean up when done
-    image.setSrc(tempCanvas.toDataURL(), () => {
-      canvas.renderAll();
-      cleanUp();
-    });
-
-    useCanvasState.setState({ pixelsChanged: new Map() });
-    pixelArrayRef.current = new Uint8ClampedArray(newPixelArray);
   });
 
-  return <canvas ref={canvasRef} />;
+  return (
+    <>
+      <canvas ref={canvasRef} />
+      {!supportsTouch && isInitialized && !isViewOnly && isCursorInBounds && fabricRef.current && (
+        <DrawingCursor canvas={fabricRef.current} />
+      )}
+    </>
+  );
+}
+
+function getCanvasBackgroundColor() {
+  // This maps to colors.canvas.bg from /panda-preset/colors.ts
+  return window.getComputedStyle(document.documentElement).getPropertyValue("--colors-canvas-bg");
 }
