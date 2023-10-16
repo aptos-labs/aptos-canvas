@@ -17,7 +17,7 @@ const skeletonStyles = css({
     position: "absolute",
     inset: 0,
     backgroundImage:
-      "linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0))",
+      "linear-gradient(90deg, token(colors.skeleton.shimmer1) 0%, token(colors.skeleton.shimmer2) 20%, token(colors.skeleton.shimmer3) 60%, token(colors.skeleton.shimmer1))",
     animation: "shimmer 2s infinite",
     content: "''",
   },
