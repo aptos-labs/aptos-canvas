@@ -1,8 +1,8 @@
 use super::{utils::get_image, CreateCanvasIntent, PixelStorageTrait, WritePixelIntent};
+use crate::RgbColor;
 use anyhow::{Context, Result};
 use aptos_move_graphql_scalars::Address;
 use memmap2::MmapMut;
-use move_types::Color;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -68,20 +68,26 @@ impl PixelStorageTrait for MmapPixelStorage {
         info!("Creating canvas file: {:?}", filename.display());
         let mut file = File::create(&filename)?;
 
+        let width = intent.width as u64;
+        let height = intent.height as u64;
+
         // Calculate the total number of pixels
-        let num_pixels = intent.width * intent.height;
+        let num_pixels = width * height;
 
         // Build all the data into a single vector.
         let mut data = Vec::with_capacity(num_pixels as usize * 3);
         for _ in 0..num_pixels {
-            data.push(intent.default_color.r);
-            data.push(intent.default_color.g);
-            data.push(intent.default_color.b);
+            // We don't use the hardcoded colors at our level, we convert
+            // them into proper rgb colors.
+            let color = RgbColor::from(&intent.default_color);
+            data.push(color.r);
+            data.push(color.g);
+            data.push(color.b);
         }
 
         // Put the width and height at the end of the file.
-        data.extend(intent.width.to_le_bytes());
-        data.extend(intent.height.to_le_bytes());
+        data.extend(width.to_le_bytes());
+        data.extend(height.to_le_bytes());
 
         // Write the data to the file.
         file.write_all(&data)?;
@@ -132,10 +138,13 @@ impl PixelStorageTrait for MmapPixelStorage {
 
             // Write the pixels to the file through the mmap.
             for intent in intents {
+                // We don't use the hardcoded colors at our level, we convert
+                // them into proper rgb colors.
                 let index = intent.index as usize;
-                mmap[index * 3] = intent.color.r;
-                mmap[index * 3 + 1] = intent.color.g;
-                mmap[index * 3 + 2] = intent.color.b;
+                let color = RgbColor::from(&intent.color);
+                mmap[index * 3] = color.r;
+                mmap[index * 3 + 1] = color.g;
+                mmap[index * 3 + 2] = color.b;
             }
 
             info!("Wrote {} pixels to canvas {}", intents_len, canvas_address,);
@@ -153,11 +162,11 @@ impl PixelStorageTrait for MmapPixelStorage {
             let (width, height) =
                 read_width_and_height(mmap).context("Failed to read width and height")?;
 
-            // Read the data from the file as a vector of Colors.
+            // Read the data from the file as a vector of RgbColors.
             let mut data = Vec::with_capacity((width * height) as usize);
             for i in 0..width * height {
                 let index = i as usize;
-                data.push(Color {
+                data.push(RgbColor {
                     r: mmap[index * 3],
                     g: mmap[index * 3 + 1],
                     b: mmap[index * 3 + 2],
@@ -186,7 +195,10 @@ impl PixelStorageTrait for MmapPixelStorage {
             mmaps.iter().map(|mmap| *mmap.0).collect::<Vec<_>>()
         };
         for address in addresses {
-            let png = self.get_canvas_as_png(&address).await?;
+            let png = self
+                .get_canvas_as_png(&address)
+                .await
+                .context(format!("Failed to get canvas {} as a png", address))?;
             pngs.insert(address, png);
         }
         Ok(pngs)

@@ -9,8 +9,8 @@ use aptos_processor_framework::{
     ProcessingResult, ProcessorTrait,
 };
 use metadata_storage::{MetadataStorageTrait, UpdateAttributionIntent};
-use move_types::{Canvas, Entry, Object, Pixel};
-use pixel_storage::{CreateCanvasIntent, PixelStorageTrait, WritePixelIntent};
+use move_types::{Canvas, Entry, Object};
+use pixel_storage::{CreateCanvasIntent, HardcodedColor, PixelStorageTrait, WritePixelIntent};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{str::FromStr, sync::Arc};
@@ -207,17 +207,15 @@ impl CanvasProcessor {
         let obj: Object = serde_json::from_value(first_arg).context("Failed to parse as Object")?;
         let canvas_address = obj.inner;
 
-        let draw_value_type = format!(
-            "vector<0x1::smart_table::Entry<u64, {}::canvas_token::Pixel>>",
-            self.config.canvas_contract_address
-        );
+        // TODO: THis is a bit flaky.
+        let draw_value_type = "vector<0x1::smart_table::Entry<u32, u8>>".to_string();
 
         let info = transaction.info.as_ref().context("No info")?;
-        let sender =
-            Address::from_str(&request.sender).context("Failed to parse sender address")?;
+        // let sender =
+        //    Address::from_str(&request.sender).context("Failed to parse sender address")?;
 
         let mut write_pixel_intents = vec![];
-        let mut update_attribution_intents = vec![];
+        // let mut update_attribution_intents = vec![];
 
         for change in &info.changes {
             match change.change.as_ref().context("No change")? {
@@ -235,26 +233,28 @@ impl CanvasProcessor {
                     for value in values {
                         let value: Entry =
                             serde_json::from_value(value).context("Failed to parse as Entry")?;
-                        let index = value.key.as_str().unwrap().parse::<u64>().unwrap();
-                        let pixel: Pixel = serde_json::from_value(value.value).unwrap();
+                        let index = value.key.as_u64().unwrap() as u32;
+                        let hardcoded_color_raw: u8 = serde_json::from_value(value.value).unwrap();
                         write_pixel_intents.push(WritePixelIntent {
                             canvas_address,
                             index,
-                            color: pixel.color,
+                            color: HardcodedColor::from(hardcoded_color_raw),
                         });
+                        /*
                         update_attribution_intents.push(UpdateAttributionIntent {
                             canvas_address,
                             artist_address: sender,
                             index,
                             drawn_at_secs: pixel.drawn_at_s.0,
                         });
+                        */
                     }
                 },
                 _ => continue,
             }
         }
 
-        Ok((write_pixel_intents, update_attribution_intents))
+        Ok((write_pixel_intents, vec![]))
     }
 
     fn process_create(&self, transaction: &Transaction) -> Result<Option<CreateCanvasIntent>> {
@@ -282,9 +282,9 @@ impl CanvasProcessor {
                         serde_json::from_str(&resource.data).context("Failed to parse Canvas")?;
                     return Ok(Some(CreateCanvasIntent {
                         canvas_address: Address::from_str(&resource.address).unwrap(),
-                        width: canvas.config.width.0,
-                        height: canvas.config.height.0,
-                        default_color: canvas.config.default_color,
+                        width: canvas.config.width,
+                        height: canvas.config.height,
+                        default_color: HardcodedColor::from(canvas.config.default_color),
                     }));
                 },
                 _ => continue,
