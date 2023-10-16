@@ -127,7 +127,7 @@ export function alterImagePixels({
 
   let points = getContinuousPoints(scalePoint(point1), scalePoint(point2));
 
-  const { isAdmin, strokeColor, strokeWidth, currentChanges } = useCanvasState.getState();
+  const { canDrawUnlimited, strokeColor, strokeWidth, currentChanges } = useCanvasState.getState();
 
   if (strokeWidth > 1) {
     // Multiply points by stroke width if it's greater than 1
@@ -145,7 +145,7 @@ export function alterImagePixels({
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const nextPixelsChanged = newChanges[newChanges.length - 1]!;
 
-  const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
+  const pixelLimit = canDrawUnlimited ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
   for (const point of points) {
     // Break out of loop to stop adding pixels once we hit the limit
     if (aggregatePixelsChanged(newChanges).size >= pixelLimit) break;

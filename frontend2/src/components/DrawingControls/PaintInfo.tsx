@@ -18,8 +18,8 @@ export function PaintInfo({ direction }: PaintInfoProps) {
   const currentChanges = useCanvasState((s) => s.currentChanges);
   const pixelsChanged = useAggregatedPixelsChanged(currentChanges);
   const changedPixelsCount = pixelsChanged.size;
-  const isAdmin = useCanvasState((s) => s.isAdmin);
-  const pixelLimit = isAdmin ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
+  const canDrawUnlimited = useCanvasState((s) => s.canDrawUnlimited);
+  const pixelLimit = canDrawUnlimited ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
   const limitReached = changedPixelsCount >= pixelLimit;
 
   useEffect(() => {
