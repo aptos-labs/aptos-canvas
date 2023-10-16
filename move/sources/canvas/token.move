@@ -232,8 +232,10 @@ module addr::canvas_token {
         let caller_addr = signer::address_of(caller);
 
         // Make sure canvas is open to draw.
-        assert_canvas_enabled_for_non_admin(caller_addr, canvas);
+        assert_canvas_enabled_for_non_unlimited_drawers(caller_addr, canvas);
         assert_timeout_and_update_last_contribution_time(caller_addr, canvas);
+
+        let caller_can_draw_unlimited = can_draw_unlimited(canvas, caller_addr);
 
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
 
@@ -247,10 +249,12 @@ module addr::canvas_token {
             E_INVALID_VECTOR_LENGTHS,
         );
 
-        assert!(
-            vector::length(&xs) <= canvas_.config.max_number_of_pixels_per_draw,
-            E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW,
-        );
+        if (!caller_can_draw_unlimited) {
+            assert!(
+                vector::length(&xs) <= canvas_.config.max_number_of_pixels_per_draw,
+                E_EXCEED_MAX_NUMBER_OF_PIXELS_PER_DRAW,
+            );
+        };
 
         let canvas_width = (canvas_.config.width as u32);
         let canvas_height = (canvas_.config.height as u32);
@@ -308,13 +312,13 @@ module addr::canvas_token {
         };
     }
 
-    fun assert_canvas_enabled_for_non_admin(
+    fun assert_canvas_enabled_for_non_unlimited_drawers(
         caller_addr: address,
         canvas: Object<Canvas>,
     ) acquires Canvas {
-        let caller_is_admin = is_admin(canvas, caller_addr);
+        let caller_can_draw_unlimited = can_draw_unlimited(canvas, caller_addr);
         let canvas_ = borrow_global<Canvas>(object::object_address(&canvas));
-        if (!caller_is_admin) {
+        if (!caller_can_draw_unlimited) {
             assert!(
                 canvas_.config.draw_enabled_for_non_admin,
                 E_DRAW_DISABLED_FOR_NON_ADMIN
@@ -560,6 +564,13 @@ module addr::canvas_token {
     /// They are root
     public fun is_super_admin(canvas: Object<Canvas>, caller_addr: address): bool {
         object::is_owner(canvas, caller_addr)
+    }
+
+
+    #[view]
+    /// Is the caller allowed to draw without time or other limitations?
+    public fun can_draw_unlimited(canvas: Object<Canvas>, caller_addr: address): bool acquires Canvas {
+        is_admin(canvas, caller_addr) || is_unlimited_artist(canvas, caller_addr)
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
