@@ -1,13 +1,23 @@
 "use client";
 
 import { NetworkName } from "@aptos-labs/wallet-adapter-react";
+import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
 import { useAptosNetworkState } from "@/contexts/wallet";
 import { capitalizeFirstLetter } from "@/utils/string";
 
 export function NetworkSelector() {
+  const [, setIsHydrated] = useState(false);
   const { network, setNetwork } = useAptosNetworkState();
+
+  useEffect(() => {
+    // Hack Alert:
+    // Once we hydrate on the client, we need to force this component to re-render so
+    // that it will display the network value from localStorage instead of the default
+    // from the server.
+    setIsHydrated(true);
+  }, []);
 
   return (
     <select
