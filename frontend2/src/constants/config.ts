@@ -18,8 +18,8 @@ export const APP_CONFIG: Record<SupportedNetworkName, AppConfig> = {
     rpcUrl: "https://fullnode.mainnet.aptoslabs.com/",
   },
   [NetworkName.Testnet]: {
-    canvasAddr: "0xbb71ff0f8e8780c0e8a53cf003116ab96dc877394cf2cf4d54e71c1667373146",
-    canvasTokenAddr: "0xf1b675e890459dfe0a676c01bd14caca20e35634babccc310b49a14c883ea435",
+    canvasAddr: "0x6b8169be66d9579ba9ad1192708edcf52de713d3513a431df6cb045f425d3d91",
+    canvasTokenAddr: "0x8c654f4be9cefc3a7d0dfa0bda4ee19f75c926763e00f6534f3ab8b5c2ebcdea",
     canvasImageUrl:
       "https://storage.googleapis.com/images.testnet.graffio.art/images/0xf1b675e890459dfe0a676c01bd14caca20e35634babccc310b49a14c883ea435.png",
     rpcUrl: "https://fullnode.testnet.aptoslabs.com/",
