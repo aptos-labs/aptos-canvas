@@ -33,17 +33,26 @@ function ConnectWalletModal({ hide }: { hide: () => void }) {
       hide();
     };
     return <WalletConnectButton key={wallet.name} wallet={wallet} connect={connectWallet} />;
-  }
+  };
   return (
     <ModalContent className={stack({ maxW: "md", gap: 24 })}>
       <h1 className={css({ textStyle: "heading.xl", textAlign: "center" })}>Connect Wallet</h1>
       <div className={stack({ gap: 16 })}>
-        {icWallet ? <WalletConnectButton wallet={icWallet} connect={() => { connect(icWallet.name); }} /> : null}
-        
-        {expanded ? otherWallets.map((wallet) => {
-          return walletConnectButton(wallet)
-        }) : null}
-        <ExpandButton expanded={expanded} setExpanded={setExpanded}/>
+        {icWallet ? (
+          <WalletConnectButton
+            wallet={icWallet}
+            connect={() => {
+              connect(icWallet.name);
+            }}
+          />
+        ) : null}
+
+        {expanded
+          ? otherWallets.map((wallet) => {
+              return walletConnectButton(wallet);
+            })
+          : null}
+        <ExpandButton expanded={expanded} setExpanded={setExpanded} />
       </div>
     </ModalContent>
   );
@@ -66,11 +75,13 @@ function ExpandButton({ expanded, setExpanded }: ExpandButtonProps) {
         bg: "interactive.secondary.hovered",
         rounded: "lg",
       })}
-      onClick={() => { setExpanded(!expanded); }}
+      onClick={() => {
+        setExpanded(!expanded);
+      }}
     >
       <div className={css({ textStyle: "body.md.medium", marginY: 4 })}>More Options</div>
       <div className={css({ paddingX: 16 })}>
-        <ChevronIcon direction={expanded ? 'up' : 'down'} />
+        <ChevronIcon direction={expanded ? "up" : "down"} />
       </div>
     </button>
   );
