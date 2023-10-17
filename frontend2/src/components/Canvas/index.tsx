@@ -48,7 +48,7 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
 
   const supportsTouch = "ontouchstart" in document.documentElement;
 
-  useKeyboardShortcuts();
+  useKeyboardShortcuts(isViewOnly);
 
   useEffect(function initializeCanvas() {
     // Initialize canvas
