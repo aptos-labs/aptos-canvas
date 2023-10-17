@@ -124,10 +124,11 @@ export function CanvasActions() {
   };
 
   return (
-    <div className={flex({ gap: 16, w: "100%" })}>
+    <div className={flex({ gap: 16, w: "100%", md: { "& > button": { shadow: "md" } } })}>
       <Button
         variant="secondary"
         iconOnly
+        aria-label="Back to View Only"
         onClick={goToViewMode}
         className={css({ md: { display: "none" } })}
       >

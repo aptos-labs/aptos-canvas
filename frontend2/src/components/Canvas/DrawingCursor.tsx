@@ -53,7 +53,7 @@ export function DrawingCursor({ canvas }: DrawingCursorProps) {
           rounded: "full",
           w: 8,
           h: 8,
-          shadow: "xs",
+          shadow: "0px 0px 5px 0px rgba(0, 0, 0, 0.2)",
           transition: "background-color token(durations.2) ease, scale token(durations.1) ease",
           zIndex: 1,
           _before: {
@@ -67,7 +67,7 @@ export function DrawingCursor({ canvas }: DrawingCursorProps) {
             w: 12,
             h: 12,
             bg: "rgba(255, 255, 255, 0.5)",
-            shadow: "xs",
+            shadow: "0px 0px 5px 0px rgba(0, 0, 0, 0.2)",
             mixBlendMode: "multiply",
           },
         })}

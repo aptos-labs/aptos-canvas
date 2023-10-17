@@ -121,6 +121,13 @@ export const semanticColors = {
         disabled: { value: { base: "{colors.navy.400}", _dark: "{colors.navy.500}" } },
       },
     },
+    tertiary: {
+      DEFAULT: { value: { base: "#F8F8F8", _dark: "#121214" } },
+      hovered: { value: { base: "{colors.navy.50}", _dark: "#393941" } },
+      pressed: { value: { base: "{colors.navy.100}", _dark: "#18181C" } },
+      // Translucent versions of DEFAULT
+      disabled: { value: { base: "rgba(248, 248, 248, 0.75)", _dark: "rgba(18, 18, 20, 0.75)" } },
+    },
     danger: {
       DEFAULT: { value: "{colors.red.600}" },
       hovered: { value: "{colors.red.500}" },
@@ -158,6 +165,7 @@ export const semanticColors = {
     shimmer2: { value: { base: "rgba(255, 255, 255, 0.2)", _dark: "rgba(64, 64, 64, 0.2)" } },
     shimmer3: { value: { base: "rgba(255, 255, 255, 0.5)", _dark: "rgba(64, 64, 64, 0.5)" } },
   },
+  shadow: { value: { base: "rgba(0, 0, 0, 0.2)", _dark: "rgba(255, 255, 255, 0.2)" } },
   dialogOverlay: { value: { base: "rgba(0, 0, 0, 0.25)", _dark: "rgba(0, 0, 0, 0.4)" } },
   warning: { value: "{colors.orange.600}" },
   error: { value: "{colors.red.600}" },

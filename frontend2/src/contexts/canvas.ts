@@ -10,7 +10,7 @@ import { TupleIndices } from "@/utils/types";
 
 import { useAptosNetworkState } from "./wallet";
 
-export type CanvasCommand = "clearChangedPixels" | "undoLastChange";
+export type CanvasCommand = "clearChangedPixels" | "undoLastChange" | "resetView";
 
 export const [emitCanvasCommand, useCanvasCommandListener] =
   createEventEmitter<CanvasCommand>("canvasCommand");

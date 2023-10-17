@@ -11,9 +11,9 @@ export const radii = {
 } satisfies Tokens["radii"];
 
 export const shadows = {
-  xs: { value: "0px 0px 5px 0px rgba(0, 0, 0, 0.20)" },
-  sm: { value: "0px 0px 10px 0px rgba(0, 0, 0, 0.20)" },
-  md: { value: "0px 0px 20px 0px rgba(0, 0, 0, 0.20)" },
+  xs: { value: "0px 0px 5px 0px {colors.shadow}" },
+  sm: { value: "0px 0px 10px 0px {colors.shadow}" },
+  md: { value: "0px 0px 20px 0px {colors.shadow}" },
 } satisfies Tokens["shadows"];
 
 export const spacing = {

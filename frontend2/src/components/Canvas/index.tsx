@@ -16,8 +16,15 @@ import { useThemeChange } from "@/utils/useThemeChange";
 
 import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
 import { DrawingCursor } from "./DrawingCursor";
-import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
 import { useKeyboardShortcuts } from "./keyboardShortcuts";
+import {
+  mousePan,
+  pinchZoom,
+  smoothResetPanAndZoom,
+  smoothZoom,
+  wheelPan,
+  wheelZoom,
+} from "./transformations";
 import { EventCanvas, Point } from "./types";
 import { emitMousePosition, getCanvasBackgroundColor, getPointScaler } from "./utils";
 
@@ -342,6 +349,10 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
         });
 
         useCanvasState.setState({ currentChanges: newChanges });
+        return;
+      }
+      case "resetView": {
+        smoothResetPanAndZoom(canvas, height, width);
         return;
       }
       default: {

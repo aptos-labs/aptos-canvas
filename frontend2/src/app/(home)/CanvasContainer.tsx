@@ -6,14 +6,13 @@ import useMeasure from "react-use-measure";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
+import { CanvasOverlay } from "@/components/CanvasOverlay";
 import { Skeleton } from "@/components/Skeleton";
 import { PIXELS_PER_SIDE } from "@/constants/canvas";
 import { APP_CONFIG } from "@/constants/config";
 import { useAptosNetworkState } from "@/contexts/wallet";
 import { isServer } from "@/utils/isServer";
 import { getPixelArrayFromImageElement } from "@/utils/tempCanvas";
-
-import { CanvasOverlay } from "./CanvasOverlay";
 
 export function CanvasContainer() {
   const [canvasContainer, containerBounds] = useMeasure();
