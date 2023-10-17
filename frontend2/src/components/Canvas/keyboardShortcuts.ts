@@ -15,6 +15,10 @@ export function useKeyboardShortcuts(isViewOnly: boolean) {
       };
     }
 
+    shortcuts.R = () => {
+      emitCanvasCommand("resetView");
+    };
+
     for (let n = 1; n <= 8; n++) {
       shortcuts[`Digit${n}`] = () => {
         useCanvasState.setState({ strokeColor: (n - 1) as TupleIndices<typeof STROKE_COLORS> });

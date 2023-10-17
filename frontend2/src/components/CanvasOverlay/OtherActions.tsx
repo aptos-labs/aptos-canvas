@@ -3,9 +3,13 @@ import { stack } from "styled-system/patterns";
 import { emitCanvasCommand } from "@/contexts/canvas";
 
 import { Button } from "../Button";
+import { openDesktopControlsModal } from "../ControlsModal";
+import { InformationIcon } from "../Icons/InformationIcon";
 import { RefreshIcon } from "../Icons/RefreshIcon";
 
 export function OtherActions() {
+  const supportsTouch = "ontouchstart" in document.documentElement;
+
   return (
     <div
       className={stack({
@@ -17,6 +21,19 @@ export function OtherActions() {
         "& > button": { shadow: "md" },
       })}
     >
+      {!supportsTouch && (
+        <Button
+          variant="tertiary"
+          size="md"
+          iconOnly
+          rounded
+          onClick={() => {
+            openDesktopControlsModal();
+          }}
+        >
+          <InformationIcon />
+        </Button>
+      )}
       <Button
         variant="tertiary"
         size="md"
