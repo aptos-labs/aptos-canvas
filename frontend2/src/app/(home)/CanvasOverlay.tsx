@@ -15,12 +15,11 @@ import { isServer } from "@/utils/isServer";
 
 export function CanvasOverlay() {
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
-  const canDrawUnlimited = useCanvasState((s) => s.canDrawUnlimited);
   const isDebugEnabled = useCanvasState((s) => s.isDebugEnabled);
   const supportsTouch = isServer() ? false : "ontouchstart" in document.documentElement;
 
   useEffect(() => {
-    if (isServer() || !canDrawUnlimited) return;
+    if (isServer()) return;
 
     const unsubscribe = tinykeys(window, {
       "Control+D": () => {
@@ -31,7 +30,7 @@ export function CanvasOverlay() {
     return () => {
       unsubscribe();
     };
-  }, [canDrawUnlimited]);
+  }, []);
 
   return (
     <>
