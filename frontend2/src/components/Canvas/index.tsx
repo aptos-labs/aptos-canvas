@@ -8,8 +8,8 @@ import { DRAW_MODE_ZOOM, PIXELS_PER_SIDE, VIEW_MODE_ZOOM } from "@/constants/can
 import {
   useCanvasCommandListener,
   useCanvasState,
-  useLatestDrawEnabledForNonAdmin,
   useOptimisticUpdateGarbageCollector,
+  usePollIsDrawingEnabled,
 } from "@/contexts/canvas";
 import { assertUnreachable } from "@/utils/assertUnreachable";
 import { useThemeChange } from "@/utils/useThemeChange";
@@ -50,6 +50,8 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
   const supportsTouch = "ontouchstart" in document.documentElement;
 
   useKeyboardShortcuts(isViewOnly);
+  useOptimisticUpdateGarbageCollector();
+  usePollIsDrawingEnabled();
 
   useEffect(function initializeCanvas() {
     // Initialize canvas
@@ -137,9 +139,6 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
     },
     [baseImage],
   );
-
-  useOptimisticUpdateGarbageCollector();
-  useLatestDrawEnabledForNonAdmin();
 
   useEffect(
     function manageViewAndDrawModes() {

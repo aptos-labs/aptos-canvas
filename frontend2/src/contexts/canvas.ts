@@ -120,7 +120,7 @@ export function useOptimisticUpdateGarbageCollector() {
   }, []);
 }
 
-export function useLatestDrawEnabledForNonAdmin() {
+export function usePollIsDrawingEnabled() {
   const REFETCH_MS = 10_000;
   const { network } = useAptosNetworkState();
   const aptosClient = useMemo(() => new AptosClient(APP_CONFIG[network].rpcUrl), [network]);
