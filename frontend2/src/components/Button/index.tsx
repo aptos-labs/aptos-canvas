@@ -102,6 +102,24 @@ const buttonStyles = cva({
           borderColor: "interactive.secondary.accent.disabled",
         },
       },
+      tertiary: {
+        bg: "interactive.tertiary",
+        borderColor: "interactive.tertiary",
+        color: "text",
+        "&:hover:not(:disabled)": {
+          bg: "interactive.tertiary.hovered",
+          borderColor: "interactive.tertiary.hovered",
+        },
+        "&:active:not(:disabled)": {
+          bg: "interactive.tertiary.pressed",
+          borderColor: "interactive.tertiary.pressed",
+        },
+        "&:disabled:not([data-loading=true])": {
+          bg: "interactive.tertiary.disabled",
+          borderColor: "interactive.tertiary.disabled",
+          color: "text.onInteractive.secondary.disabled",
+        },
+      },
       danger: {
         bg: "interactive.danger",
         borderColor: "interactive.danger",
