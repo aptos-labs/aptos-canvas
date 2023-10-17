@@ -10,6 +10,8 @@ import { useAggregatedPixelsChanged, useCanvasState } from "@/contexts/canvas";
 import { PaintIcon } from "../Icons/PaintIcon";
 import { removeToast, toast } from "../Toast";
 
+const PIXEL_LIMIT_TOAST_ID = "pixel-limit-reached";
+
 export interface PaintInfoProps {
   direction: "row" | "column";
 }
@@ -23,17 +25,18 @@ export function PaintInfo({ direction }: PaintInfoProps) {
   const limitReached = changedPixelsCount >= pixelLimit;
 
   useEffect(() => {
-    const TOAST_ID = "pixel-limit-reached";
-    if (limitReached) {
-      toast({
-        id: TOAST_ID,
-        variant: "warning",
-        content: "Pixel limit per transaction reached. Submit your work to continue drawing.",
-        duration: null,
-      });
-    } else {
-      removeToast(TOAST_ID);
-    }
+    if (!limitReached) return;
+
+    toast({
+      id: PIXEL_LIMIT_TOAST_ID,
+      variant: "warning",
+      content: "Pixel limit per transaction reached. Submit your work to continue drawing.",
+      duration: null,
+    });
+
+    return () => {
+      removeToast(PIXEL_LIMIT_TOAST_ID);
+    };
   }, [limitReached]);
 
   return (
