@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { stack } from "styled-system/patterns";
 
 import { emitCanvasCommand } from "@/contexts/canvas";
@@ -9,10 +11,19 @@ import { InformationIcon } from "../Icons/InformationIcon";
 import { RefreshIcon } from "../Icons/RefreshIcon";
 
 export function OtherActions() {
-  const supportsTouch = isServer() ? false : "ontouchstart" in document.documentElement;
+  const [showDesktopControls, setShowDesktopControls] = useState(false);
+
+  useEffect(() => {
+    if (isServer()) return;
+    const supportsTouch = "ontouchstart" in document.documentElement;
+    setShowDesktopControls(!supportsTouch);
+  }, []);
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className={stack({
         display: { base: "none", md: "flex" },
         position: "absolute",
@@ -22,7 +33,7 @@ export function OtherActions() {
         "& > button": { shadow: "md" },
       })}
     >
-      {!supportsTouch && (
+      {showDesktopControls && (
         <Button
           variant="tertiary"
           size="md"
@@ -46,6 +57,6 @@ export function OtherActions() {
       >
         <RefreshIcon />
       </Button>
-    </div>
+    </motion.div>
   );
 }

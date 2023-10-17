@@ -14,6 +14,7 @@ import {
 import { assertUnreachable } from "@/utils/assertUnreachable";
 import { useThemeChange } from "@/utils/useThemeChange";
 
+import { openMobileControlsModal } from "../ControlsModal";
 import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
 import { DrawingCursor } from "./DrawingCursor";
 import { useKeyboardShortcuts } from "./keyboardShortcuts";
@@ -84,6 +85,10 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
     fabricRef.current = newCanvas;
 
     useCanvasState.setState({ isInitialized: true });
+
+    if (supportsTouch) {
+      openMobileControlsModal();
+    }
 
     return () => {
       newCanvas.dispose();
