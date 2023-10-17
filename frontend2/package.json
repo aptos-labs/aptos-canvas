@@ -20,6 +20,7 @@
     "@identity-connect/wallet-adapter-plugin": "^1.0.11",
     "@martianwallet/aptos-wallet-adapter": "^0.0.4",
     "@pontem/wallet-adapter-plugin": "^0.2.0",
+    "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-toast": "^1.1.5",
