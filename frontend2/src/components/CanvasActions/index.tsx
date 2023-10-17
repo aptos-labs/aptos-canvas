@@ -13,15 +13,36 @@ import { useAptosNetworkState } from "@/contexts/wallet";
 
 import { Button } from "../Button";
 import { EyeIcon } from "../Icons/EyeIcon";
-import { toast } from "../Toast";
+import { removeToast, toast } from "../Toast";
+
+const DISABLED_DRAWING_TOAST_ID = "drawing-disabled";
 
 export function CanvasActions() {
   const network = useAptosNetworkState((s) => s.network);
   const { signAndSubmitTransaction } = useWallet();
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
   const currentChanges = useCanvasState((s) => s.currentChanges);
+  const isDrawingEnabled = useCanvasState((s) => s.isDrawingEnabled);
+  const canDrawUnlimited = useCanvasState((s) => s.canDrawUnlimited);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coolDownLeft, setCoolDownLeft] = useState<number | null>(null);
+
+  const shouldDisableDrawing = !isDrawingEnabled && !canDrawUnlimited;
+
+  useEffect(() => {
+    if (!shouldDisableDrawing) return;
+
+    toast({
+      id: DISABLED_DRAWING_TOAST_ID,
+      variant: "warning",
+      content: "Drawing is temporarily paused",
+      duration: null,
+    });
+
+    return () => {
+      removeToast(DISABLED_DRAWING_TOAST_ID);
+    };
+  }, [shouldDisableDrawing]);
 
   useEffect(() => {
     if (coolDownLeft === null) return;
@@ -82,9 +103,9 @@ export function CanvasActions() {
         optimisticUpdates: newOptimisticUpdates,
       });
       toast({ id: "add-success", variant: "success", content: "Added!" });
-      if (!useCanvasState.getState().canDrawUnlimited) setCoolDownLeft(5);
+      if (!canDrawUnlimited) setCoolDownLeft(5);
     } catch (e) {
-      if (typeof e === 'string') {
+      if (typeof e === "string") {
         toast({
           id: "add-failure",
           variant: "error",
@@ -122,7 +143,7 @@ export function CanvasActions() {
       </Button>
       <Button
         variant="primary"
-        disabled={!currentChanges.length || coolDownLeft !== null}
+        disabled={!currentChanges.length || coolDownLeft !== null || shouldDisableDrawing}
         loading={isSubmitting}
         onClick={finishDrawing}
         className={css({ flex: 1, textWrap: "nowrap" })}

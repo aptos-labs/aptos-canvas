@@ -43,7 +43,7 @@ export interface CanvasState {
   strokeWidth: number;
   currentChanges: Array<ImagePatch>;
   optimisticUpdates: Array<OptimisticUpdate>;
-  drawEnabledForNonAdmin: boolean;
+  isDrawingEnabled: boolean;
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
@@ -65,7 +65,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   strokeWidth: STROKE_WIDTH_CONFIG.min,
   currentChanges: [],
   optimisticUpdates: [],
-  drawEnabledForNonAdmin: true,
+  isDrawingEnabled: true,
 }));
 
 /** This function rolls up every collection of changed pixels into one deduplicated Map. */
@@ -129,7 +129,7 @@ export function useLatestDrawEnabledForNonAdmin() {
           `${APP_CONFIG[network].canvasAddr}::canvas_token::Canvas`,
         )
       ).data as unknown as CanvasMoveResource;
-      useCanvasState.setState({ drawEnabledForNonAdmin: canvas.config.draw_enabled_for_non_admin });
+      useCanvasState.setState({ isDrawingEnabled: canvas.config.draw_enabled_for_non_admin });
     };
 
     fetch().catch(console.error);
@@ -141,63 +141,61 @@ export function useLatestDrawEnabledForNonAdmin() {
   }, [aptosClient, network]);
 }
 
-type CanvasMoveResource = typeof exampleCanvasMoveResource;
-
-const exampleCanvasMoveResource = {
+interface CanvasMoveResource {
   admins: {
-    data: [] as Array<string>,
-  },
+    data: Array<string>;
+  };
   allowlisted_artists: {
-    data: [] as Array<string>,
-  },
+    data: Array<string>;
+  };
   blocklisted_artists: {
-    data: [] as Array<string>,
-  },
+    data: Array<string>;
+  };
   config: {
-    can_draw_for_s: "0",
-    can_draw_multiple_pixels_at_once: true,
-    cost: "0",
-    cost_multiplier: "2",
-    cost_multiplier_decay_s: "300",
-    draw_enabled_for_non_admin: true,
-    height: "1000",
-    max_number_of_pixels_per_draw: "3000",
-    owner_is_super_admin: true,
-    palette: [],
-    per_account_timeout_s: "10",
-    width: "1000",
-  },
-  created_at_s: "1696989379",
+    can_draw_for_s: string;
+    can_draw_multiple_pixels_at_once: boolean;
+    cost: string;
+    cost_multiplier: string;
+    cost_multiplier_decay_s: string;
+    draw_enabled_for_non_admin: boolean;
+    height: string;
+    max_number_of_pixels_per_draw: string;
+    owner_is_super_admin: boolean;
+    palette: Array<unknown>;
+    per_account_timeout_s: string;
+    width: string;
+  };
+  created_at_s: string;
   extend_ref: {
-    self: "0xf1b675e890459dfe0a676c01bd14caca20e35634babccc310b49a14c883ea435",
-  },
+    self: string;
+  };
   last_contribution_s: {
     buckets: {
       inner: {
-        handle: "0x2c2c2685cf9383c5645357e1f0e4ac0d0f10149b7eb00c15384bd1f7307c1133",
-      },
-      length: "7",
-    },
-    level: 2,
-    num_buckets: "7",
-    size: "109",
-    split_load_threshold: 75,
-    target_bucket_size: "21",
-  },
+        handle: string;
+      };
+      length: string;
+    };
+    level: number;
+    num_buckets: string;
+    size: string;
+    split_load_threshold: number;
+    target_bucket_size: string;
+  };
   mutator_ref: {
-    self: "0xf1b675e890459dfe0a676c01bd14caca20e35634babccc310b49a14c883ea435",
-  },
+    self: string;
+  };
   pixels: {
     buckets: {
       inner: {
-        handle: "0xe1132372efef6089c1174a3300ea64c671b2e6eb9d2a83027c0563cdece4f153",
-      },
-      length: "36037",
-    },
-    level: 15,
-    num_buckets: "36037",
-    size: "1000000",
-    split_load_threshold: 75,
-    target_bucket_size: "37",
-  },
-};
+        handle: string;
+      };
+      length: string;
+    };
+    level: number;
+    num_buckets: string;
+    size: string;
+    split_load_threshold: number;
+    target_bucket_size: string;
+  };
+}
