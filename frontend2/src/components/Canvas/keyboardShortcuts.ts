@@ -3,6 +3,7 @@ import { KeyBindingMap, tinykeys } from "tinykeys";
 
 import { STROKE_COLORS } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
+import { TupleIndices } from "@/utils/types";
 
 export function useKeyboardShortcuts() {
   useEffect(() => {
@@ -10,7 +11,7 @@ export function useKeyboardShortcuts() {
 
     for (let n = 1; n <= 8; n++) {
       shortcuts[`Digit${n}`] = () => {
-        useCanvasState.setState({ strokeColor: STROKE_COLORS[n - 1] });
+        useCanvasState.setState({ strokeColor: (n - 1) as TupleIndices<typeof STROKE_COLORS> });
       };
     }
     for (let n = 1; n <= 8; n++) {

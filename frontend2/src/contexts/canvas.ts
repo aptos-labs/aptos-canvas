@@ -1,10 +1,14 @@
+import { AptosClient } from "aptos";
 import { useEffect, useMemo } from "react";
 import { create } from "zustand";
 
 import { STROKE_COLORS, STROKE_WIDTH_CONFIG } from "@/constants/canvas";
-import { RgbaColor } from "@/utils/color";
+import { APP_CONFIG } from "@/constants/config";
 import { createEventEmitter } from "@/utils/eventEmitter";
 import { isServer } from "@/utils/isServer";
+import { TupleIndices } from "@/utils/types";
+
+import { useAptosNetworkState } from "./wallet";
 
 export type CanvasCommand = "clearChangedPixels" | "undoLastChange";
 
@@ -16,12 +20,8 @@ export interface PixelData {
   x: number;
   /** y coordinate */
   y: number;
-  /** red value */
-  r: number;
-  /** green value */
-  g: number;
-  /** blue value */
-  b: number;
+  /** color index */
+  color: TupleIndices<typeof STROKE_COLORS>;
 }
 
 /** Format: { "x-y": PixelData } */
@@ -35,18 +35,19 @@ export interface OptimisticUpdate {
 }
 
 export interface CanvasState {
-  isAdmin: boolean;
+  canDrawUnlimited: boolean;
   isInitialized: boolean;
   isViewOnly: boolean;
   setViewOnly: (isViewOnly: boolean) => boolean;
-  strokeColor: RgbaColor;
+  strokeColor: TupleIndices<typeof STROKE_COLORS>;
   strokeWidth: number;
   currentChanges: Array<ImagePatch>;
   optimisticUpdates: Array<OptimisticUpdate>;
+  isDrawingEnabled: boolean;
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
-  isAdmin: false,
+  canDrawUnlimited: false,
   isInitialized: false,
   isViewOnly: true,
   setViewOnly: (isViewOnly) => {
@@ -60,10 +61,11 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
     set({ isViewOnly });
     return true;
   },
-  strokeColor: STROKE_COLORS[0],
+  strokeColor: 0,
   strokeWidth: STROKE_WIDTH_CONFIG.min,
   currentChanges: [],
   optimisticUpdates: [],
+  isDrawingEnabled: true,
 }));
 
 /** This function rolls up every collection of changed pixels into one deduplicated Map. */
@@ -110,4 +112,90 @@ export function useOptimisticUpdateGarbageCollector() {
       window.clearInterval(interval);
     };
   }, []);
+}
+
+export function useLatestDrawEnabledForNonAdmin() {
+  const REFETCH_MS = 10_000;
+  const { network } = useAptosNetworkState();
+  const aptosClient = useMemo(() => new AptosClient(APP_CONFIG[network].rpcUrl), [network]);
+
+  useEffect(() => {
+    if (isServer()) return;
+
+    const fetch = async () => {
+      const canvas = (
+        await aptosClient.getAccountResource(
+          APP_CONFIG[network].canvasTokenAddr,
+          `${APP_CONFIG[network].canvasAddr}::canvas_token::Canvas`,
+        )
+      ).data as unknown as CanvasMoveResource;
+      useCanvasState.setState({ isDrawingEnabled: canvas.config.draw_enabled_for_non_admin });
+    };
+
+    fetch().catch(console.error);
+    const interval = window.setInterval(fetch, REFETCH_MS);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [aptosClient, network]);
+}
+
+interface CanvasMoveResource {
+  admins: {
+    data: Array<string>;
+  };
+  allowlisted_artists: {
+    data: Array<string>;
+  };
+  blocklisted_artists: {
+    data: Array<string>;
+  };
+  config: {
+    can_draw_for_s: string;
+    can_draw_multiple_pixels_at_once: boolean;
+    cost: string;
+    cost_multiplier: string;
+    cost_multiplier_decay_s: string;
+    draw_enabled_for_non_admin: boolean;
+    height: string;
+    max_number_of_pixels_per_draw: string;
+    owner_is_super_admin: boolean;
+    palette: Array<unknown>;
+    per_account_timeout_s: string;
+    width: string;
+  };
+  created_at_s: string;
+  extend_ref: {
+    self: string;
+  };
+  last_contribution_s: {
+    buckets: {
+      inner: {
+        handle: string;
+      };
+      length: string;
+    };
+    level: number;
+    num_buckets: string;
+    size: string;
+    split_load_threshold: number;
+    target_bucket_size: string;
+  };
+  mutator_ref: {
+    self: string;
+  };
+  pixels: {
+    buckets: {
+      inner: {
+        handle: string;
+      };
+      length: string;
+    };
+    level: number;
+    num_buckets: string;
+    size: string;
+    split_load_threshold: number;
+    target_bucket_size: string;
+  };
 }

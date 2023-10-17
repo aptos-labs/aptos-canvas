@@ -1,9 +1,9 @@
+use crate::RgbColor;
 use anyhow::{Context, Result};
 use image::{codecs::png::PngEncoder, ColorType, ImageBuffer, ImageEncoder, Rgb};
-use move_types::Color;
 
 /// Convert a vector of Colors to a png.
-pub fn get_image(pixels: Vec<Color>, width: u32, height: u32) -> Result<Vec<u8>> {
+pub fn get_image(pixels: Vec<RgbColor>, width: u32, height: u32) -> Result<Vec<u8>> {
     let mut image_buffer = ImageBuffer::new(width, height);
 
     for (x, y, pixel) in image_buffer.enumerate_pixels_mut() {

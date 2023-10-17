@@ -10,30 +10,31 @@ import { truncateAddress } from "@/utils/wallet";
 import { removeToast, toast } from "../Toast";
 import { openConnectWalletModal } from "./ConnectWalletModal";
 import { openDisconnectWalletModal } from "./DisconnectWalletModal";
-import { useIsAdmin } from "./useIsAdmin";
+import { useCanDrawUnlimited } from "./useCanDrawUnlimited";
 
-const TOAST_ID = "connect-wallet";
+const CONNECT_TOAST_ID = "connect-wallet";
 
 export function ConnectWalletButton() {
   const isCanvasInitialized = useCanvasState((s) => s.isInitialized);
   const { disconnect, account, connected } = useWallet();
 
-  useIsAdmin(account?.address);
+  useCanDrawUnlimited(account?.address);
 
   useEffect(
     function manageConnectWalletToast() {
       if (!isCanvasInitialized) return;
+      if (connected) return;
 
-      if (!connected) {
-        toast({
-          id: TOAST_ID,
-          variant: "info",
-          content: "Connect a wallet to draw on the canvas!",
-          duration: null,
-        });
-      } else {
-        removeToast(TOAST_ID);
-      }
+      toast({
+        id: CONNECT_TOAST_ID,
+        variant: "info",
+        content: "Connect a wallet to draw on the canvas!",
+        duration: null,
+      });
+
+      return () => {
+        removeToast(CONNECT_TOAST_ID);
+      };
     },
     [connected, isCanvasInitialized],
   );

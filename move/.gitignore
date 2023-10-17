@@ -3,3 +3,6 @@ build/
 
 # Aptos stuff
 .aptos
+*.trace
+*.mvcov
+

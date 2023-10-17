@@ -34,4 +34,12 @@ export const keyframes = {
     "0%": { transform: "translateX(-100%)" },
     "100%": { transform: "translateX(100%)" },
   },
+  accordionOpen: {
+    "0%": { height: 0 },
+    "100%": { height: "var(--radix-accordion-content-height)" },
+  },
+  accordionClose: {
+    "0%": { height: "var(--radix-accordion-content-height)" },
+    "100%": { height: 0 },
+  },
 } satisfies CssKeyframes;

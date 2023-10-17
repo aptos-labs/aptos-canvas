@@ -2,6 +2,7 @@ import { fabric } from "fabric";
 import { useEffect, useRef } from "react";
 import { css } from "styled-system/css";
 
+import { STROKE_COLORS } from "@/constants/canvas";
 import { useCanvasState } from "@/contexts/canvas";
 
 import { EventCanvas } from "./types";
@@ -41,7 +42,7 @@ export function DrawingCursor({ canvas }: DrawingCursorProps) {
     >
       <div
         style={{
-          backgroundColor: strokeColor.value,
+          backgroundColor: STROKE_COLORS[strokeColor].value,
           scale: 1 + 0.5 * strokeWidth,
         }}
         className={css({

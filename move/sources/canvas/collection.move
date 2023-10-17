@@ -42,8 +42,8 @@ module addr::canvas_collection {
 
     /// Resource we store at the object address to limit the max dimension of the canvas can be created in the collection.
     struct CollectionConfig has key {
-        max_width: u64,
-        max_height: u64,
+        max_width: u16,
+        max_height: u16,
     }
 
     /// One-time initialization in which we create the collection. I choose to use an
@@ -108,8 +108,8 @@ module addr::canvas_collection {
     /// Update the max dimension of the canvas can be created in the collection.
     public entry fun update_max_canvas_dimension(
         caller: &signer,
-        updated_max_width: u64,
-        updated_max_height: u64
+        updated_max_width: u16,
+        updated_max_height: u16
     ) acquires CollectionConfig {
         let collection = get_collection();
         assert!(
@@ -152,7 +152,7 @@ module addr::canvas_collection {
     }
 
     /// Returns the (max_width, max_height) of the canvas allowed to create in the collection
-    public fun get_max_canvas_dimension(): (u64, u64) acquires CollectionConfig {
+    public fun get_max_canvas_dimension(): (u16, u16) acquires CollectionConfig {
         let collection = get_collection();
         let collection_config = borrow_global<CollectionConfig>(object::object_address(&collection));
         (collection_config.max_width, collection_config.max_height)
