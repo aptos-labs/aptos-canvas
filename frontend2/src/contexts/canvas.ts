@@ -44,6 +44,8 @@ export interface CanvasState {
   currentChanges: Array<ImagePatch>;
   optimisticUpdates: Array<OptimisticUpdate>;
   isDrawingEnabled: boolean;
+  isDebugEnabled: boolean;
+  toggleDebug: () => void;
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
@@ -66,6 +68,10 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   currentChanges: [],
   optimisticUpdates: [],
   isDrawingEnabled: true,
+  isDebugEnabled: false,
+  toggleDebug: () => {
+    set({ isDebugEnabled: !get().isDebugEnabled });
+  },
 }));
 
 /** This function rolls up every collection of changed pixels into one deduplicated Map. */

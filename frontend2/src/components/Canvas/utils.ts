@@ -1,5 +1,11 @@
 import { fabric } from "fabric";
-import { Point } from "framer-motion";
+
+import { createEventEmitter } from "@/utils/eventEmitter";
+
+import { Point } from "./types";
+
+export const [emitMousePosition, useMousePositionListener] =
+  createEventEmitter<Point>("mousePosition");
 
 export function getCanvasBackgroundColor() {
   // This maps to colors.canvas.bg from /panda-preset/colors.ts

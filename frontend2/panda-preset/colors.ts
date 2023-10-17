@@ -87,7 +87,7 @@ export const semanticColors = {
   },
   text: {
     DEFAULT: { value: { base: "{colors.black}", _dark: "{colors.white}" } },
-    secondary: { value: "{colors.navy.500}" },
+    secondary: { value: { base: "rgba(0, 0, 0, 0.4)", _dark: "rgba(255, 255, 255, 0.4)" } },
     inverted: { value: { base: "{colors.white}", _dark: "{colors.black}" } },
     onInteractive: {
       primary: {
