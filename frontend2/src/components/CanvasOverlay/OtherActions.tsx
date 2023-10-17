@@ -1,6 +1,7 @@
 import { stack } from "styled-system/patterns";
 
 import { emitCanvasCommand } from "@/contexts/canvas";
+import { isServer } from "@/utils/isServer";
 
 import { Button } from "../Button";
 import { openDesktopControlsModal } from "../ControlsModal";
@@ -8,7 +9,7 @@ import { InformationIcon } from "../Icons/InformationIcon";
 import { RefreshIcon } from "../Icons/RefreshIcon";
 
 export function OtherActions() {
-  const supportsTouch = "ontouchstart" in document.documentElement;
+  const supportsTouch = isServer() ? false : "ontouchstart" in document.documentElement;
 
   return (
     <div
