@@ -2,12 +2,18 @@ import { useEffect } from "react";
 import { KeyBindingMap, tinykeys } from "tinykeys";
 
 import { STROKE_COLORS } from "@/constants/canvas";
-import { useCanvasState } from "@/contexts/canvas";
+import { emitCanvasCommand, useCanvasState } from "@/contexts/canvas";
 import { TupleIndices } from "@/utils/types";
 
-export function useKeyboardShortcuts() {
+export function useKeyboardShortcuts(isViewOnly: boolean) {
   useEffect(() => {
     const shortcuts: KeyBindingMap = {};
+
+    if (!isViewOnly) {
+      shortcuts["$mod+Z"] = () => {
+        emitCanvasCommand("undoLastChange");
+      };
+    }
 
     for (let n = 1; n <= 8; n++) {
       shortcuts[`Digit${n}`] = () => {
@@ -24,5 +30,5 @@ export function useKeyboardShortcuts() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [isViewOnly]);
 }

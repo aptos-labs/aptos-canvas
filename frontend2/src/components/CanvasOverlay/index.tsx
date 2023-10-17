@@ -19,7 +19,7 @@ export function CanvasOverlay() {
     if (isServer()) return;
 
     const unsubscribe = tinykeys(window, {
-      "Control+D": () => {
+      D: () => {
         useCanvasState.getState().toggleDebug();
       },
     });
