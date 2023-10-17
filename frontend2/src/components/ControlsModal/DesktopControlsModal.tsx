@@ -22,7 +22,7 @@ function DesktopControlsModal({ hide }: DesktopControlsModalProps) {
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
 
   return (
-    <ModalContent className={stack({ gap: 32 })}>
+    <ModalContent className={stack({ gap: 24 })}>
       <div className={flex({ align: "center", justify: "space-between", gap: 16 })}>
         <h1 className={css({ textStyle: "body.lg.bold" })}>
           {isViewOnly ? "View" : "Draw"} Mode Controls
@@ -88,4 +88,5 @@ const grid = css({
   columnGap: 24,
   rowGap: 24,
   px: 16,
+  py: 8,
 });

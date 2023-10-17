@@ -7,6 +7,7 @@ import { stack } from "styled-system/patterns";
 import { useCanvasState } from "@/contexts/canvas";
 
 import { Button } from "../Button";
+import { openConnectWalletModal } from "../ConnectWalletModal/ConnectWalletModal";
 import { EditBoxIcon } from "../Icons/EditBoxIcon";
 import { EyeIcon } from "../Icons/EyeIcon";
 
@@ -21,8 +22,11 @@ export function DrawModeToggle() {
         iconOnly
         rounded
         aria-label={isViewOnly ? "Go to Draw Mode" : "Back to View Only"}
-        disabled={isViewOnly && !connected}
         onClick={() => {
+          if (!connected) {
+            openConnectWalletModal();
+            return;
+          }
           setViewOnly(!isViewOnly);
         }}
       >

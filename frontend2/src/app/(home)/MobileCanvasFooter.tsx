@@ -7,6 +7,7 @@ import { flex, stack } from "styled-system/patterns";
 
 import { Button } from "@/components/Button";
 import { CanvasActions } from "@/components/CanvasActions";
+import { openConnectWalletModal } from "@/components/ConnectWalletModal/ConnectWalletModal";
 import { StrokeColorSelector } from "@/components/DrawingControls/StrokeColorSelector";
 import { EyeIcon } from "@/components/Icons/EyeIcon";
 import { useCanvasState } from "@/contexts/canvas";
@@ -41,9 +42,12 @@ export function MobileCanvasFooter() {
             <Button
               variant="primary"
               onClick={() => {
+                if (!connected) {
+                  openConnectWalletModal();
+                  return;
+                }
                 setViewOnly(false);
               }}
-              disabled={!connected}
               className={css({ w: "100%" })}
             >
               Go to Draw Mode
