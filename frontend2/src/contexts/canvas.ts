@@ -55,7 +55,7 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   setViewOnly: (isViewOnly) => {
     if (isViewOnly && get().currentChanges.length) {
       const hasConfirmed = window.confirm(
-        "You have unsaved changes on the board. Are you sure you want to discard them?",
+        "You have unsaved changes on the canvas. Are you sure you want to discard them?",
       );
       if (!hasConfirmed) return false;
       emitCanvasCommand("clearChangedPixels");

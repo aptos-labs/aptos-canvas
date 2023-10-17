@@ -166,6 +166,7 @@ export const semanticColors = {
     shimmer3: { value: { base: "rgba(255, 255, 255, 0.5)", _dark: "rgba(64, 64, 64, 0.5)" } },
   },
   shadow: { value: { base: "rgba(0, 0, 0, 0.2)", _dark: "rgba(255, 255, 255, 0.2)" } },
+  focusBg: { value: { base: "rgba(64, 64, 64, 0.1)", _dark: "rgba(192, 192, 192, 0.1)" } },
   dialogOverlay: { value: { base: "rgba(0, 0, 0, 0.25)", _dark: "rgba(0, 0, 0, 0.4)" } },
   warning: { value: "{colors.orange.600}" },
   error: { value: "{colors.red.600}" },
