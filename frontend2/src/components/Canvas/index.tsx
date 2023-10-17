@@ -19,6 +19,7 @@ import { DrawingCursor } from "./DrawingCursor";
 import { mousePan, pinchZoom, smoothZoom, wheelPan, wheelZoom } from "./gestures";
 import { useKeyboardShortcuts } from "./keyboardShortcuts";
 import { EventCanvas, Point } from "./types";
+import { emitMousePosition, getCanvasBackgroundColor, getPointScaler } from "./utils";
 
 export interface CanvasProps {
   height: number;
@@ -178,14 +179,21 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
       }
 
       function handleMouseMove(this: EventCanvas, { e }: fabric.IEvent<MouseEvent>) {
+        const image = imageRef.current;
+
+        if (image && useCanvasState.getState().isDebugEnabled) {
+          const scalePoint = getPointScaler(this, image);
+          emitMousePosition(scalePoint({ x: e.offsetX, y: e.offsetY }));
+        }
+
         if (this.isDragging) {
           this.hoverCursor = "grabbing";
           mousePan(this, e.clientX, e.clientY);
         } else if (isDrawingRef.current) {
-          if (!imageRef.current) return;
+          if (!image) return;
           if (e.target !== this.upperCanvasEl) return; // Stop handling event when outside canvas
           alterImagePixels({
-            image: imageRef.current,
+            image,
             size: PIXELS_PER_SIDE,
             pixelArray: pixelArrayRef.current,
             canvas: this,
@@ -350,9 +358,4 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
       )}
     </>
   );
-}
-
-function getCanvasBackgroundColor() {
-  // This maps to colors.canvas.bg from /panda-preset/colors.ts
-  return window.getComputedStyle(document.documentElement).getPropertyValue("--colors-canvas-bg");
 }

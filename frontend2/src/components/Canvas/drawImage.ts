@@ -6,6 +6,7 @@ import { aggregatePixelsChanged, ImagePatch, useCanvasState } from "@/contexts/c
 import { createTempCanvas } from "@/utils/tempCanvas";
 
 import { EventCanvas, Point } from "./types";
+import { getPointScaler } from "./utils";
 
 export interface CreateImageArgs {
   size: number;
@@ -107,23 +108,7 @@ export function alterImagePixels({
   point2,
   isNewLine,
 }: AlterImagePixelsArgs) {
-  // Get the initial current scaling of the image. It doesn't matter if we use scaleX or scaleY
-  // since the image is a square
-  const imageScale = image.getObjectScaling().scaleX;
-
-  const zoom = canvas.getZoom();
-  const panX = canvas.viewportTransform?.[4];
-  const panY = canvas.viewportTransform?.[5];
-
-  const scalePosition = (position: number) => {
-    const newPos = position / imageScale / zoom;
-    return newPos < 0 ? Math.ceil(newPos) : Math.floor(newPos);
-  };
-
-  const scalePoint = (point: Point) => ({
-    x: scalePosition(point.x - (panX ?? 0)),
-    y: scalePosition(point.y - (panY ?? 0)),
-  });
+  const scalePoint = getPointScaler(canvas, image);
 
   let points = getContinuousPoints(scalePoint(point1), scalePoint(point2));
 
