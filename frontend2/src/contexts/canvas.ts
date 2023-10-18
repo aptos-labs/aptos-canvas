@@ -40,6 +40,7 @@ export interface OptimisticUpdate {
 }
 
 export interface CanvasState {
+  isEventComplete: boolean;
   canDrawUnlimited: boolean;
   isInitialized: boolean;
   isViewOnly: boolean;
@@ -56,6 +57,7 @@ export interface CanvasState {
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
+  isEventComplete: false,
   canDrawUnlimited: false,
   isInitialized: false,
   isViewOnly: true,

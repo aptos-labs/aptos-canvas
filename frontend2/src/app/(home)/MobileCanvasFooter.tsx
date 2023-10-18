@@ -16,69 +16,13 @@ import { DISCORD_CHANNEL } from "@/constants/links";
 import { useCanvasState } from "@/contexts/canvas";
 
 export function MobileCanvasFooter() {
-  const { connected } = useWallet();
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
-  const setViewOnly = useCanvasState((s) => s.setViewOnly);
+  // const isDrawModeDisabled = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
 
   return (
     <div className={css({ md: { display: "none" } })}>
       <AnimatePresence initial={false} mode="popLayout">
-        {isViewOnly ? (
-          <motion.div
-            key="viewOnly"
-            className={stack({ alignItems: "center", gap: 16 })}
-            {...transition}
-          >
-            <div
-              className={flex({
-                textStyle: "body.sm.regular",
-                w: "100%",
-                align: "center",
-                justify: "center",
-                gap: 8,
-                py: 8,
-              })}
-            >
-              <EyeIcon />
-              View Only
-            </div>
-            <div className={flex({ gap: 16 })}>
-              <Button variant="secondary" asChild className={css({ flex: 1 })}>
-                <Link
-                  href={DISCORD_CHANNEL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={flex({ gap: 8, align: "center", whiteSpace: "nowrap" })}
-                >
-                  <DiscordIcon />
-                  Join Discussion
-                </Link>
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  if (!connected) {
-                    openConnectWalletModal();
-                    return;
-                  }
-                  setViewOnly(false);
-                }}
-                className={css({ flex: 1 })}
-              >
-                Go to Draw Mode
-              </Button>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="drawTools"
-            className={stack({ alignItems: "center", gap: 16 })}
-            {...transition}
-          >
-            <StrokeColorSelector direction="row" className={css({ py: 8 })} />
-            <CanvasActions />
-          </motion.div>
-        )}
+        {isViewOnly ? <ViewOnly key="viewOnly" /> : <DrawTools key="drawTools" />}
       </AnimatePresence>
     </div>
   );
@@ -89,3 +33,60 @@ const transition = {
   animate: { transform: "translateY(0px)" },
   exit: { transform: "translateY(128px)" },
 };
+
+function ViewOnly() {
+  const { connected } = useWallet();
+
+  return (
+    <motion.div className={stack({ alignItems: "center", gap: 16 })} {...transition}>
+      <div
+        className={flex({
+          textStyle: "body.sm.regular",
+          w: "100%",
+          align: "center",
+          justify: "center",
+          gap: 8,
+          py: 8,
+        })}
+      >
+        <EyeIcon />
+        View Only
+      </div>
+      <div className={flex({ gap: 16 })}>
+        <Button variant="secondary" asChild className={css({ flex: 1 })}>
+          <Link
+            href={DISCORD_CHANNEL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={flex({ gap: 8, align: "center", whiteSpace: "nowrap" })}
+          >
+            <DiscordIcon />
+            Join Discussion
+          </Link>
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => {
+            if (!connected) {
+              openConnectWalletModal();
+              return;
+            }
+            useCanvasState.getState().setViewOnly(false);
+          }}
+          className={css({ flex: 1 })}
+        >
+          Go to Draw Mode
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+function DrawTools() {
+  return (
+    <motion.div className={stack({ alignItems: "center", gap: 16 })} {...transition}>
+      <StrokeColorSelector direction="row" className={css({ py: 8 })} />
+      <CanvasActions />
+    </motion.div>
+  );
+}

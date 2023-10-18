@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
-const END_DATE = new Date("October 19, 2023 10:00:00 PDT");
+import { emitCanvasCommand, useCanvasState } from "@/contexts/canvas";
+
+const END_DATE = new Date(process.env.NEXT_PUBLIC_EVENT_END_DATE ?? new Date());
 
 const getSecondsLeft = () => {
   const seconds = Math.round((END_DATE.valueOf() - Date.now()) / 1000);
@@ -16,6 +18,15 @@ export function Countdown() {
   const [secondsLeft, setSecondsLeft] = useState<number>();
 
   useEffect(() => {
+    if (secondsLeft !== undefined && secondsLeft <= 0) {
+      if (!useCanvasState.getState().canDrawUnlimited) {
+        emitCanvasCommand("clearChangedPixels");
+        useCanvasState.setState({ isViewOnly: true });
+      }
+      useCanvasState.setState({ isEventComplete: true });
+      return;
+    }
+
     setSecondsLeft(getSecondsLeft());
 
     // Update counter once a minute since we're only displaying down to the minute
@@ -26,7 +37,7 @@ export function Countdown() {
     return () => {
       window.clearInterval(interval);
     };
-  }, []);
+  }, [secondsLeft]);
 
   const days = secondsLeft !== undefined ? secondsLeft / 60 / 60 / 24 : 0;
   const hours = (days % 1) * 24;
