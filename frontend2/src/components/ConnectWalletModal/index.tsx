@@ -28,7 +28,17 @@ export function ConnectWalletButton() {
       toast({
         id: CONNECT_TOAST_ID,
         variant: "info",
-        content: "Connect a wallet to draw on the canvas!",
+        content: (
+          <span className={css({ textStyle: "body.md.medium" })}>
+            <button
+              onClick={openConnectWalletModal}
+              className={css({ color: "interactive.primary", cursor: "pointer" })}
+            >
+              Connect a Wallet
+            </button>{" "}
+            to draw on the canvas!
+          </span>
+        ),
         duration: null,
       });
 
