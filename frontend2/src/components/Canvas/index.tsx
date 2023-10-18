@@ -17,6 +17,7 @@ import { useThemeChange } from "@/utils/useThemeChange";
 import { openMobileControlsModal } from "../ControlsModal";
 import { alterImagePixels, applyImagePatches, createSquareImage } from "./drawImage";
 import { DrawingCursor } from "./DrawingCursor";
+import { createGridOverlay } from "./gridOverlay";
 import { useKeyboardShortcuts } from "./keyboardShortcuts";
 import {
   mousePan,
@@ -39,9 +40,11 @@ export interface CanvasProps {
 export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasProps) {
   const isInitialized = useCanvasState((s) => s.isInitialized);
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
+  const isDebugEnabled = useCanvasState((s) => s.isDebugEnabled);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas>();
   const imageRef = useRef<fabric.Image>();
+  const gridRef = useRef<fabric.Image>();
   const isDrawingRef = useRef<boolean>(false);
   const prevPointRef = useRef<Point>();
   const isGesturingRef = useRef<boolean>(false);
@@ -71,6 +74,13 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
       pixelArray: pixelArrayRef.current,
       canvas: newCanvas,
       imageRef,
+    });
+
+    // Grid create grid overlay for debug mode
+    createGridOverlay({
+      size: PIXELS_PER_SIDE,
+      canvas: newCanvas,
+      gridRef,
     });
 
     // Zoom into the center of the image
@@ -117,6 +127,18 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
       canvas.requestRenderAll();
     },
     [height, width],
+  );
+
+  useEffect(
+    function updateGridOverlayVisibility() {
+      const canvas = fabricRef.current;
+      const gridOverlay = gridRef.current;
+      if (!canvas || !gridOverlay) return;
+
+      gridOverlay.visible = isDebugEnabled && !isViewOnly;
+      canvas.requestRenderAll();
+    },
+    [isDebugEnabled, isViewOnly],
   );
 
   useEffect(
