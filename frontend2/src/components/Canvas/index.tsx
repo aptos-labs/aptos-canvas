@@ -135,10 +135,10 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
       const gridOverlay = gridRef.current;
       if (!canvas || !gridOverlay) return;
 
-      gridOverlay.visible = isDebugEnabled;
+      gridOverlay.visible = isDebugEnabled && !isViewOnly;
       canvas.requestRenderAll();
     },
-    [isDebugEnabled],
+    [isDebugEnabled, isViewOnly],
   );
 
   useEffect(
