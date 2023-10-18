@@ -12,7 +12,7 @@ export function MobileHeader() {
       <AptosIcon className={css({ color: "brand.logo", h: 24, w: 24 })} />
       <div className={flex({ gap: 16, align: "center" })}>
         <ConnectWalletButton />
-        <NetworkSelector />
+        {process.env.GRAFFIO_ENV !== "production" && <NetworkSelector />}
         <ThemeToggle />
       </div>
     </div>

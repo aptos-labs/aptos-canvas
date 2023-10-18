@@ -40,7 +40,7 @@ export function DesktopCanvasHeader() {
           Join Discussion
         </Link>
         <ConnectWalletButton />
-        <NetworkSelector />
+        {process.env.GRAFFIO_ENV !== "production" && <NetworkSelector />}
       </div>
     </div>
   );
