@@ -2,6 +2,7 @@
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { css } from "styled-system/css";
 import { flex, stack } from "styled-system/patterns";
 
@@ -9,7 +10,9 @@ import { Button } from "@/components/Button";
 import { CanvasActions } from "@/components/CanvasActions";
 import { openConnectWalletModal } from "@/components/ConnectWalletModal/ConnectWalletModal";
 import { StrokeColorSelector } from "@/components/DrawingControls/StrokeColorSelector";
+import { DiscordIcon } from "@/components/Icons/DiscordIcon";
 import { EyeIcon } from "@/components/Icons/EyeIcon";
+import { DISCORD_CHANNEL } from "@/constants/links";
 import { useCanvasState } from "@/contexts/canvas";
 
 export function MobileCanvasFooter() {
@@ -39,19 +42,32 @@ export function MobileCanvasFooter() {
               <EyeIcon />
               View Only
             </div>
-            <Button
-              variant="primary"
-              onClick={() => {
-                if (!connected) {
-                  openConnectWalletModal();
-                  return;
-                }
-                setViewOnly(false);
-              }}
-              className={css({ w: "100%" })}
-            >
-              Go to Draw Mode
-            </Button>
+            <div className={flex({ gap: 16 })}>
+              <Button variant="secondary" asChild className={css({ flex: 1 })}>
+                <Link
+                  href={DISCORD_CHANNEL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={flex({ gap: 8, align: "center", whiteSpace: "nowrap" })}
+                >
+                  <DiscordIcon />
+                  Join Discussion
+                </Link>
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  if (!connected) {
+                    openConnectWalletModal();
+                    return;
+                  }
+                  setViewOnly(false);
+                }}
+                className={css({ flex: 1 })}
+              >
+                Go to Draw Mode
+              </Button>
+            </div>
           </motion.div>
         ) : (
           <motion.div
