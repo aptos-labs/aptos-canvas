@@ -65,6 +65,8 @@ module addr::canvas_token {
     /// The color for a pixel is not valid or allowed
     const E_INVALID_COLOR: u64 = 11;
 
+    /// You need to draw more pixels
+    const E_PLEASE_DRAW_MORE_PIXELS: u64 = 12;
 
     /// The maximum color allowed; i.e a value of 7 indicate there are 8 colors total (zero indexed)
     const MAX_VALID_COLOR: u8 = 7;
@@ -238,6 +240,11 @@ module addr::canvas_token {
         let caller_can_draw_unlimited = can_draw_unlimited(canvas, caller_addr);
 
         let canvas_ = borrow_global_mut<Canvas>(object::object_address(&canvas));
+
+        assert!(
+            vector::length(&xs) > 1,
+            E_PLEASE_DRAW_MORE_PIXELS,
+        );
 
         // Assert the vectors are all the same length.
         assert!(
@@ -668,7 +675,7 @@ module addr::canvas_token {
             height,
             per_account_timeout_s: 1,
             default_color: 0,
-            max_number_of_pixels_per_draw: 1,
+            max_number_of_pixels_per_draw: 2,
             draw_enabled_for_non_admin: true,
         };
 
@@ -717,9 +724,9 @@ module addr::canvas_token {
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Admin can draw consequently without restricted by the timeout
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -734,9 +741,9 @@ module addr::canvas_token {
         let canvas = create_canvas(&caller, 50, 50);
         add_to_unlimited_artists(&caller, canvas, signer::address_of(&friend1));
         // unlimited artist can draw consequently without restricted by the timeout
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -751,9 +758,9 @@ module addr::canvas_token {
         let canvas = create_canvas(&caller, 50, 50);
         add_admin(&caller, canvas, signer::address_of(&friend1));
         // The new admin can draw consequently without restricted by the timeout
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -780,12 +787,12 @@ module addr::canvas_token {
         aptos_framework: signer
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
-        // Initially set max number of pixels can draw to 1
+        // Initially set max number of pixels can draw to 2
         let canvas = create_canvas(&caller, 50, 50);
-        // Can draw 1 pixel
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
-        // Cannot draw 2 pixels
-        draw(&friend2, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        // Can draw 2 pixel
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        // Cannot draw 3 pixels
+        draw(&friend2, canvas, vector[1, 2, 3], vector[1, 2, 3], vector[1, 2, 3]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -797,10 +804,10 @@ module addr::canvas_token {
         aptos_framework: signer
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
-        // Initially set max number of pixels per draw to 1
+        // Initially set max number of pixels per draw to 2
         let canvas = create_canvas(&caller, 50, 50);
-        // Non admin cannot update max number of pixels per draw to 2
-        update_max_number_of_pixels_per_draw(&friend1, canvas, 2);
+        // Non admin cannot update max number of pixels per draw to 3
+        update_max_number_of_pixels_per_draw(&friend1, canvas, 3);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -811,16 +818,16 @@ module addr::canvas_token {
         aptos_framework: signer
     ) acquires Canvas {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
-        // Initially set max number of pixels per draw to 1
+        // Initially set max number of pixels per draw to 2
         let canvas = create_canvas(&caller, 50, 50);
-        // Can draw 1 pixel
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
-        // Update max number of pixels per draw to 2
-        update_max_number_of_pixels_per_draw(&caller, canvas, 2);
+        // Can draw 2 pixel
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        // Update max number of pixels per draw to 3
+        update_max_number_of_pixels_per_draw(&caller, canvas, 3);
         // Wait for 1 second
         timestamp::fast_forward_seconds(1);
-        // Can draw 2 pixels now
-        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+        // Can draw 3 pixels now
+        draw(&friend1, canvas, vector[1, 2, 3], vector[1, 2, 3], vector[1, 2, 3]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -834,13 +841,13 @@ module addr::canvas_token {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Wait for 1 second
         timestamp::fast_forward_seconds(1);
         // Should be able to draw now since timeout already passed
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Cannot draw immediately
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -853,13 +860,13 @@ module addr::canvas_token {
         init_test(&caller, &friend1, &friend2, &aptos_framework);
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Update per account timeout to 2 seconds
         update_per_account_timeout(&caller, canvas, 2);
         // Wait for 2 second
         timestamp::fast_forward_seconds(2);
         // Should be able to draw now since timeout already passed
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -889,11 +896,11 @@ module addr::canvas_token {
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin can draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Admin disable drawing
         disable_draw_for_non_admin(&caller, canvas);
         // Non admin cannot draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
     }
 
     #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
@@ -922,18 +929,33 @@ module addr::canvas_token {
         // Initially per account timeout to 1 second
         let canvas = create_canvas(&caller, 50, 50);
         // Non admin can draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Admin disable drawing
         disable_draw_for_non_admin(&caller, canvas);
         // Admin can still draw after disabled
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Admin re-enable drawing
         enable_draw_for_non_admin(&caller, canvas);
         // Wait for 1 second so non admin pass the timeout
         timestamp::fast_forward_seconds(1);
         // Non admin can draw
-        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
+        draw(&friend1, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
         // Admin can still draw after enabled
-        draw(&caller, canvas, vector[1], vector[1], vector[1]);
+        draw(&caller, canvas, vector[1, 2], vector[1, 2], vector[1, 2]);
+    }
+
+    #[test(caller = @addr, friend1 = @0x456, friend2 = @0x789, aptos_framework = @aptos_framework)]
+    #[expected_failure(abort_code = E_PLEASE_DRAW_MORE_PIXELS, location = addr::canvas_token)]
+    fun test_cannot_draw_only_one_pixel(
+        caller: signer,
+        friend1: signer,
+        friend2: signer,
+        aptos_framework: signer
+    ) acquires Canvas {
+        init_test(&caller, &friend1, &friend2, &aptos_framework);
+        // Initially per account timeout to 1 second
+        let canvas = create_canvas(&caller, 50, 50);
+        // Expect to fail cause you need to draw at least 2 pixels
+        draw(&friend1, canvas, vector[1], vector[1], vector[1]);
     }
 }
