@@ -7,7 +7,6 @@ import {
 } from "@identity-connect/wallet-adapter-plugin";
 import { MartianWallet } from "@martianwallet/aptos-wallet-adapter";
 import { PontemWallet } from "@pontem/wallet-adapter-plugin";
-import { FewchaWallet } from "fewcha-plugin-wallet-adapter";
 import { PetraWallet } from "petra-plugin-wallet-adapter";
 import { create } from "zustand";
 
@@ -49,7 +48,6 @@ export function WalletProvider({ children }: React.PropsWithChildren) {
     new PetraWallet(),
     new PontemWallet(),
     new MartianWallet(),
-    new FewchaWallet(),
   ];
 
   return (
