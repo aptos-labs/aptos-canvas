@@ -147,7 +147,7 @@ export function CanvasActions() {
         disabled={!currentChanges.length || coolDownLeft !== null || shouldDisableDrawing}
         loading={isSubmitting}
         onClick={finishDrawing}
-        className={css({ flex: 1, textWrap: "nowrap" })}
+        className={css({ flex: 1, whiteSpace: "nowrap" })}
       >
         {coolDownLeft !== null ? `Wait ${coolDownLeft}s` : "Submit Drawing"}
       </Button>

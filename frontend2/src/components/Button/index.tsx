@@ -1,5 +1,6 @@
 "use client";
 
+import { Slot } from "@radix-ui/react-slot";
 import { forwardRef, ReactNode } from "react";
 import { css, cva, cx, type RecipeVariantProps } from "styled-system/css";
 import { center } from "styled-system/patterns";
@@ -12,40 +13,61 @@ type ButtonAttributes = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "col
 export interface ButtonProps extends ButtonAttributes, ButtonVariants {
   loading?: boolean;
   children: ReactNode;
+  asChild?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { variant = "primary", size, iconOnly, rounded, loading, disabled, className, ...props },
+    {
+      variant = "primary",
+      size,
+      iconOnly,
+      rounded,
+      loading,
+      disabled,
+      children,
+      asChild,
+      className,
+      ...props
+    },
     ref,
   ) => {
+    const Component = asChild ? Slot : "button";
     return (
-      <button
+      <Component
         ref={ref}
         data-loading={loading || undefined}
         disabled={disabled || loading}
         className={cx(buttonStyles({ variant, size, iconOnly, rounded }), className)}
         {...props}
       >
-        <div className={center({ visibility: loading ? "hidden" : "visible", gap: 8 })}>
-          {props.children}
-        </div>
-        {loading && (
-          <div
-            className={css({
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            })}
-          >
-            <Spinner
-              size="md"
-              color={variant === "primary" || variant === "danger" ? "onInteractive" : "primary"}
-            />
-          </div>
+        {asChild ? (
+          children
+        ) : (
+          <>
+            <div className={center({ visibility: loading ? "hidden" : "visible", gap: 8 })}>
+              {children}
+            </div>
+            {loading && (
+              <div
+                className={css({
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                })}
+              >
+                <Spinner
+                  size="md"
+                  color={
+                    variant === "primary" || variant === "danger" ? "onInteractive" : "primary"
+                  }
+                />
+              </div>
+            )}
+          </>
         )}
-      </button>
+      </Component>
     );
   },
 );
