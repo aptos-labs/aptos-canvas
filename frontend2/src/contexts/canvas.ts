@@ -2,7 +2,12 @@ import { AptosClient } from "aptos";
 import { useEffect, useMemo } from "react";
 import { create } from "zustand";
 
-import { STROKE_COLORS, STROKE_WIDTH_CONFIG } from "@/constants/canvas";
+import {
+  COOLDOWN_SECONDS,
+  MAX_PIXELS_PER_TXN,
+  STROKE_COLORS,
+  STROKE_WIDTH_CONFIG,
+} from "@/constants/canvas";
 import { APP_CONFIG } from "@/constants/config";
 import { createEventEmitter } from "@/utils/eventEmitter";
 import { isServer } from "@/utils/isServer";
@@ -44,6 +49,8 @@ export interface CanvasState {
   currentChanges: Array<ImagePatch>;
   optimisticUpdates: Array<OptimisticUpdate>;
   isDrawingEnabled: boolean;
+  pixelLimit: number;
+  coolDownSeconds: number;
   isDebugEnabled: boolean;
   toggleDebug: () => void;
 }
@@ -68,6 +75,8 @@ export const useCanvasState = create<CanvasState>((set, get) => ({
   currentChanges: [],
   optimisticUpdates: [],
   isDrawingEnabled: true,
+  pixelLimit: MAX_PIXELS_PER_TXN,
+  coolDownSeconds: COOLDOWN_SECONDS,
   isDebugEnabled: false,
   toggleDebug: () => {
     set({ isDebugEnabled: !get().isDebugEnabled });
@@ -120,7 +129,7 @@ export function useOptimisticUpdateGarbageCollector() {
   }, []);
 }
 
-export function usePollIsDrawingEnabled() {
+export function usePollCanvasConfig() {
   const REFETCH_MS = 10_000;
   const { network } = useAptosNetworkState();
   const aptosClient = useMemo(() => new AptosClient(APP_CONFIG[network].rpcUrl), [network]);
@@ -135,7 +144,15 @@ export function usePollIsDrawingEnabled() {
           `${APP_CONFIG[network].canvasAddr}::canvas_token::Canvas`,
         )
       ).data as unknown as CanvasMoveResource;
-      useCanvasState.setState({ isDrawingEnabled: canvas.config.draw_enabled_for_non_admin });
+
+      const pixelLimit = parseInt(canvas.config.max_number_of_pixels_per_draw);
+      const coolDownSeconds = parseInt(canvas.config.per_account_timeout_s);
+
+      useCanvasState.setState({
+        isDrawingEnabled: canvas.config.draw_enabled_for_non_admin,
+        pixelLimit: Number.isNaN(pixelLimit) ? MAX_PIXELS_PER_TXN : pixelLimit,
+        coolDownSeconds: Number.isNaN(coolDownSeconds) ? COOLDOWN_SECONDS : coolDownSeconds,
+      });
     };
 
     fetch().catch(console.error);
@@ -165,10 +182,12 @@ interface CanvasMoveResource {
     cost_multiplier_decay_s: string;
     draw_enabled_for_non_admin: boolean;
     height: string;
+    /** Should be parsed as int */
     max_number_of_pixels_per_draw: string;
+    /** Should be parsed as int */
+    per_account_timeout_s: string;
     owner_is_super_admin: boolean;
     palette: Array<unknown>;
-    per_account_timeout_s: string;
     width: string;
   };
   created_at_s: string;
