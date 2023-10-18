@@ -29,7 +29,8 @@ export function CanvasActions() {
 
   const abi = useMemo(() => ABI(APP_CONFIG[network].canvasAddr), [network]);
 
-  const shouldDisableDrawing = !isDrawingEnabled && !canDrawUnlimited;
+  const eventPaused = Boolean(process.env.NEXT_PUBLIC_PAUSE_EVENT);
+  const shouldDisableDrawing = (!isDrawingEnabled && !canDrawUnlimited) || eventPaused;
 
   useEffect(() => {
     if (!shouldDisableDrawing) return;
