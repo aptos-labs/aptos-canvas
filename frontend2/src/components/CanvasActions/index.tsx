@@ -7,7 +7,6 @@ import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
 import { ABI } from "@/constants/abi";
-import { COOLDOWN_SECONDS } from "@/constants/canvas";
 import { APP_CONFIG } from "@/constants/config";
 import { aggregatePixelsChanged, emitCanvasCommand, useCanvasState } from "@/contexts/canvas";
 import { useAptosNetworkState } from "@/contexts/wallet";
@@ -96,7 +95,7 @@ export function CanvasActions() {
         type: "entry_function_payload",
         ...payload,
       });
-      const { optimisticUpdates } = useCanvasState.getState();
+      const { optimisticUpdates, coolDownSeconds } = useCanvasState.getState();
       const newOptimisticUpdates = [...optimisticUpdates].concat({
         imagePatch: pixelsChanged,
         committedAt: Date.now(),
@@ -106,7 +105,7 @@ export function CanvasActions() {
         optimisticUpdates: newOptimisticUpdates,
       });
       toast({ id: "add-success", variant: "success", content: "Added!" });
-      if (!canDrawUnlimited) setCoolDownLeft(COOLDOWN_SECONDS);
+      if (!canDrawUnlimited) setCoolDownLeft(coolDownSeconds);
     } catch (e) {
       if (typeof e === "string") {
         toast({

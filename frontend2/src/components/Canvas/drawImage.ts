@@ -1,7 +1,7 @@
 import { fabric } from "fabric";
 import { MutableRefObject } from "react";
 
-import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN, STROKE_COLORS } from "@/constants/canvas";
+import { MAX_PIXELS_PER_TXN_ADMIN, STROKE_COLORS } from "@/constants/canvas";
 import { aggregatePixelsChanged, ImagePatch, useCanvasState } from "@/contexts/canvas";
 import { createTempCanvas } from "@/utils/tempCanvas";
 
@@ -112,7 +112,8 @@ export function alterImagePixels({
 
   let points = getContinuousPoints(scalePoint(point1), scalePoint(point2));
 
-  const { canDrawUnlimited, strokeColor, strokeWidth, currentChanges } = useCanvasState.getState();
+  const { canDrawUnlimited, strokeColor, strokeWidth, currentChanges, pixelLimit } =
+    useCanvasState.getState();
 
   if (strokeWidth > 1) {
     // Multiply points by stroke width if it's greater than 1
@@ -130,10 +131,10 @@ export function alterImagePixels({
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const nextPixelsChanged = newChanges[newChanges.length - 1]!;
 
-  const pixelLimit = canDrawUnlimited ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
+  const curPixelLimit = canDrawUnlimited ? MAX_PIXELS_PER_TXN_ADMIN : pixelLimit;
   for (const point of points) {
     // Break out of loop to stop adding pixels once we hit the limit
-    if (aggregatePixelsChanged(newChanges).size >= pixelLimit) break;
+    if (aggregatePixelsChanged(newChanges).size >= curPixelLimit) break;
 
     nextPixelsChanged.set(`${point.x}-${point.y}`, {
       x: point.x,

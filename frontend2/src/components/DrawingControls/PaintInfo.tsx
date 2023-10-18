@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
-import { MAX_PIXELS_PER_TXN, MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
+import { MAX_PIXELS_PER_TXN_ADMIN } from "@/constants/canvas";
 import { useAggregatedPixelsChanged, useCanvasState } from "@/contexts/canvas";
 import { useWarnBeforeUnload } from "@/utils/useWarnBeforeUnload";
 
@@ -22,8 +22,9 @@ export function PaintInfo({ direction }: PaintInfoProps) {
   const pixelsChanged = useAggregatedPixelsChanged(currentChanges);
   const changedPixelsCount = pixelsChanged.size;
   const canDrawUnlimited = useCanvasState((s) => s.canDrawUnlimited);
-  const pixelLimit = canDrawUnlimited ? MAX_PIXELS_PER_TXN_ADMIN : MAX_PIXELS_PER_TXN;
-  const limitReached = changedPixelsCount >= pixelLimit;
+  const pixelLimit = useCanvasState((s) => s.pixelLimit);
+  const curPixelLimit = canDrawUnlimited ? MAX_PIXELS_PER_TXN_ADMIN : pixelLimit;
+  const limitReached = changedPixelsCount >= curPixelLimit;
 
   useWarnBeforeUnload(!!changedPixelsCount);
 
@@ -53,7 +54,7 @@ export function PaintInfo({ direction }: PaintInfoProps) {
     >
       <PaintIcon />
       <div className={css({ textStyle: "body.sm.regular", textAlign: "center" })}>
-        {(pixelLimit - changedPixelsCount).toLocaleString()} <br /> Pixels
+        {(curPixelLimit - changedPixelsCount).toLocaleString()} <br /> Pixels
       </div>
     </div>
   );

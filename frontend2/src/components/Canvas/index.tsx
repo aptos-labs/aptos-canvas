@@ -9,7 +9,7 @@ import {
   useCanvasCommandListener,
   useCanvasState,
   useOptimisticUpdateGarbageCollector,
-  usePollIsDrawingEnabled,
+  usePollCanvasConfig,
 } from "@/contexts/canvas";
 import { assertUnreachable } from "@/utils/assertUnreachable";
 import { useThemeChange } from "@/utils/useThemeChange";
@@ -54,7 +54,7 @@ export function Canvas({ height, width, baseImage, isCursorInBounds }: CanvasPro
 
   useKeyboardShortcuts(isViewOnly);
   useOptimisticUpdateGarbageCollector();
-  usePollIsDrawingEnabled();
+  usePollCanvasConfig();
 
   useEffect(function initializeCanvas() {
     // Initialize canvas
