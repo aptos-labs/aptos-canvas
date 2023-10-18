@@ -12,7 +12,9 @@ export function useCanDrawUnlimited(address: string | undefined) {
   useEffect(() => {
     if (!address) return;
 
-    const client = createClient({ nodeUrl: APP_CONFIG[network].rpcUrl }).useABI(ABI);
+    const canvasModuleAddress = APP_CONFIG[network].canvasAddr;
+    const abi = ABI(canvasModuleAddress);
+    const client = createClient({ nodeUrl: APP_CONFIG[network].rpcUrl }).useABI(abi);
 
     const fetchCanDrawUnlimited = async () => {
       const canDrawUnlimited = (

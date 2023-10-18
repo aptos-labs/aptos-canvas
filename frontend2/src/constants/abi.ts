@@ -1,5 +1,5 @@
-export const ABI = {
-  address: "0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23",
+export const ABI = (moduleAddress: string) => ({
+  address: moduleAddress,
   name: "canvas_token",
   friends: [],
   exposed_functions: [
@@ -11,7 +11,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: [],
@@ -24,7 +24,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: [],
@@ -36,7 +36,7 @@ export const ABI = {
       is_view: true,
       generic_type_params: [],
       params: [
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: ["bool"],
@@ -49,7 +49,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
       ],
       return: [],
     },
@@ -61,7 +61,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
       ],
       return: [],
     },
@@ -92,7 +92,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
       ],
       return: [],
     },
@@ -104,7 +104,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "vector<u16>",
         "vector<u16>",
         "vector<u8>",
@@ -119,7 +119,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
       ],
       return: [],
     },
@@ -130,7 +130,7 @@ export const ABI = {
       is_view: true,
       generic_type_params: [],
       params: [
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: ["bool"],
@@ -142,7 +142,7 @@ export const ABI = {
       is_view: true,
       generic_type_params: [],
       params: [
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: ["bool"],
@@ -154,7 +154,7 @@ export const ABI = {
       is_view: true,
       generic_type_params: [],
       params: [
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: ["bool"],
@@ -167,7 +167,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: [],
@@ -180,7 +180,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "address",
       ],
       return: [],
@@ -193,7 +193,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "0x1::string::String",
       ],
       return: [],
@@ -206,7 +206,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "u64",
       ],
       return: [],
@@ -219,7 +219,7 @@ export const ABI = {
       generic_type_params: [],
       params: [
         "&signer",
-        "0x1::object::Object<0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::Canvas>",
+        `0x1::object::Object<${moduleAddress}::canvas_token::Canvas>`,
         "u64",
       ],
       return: [],
@@ -234,7 +234,7 @@ export const ABI = {
       fields: [
         {
           name: "config",
-          type: "0x915efe6647e0440f927d46e39bcb5eb040a7e567e1756e002073bc6e26f2cd23::canvas_token::CanvasConfig",
+          type: `${moduleAddress}::canvas_token::CanvasConfig`,
         },
         { name: "pixels", type: "0x1::smart_table::SmartTable<u32, u8>" },
         { name: "last_contribution_s", type: "0x1::table::Table<address, u64>" },
@@ -267,4 +267,4 @@ export const ABI = {
       fields: [{ name: "table", type: "0x1::table::Table<T0, T1>" }],
     },
   ],
-} as const;
+} as const);

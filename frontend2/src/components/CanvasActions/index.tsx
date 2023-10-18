@@ -2,7 +2,7 @@
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { createEntryPayload } from "@thalalabs/surf";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { css } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
@@ -26,6 +26,8 @@ export function CanvasActions() {
   const canDrawUnlimited = useCanvasState((s) => s.canDrawUnlimited);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coolDownLeft, setCoolDownLeft] = useState<number | null>(null);
+
+  const abi = useMemo(() => ABI(APP_CONFIG[network].canvasAddr), [network]);
 
   const shouldDisableDrawing = !isDrawingEnabled && !canDrawUnlimited;
 
@@ -82,7 +84,7 @@ export function CanvasActions() {
       colors.push(pixelChanged.color);
     }
 
-    const payload = createEntryPayload(ABI, {
+    const payload = createEntryPayload(abi, {
       function: "draw",
       type_arguments: [],
       arguments: [APP_CONFIG[network].canvasTokenAddr, xs, ys, colors],
