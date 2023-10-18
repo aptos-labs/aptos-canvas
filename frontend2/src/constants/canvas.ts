@@ -2,8 +2,10 @@ import { rgba } from "@/utils/color";
 
 export const PIXELS_PER_SIDE = 1000;
 
-export const MAX_PIXELS_PER_TXN = 800;
+export const MAX_PIXELS_PER_TXN = 100;
 export const MAX_PIXELS_PER_TXN_ADMIN = 2500;
+
+export const COOLDOWN_SECONDS = 30;
 
 export const VIEW_MODE_ZOOM = 1;
 export const DRAW_MODE_ZOOM = 10;
