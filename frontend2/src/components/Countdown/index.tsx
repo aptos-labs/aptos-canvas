@@ -18,6 +18,8 @@ export function Countdown() {
   const [secondsLeft, setSecondsLeft] = useState<number>();
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_PAUSE_EVENT) return;
+
     if (secondsLeft !== undefined && secondsLeft <= 0) {
       if (!useCanvasState.getState().canDrawUnlimited) {
         emitCanvasCommand("clearChangedPixels");
