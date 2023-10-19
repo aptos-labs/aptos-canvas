@@ -90,7 +90,7 @@ You may need to prefix that with `DOCKER_DEFAULT_PLATFORM=linux/amd64` if you bu
 
 ## Notes
 - The GraphQL API only accepts account addresses in LONG form without the leading 0x. It returns them the same way.
-- For now, the best way to get the schema.graphql file is to go to http://127.0.0.1:7645/metadata/gql and use the Download -> SDL button.
+- For now, the best way to get the schema.graphql file is to go to http://127.0.0.1:7645/v1/metadata/graphql and use the Download -> SDL button.
 - This code relies on a variety of features that haven't been landed in their repos. This means, particularly with the indexer libs, we do not pick up new features as they come out.
   - To generate the Rust code representing the Move types we rely on banool/rust-move-codegen in aptos-core.
   - To make it possible to write an indexer in a modular way we rely on banool/txn-parsers in aptos-indexer-processors.

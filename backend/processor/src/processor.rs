@@ -1,4 +1,4 @@
-use anyhow::{Context as AnyhowContext, Result};
+use anyhow::{bail, Context as AnyhowContext, Result};
 use aptos_move_graphql_scalars::Address;
 use aptos_processor_framework::{
     indexer_protos::transaction::v1::{
@@ -27,6 +27,10 @@ pub struct CanvasProcessorConfig {
     /// If set, disable metadata processing and only process pixel data.
     #[serde(default)]
     pub disable_metadata_processing: bool,
+
+    /// If set, disable pixel processing and only process metadata.
+    #[serde(default)]
+    pub disable_pixel_processing: bool,
 }
 
 #[derive(Debug)]
@@ -41,12 +45,15 @@ impl CanvasProcessor {
         config: CanvasProcessorConfig,
         pixels_storage: Arc<dyn PixelStorageTrait>,
         metadata_storage: Arc<dyn MetadataStorageTrait>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self> {
+        if config.disable_metadata_processing && config.disable_pixel_processing {
+            bail!("disable_metadata_processing and disable_pixel_processing are both set to true, this is invalid");
+        }
+        Ok(Self {
             config,
             pixels_storage,
             metadata_storage,
-        }
+        })
     }
 
     pub fn get_canvas_struct_tag(&self) -> MoveStructTag {
@@ -110,27 +117,29 @@ impl ProcessorTrait for CanvasProcessor {
             num_pixels_to_write = all_write_pixel_intents.len()
         );
 
-        // Create canvases.
-        for create_canvas_intent in all_create_canvas_intents {
-            info!("Creating canvas {}", create_canvas_intent.canvas_address);
-            self.pixels_storage
-                .create_canvas(create_canvas_intent)
-                .await
-                .context("Failed to create canvas in storage")?;
-        }
+        if !self.config.disable_pixel_processing {
+            // Create canvases.
+            for create_canvas_intent in all_create_canvas_intents {
+                info!("Creating canvas {}", create_canvas_intent.canvas_address);
+                self.pixels_storage
+                    .create_canvas(create_canvas_intent)
+                    .await
+                    .context("Failed to create canvas in storage")?;
+            }
 
-        // Write pixels.
-        if !all_write_pixel_intents.is_empty() {
-            info!(
-                "Writing {} pixels (from txns {} to {})",
-                all_write_pixel_intents.len(),
-                start_version,
-                end_version
-            );
-            self.pixels_storage
-                .write_pixels(all_write_pixel_intents)
-                .await
-                .context("Failed to write pixel in storage")?;
+            // Write pixels.
+            if !all_write_pixel_intents.is_empty() {
+                info!(
+                    "Writing {} pixels (from txns {} to {})",
+                    all_write_pixel_intents.len(),
+                    start_version,
+                    end_version
+                );
+                self.pixels_storage
+                    .write_pixels(all_write_pixel_intents)
+                    .await
+                    .context("Failed to write pixel in storage")?;
+            }
         }
 
         if !self.config.disable_metadata_processing {
@@ -214,11 +223,11 @@ impl CanvasProcessor {
 
         let info = transaction.info.as_ref().context("No info")?;
 
-        // let sender =
-        //    Address::from_str(&request.sender).context("Failed to parse sender address")?;
+        let sender =
+            Address::from_str(&request.sender).context("Failed to parse sender address")?;
 
         let mut write_pixel_intents = vec![];
-        // let mut update_attribution_intents = vec![];
+        let mut update_attribution_intents = vec![];
 
         for change in &info.changes {
             match change.change.as_ref().context("No change")? {
@@ -243,21 +252,21 @@ impl CanvasProcessor {
                             index,
                             color: HardcodedColor::from(hardcoded_color_raw),
                         });
-                        /*
                         update_attribution_intents.push(UpdateAttributionIntent {
                             canvas_address,
                             artist_address: sender,
                             index,
-                            drawn_at_secs: pixel.drawn_at_s.0,
+                            // This information is gone from the contract so we just
+                            // use a hardcoded value for now.
+                            drawn_at_secs: 42,
                         });
-                        */
                     }
                 },
                 _ => continue,
             }
         }
 
-        Ok((write_pixel_intents, vec![]))
+        Ok((write_pixel_intents, update_attribution_intents))
     }
 
     fn process_create(&self, transaction: &Transaction) -> Result<Option<CreateCanvasIntent>> {

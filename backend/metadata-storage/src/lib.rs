@@ -21,7 +21,7 @@ pub struct UpdateAttributionIntent {
     /// The address of the artist who wrote the pixel.
     pub artist_address: Address,
     /// The index of the pixel.
-    pub index: u64,
+    pub index: u32,
     /// When the pixel was written.
     pub drawn_at_secs: u64,
 }

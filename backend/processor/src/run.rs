@@ -3,7 +3,7 @@
 //! doesn't use anything private, so this is all just for dev convenience / dedupe.
 
 use crate::{CanvasProcessor, CanvasProcessorConfig};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use aptos_processor_framework::{
     CommonStorageConfig, Dispatcher, DispatcherConfig, GrpcStreamSubscriber,
     GrpcStreamSubscriberConfig, ProcessorTrait, StorageTrait, StreamSubscriberTrait,
@@ -33,11 +33,14 @@ pub async fn run(
 ) -> Result<Vec<JoinHandle<()>>> {
     // Build the canvas processor, which is what processes transactions and updates the
     // canvas storage and the DB.
-    let processor = Arc::new(CanvasProcessor::new(
-        config.processor_config.clone(),
-        pixels_storage.clone(),
-        metadata_storage.clone(),
-    ));
+    let processor = Arc::new(
+        CanvasProcessor::new(
+            config.processor_config.clone(),
+            pixels_storage.clone(),
+            metadata_storage.clone(),
+        )
+        .context("Failed to build processor")?,
+    );
 
     // From the DB, read the last version we processed.
     let starting_version_from_db = metadata_storage
