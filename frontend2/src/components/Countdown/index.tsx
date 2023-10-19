@@ -16,6 +16,9 @@ const getSecondsLeft = () => {
 
 export function Countdown() {
   const [secondsLeft, setSecondsLeft] = useState<number>();
+  const isEventOver = useCanvasState(
+    (s) => s.isEventComplete || process.env.NEXT_PUBLIC_MINT_COMPLETE,
+  );
 
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_PAUSE_EVENT) return;
@@ -52,7 +55,9 @@ export function Countdown() {
   return (
     <div className={wrapper}>
       <p className={strongText}>
-        {formattedDays} days {formattedHours} hours and {formattedMinutes} minutes until close.
+        {isEventOver
+          ? "This event is now closed."
+          : `${formattedDays} days ${formattedHours} hours and ${formattedMinutes} minutes until close.`}
       </p>{" "}
       <p className={css({ opacity: 0.4 })}>
         Graffio moderators reserve the right to edit or clear the canvas.{" "}

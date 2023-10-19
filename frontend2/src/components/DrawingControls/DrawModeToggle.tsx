@@ -4,7 +4,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { css } from "styled-system/css";
 import { stack } from "styled-system/patterns";
 
-import { useCanvasState } from "@/contexts/canvas";
+import { isMintComplete, useCanvasState } from "@/contexts/canvas";
 
 import { Button } from "../Button";
 import { openConnectWalletModal } from "../ConnectWalletModal/ConnectWalletModal";
@@ -16,7 +16,6 @@ export function DrawModeToggle() {
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
   const hasGeneralDrawingEnded = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
-  const isMintComplete = Boolean(process.env.NEXT_PUBLIC_MINT_COMPLETE);
 
   return (
     <div className={stack({ gap: 16, align: "center" })}>

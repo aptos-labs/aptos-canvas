@@ -15,6 +15,8 @@ import { TupleIndices } from "@/utils/types";
 
 import { useAptosNetworkState } from "./wallet";
 
+export const isMintComplete = Boolean(process.env.NEXT_PUBLIC_MINT_COMPLETE);
+
 export type CanvasCommand = "clearChangedPixels" | "undoLastChange" | "resetView";
 
 export const [emitCanvasCommand, useCanvasCommandListener] =

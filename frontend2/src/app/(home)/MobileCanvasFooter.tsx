@@ -11,16 +11,18 @@ import { Button } from "@/components/Button";
 import { CanvasActions } from "@/components/CanvasActions";
 import { openConnectWalletModal } from "@/components/ConnectWalletModal/ConnectWalletModal";
 import { StrokeColorSelector } from "@/components/DrawingControls/StrokeColorSelector";
+import { EndStateContent } from "@/components/EndStateContent";
 import { DiscordIcon } from "@/components/Icons/DiscordIcon";
 import { EyeIcon } from "@/components/Icons/EyeIcon";
 import { DISCORD_CHANNEL } from "@/constants/links";
-import { useCanvasState } from "@/contexts/canvas";
+import { isMintComplete, useCanvasState } from "@/contexts/canvas";
 
 export function MobileCanvasFooter() {
+  const { isLoading } = useWallet();
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
+  const isInitialized = useCanvasState((s) => s.isInitialized);
   const hasGeneralDrawingEnded = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
-  const isMintComplete = Boolean(process.env.NEXT_PUBLIC_MINT_COMPLETE);
-  const showEndState = hasGeneralDrawingEnded || isMintComplete;
+  const showEndState = !isLoading && isInitialized && (hasGeneralDrawingEnded || isMintComplete);
 
   return (
     <div className={css({ md: { display: "none" } })}>
@@ -42,6 +44,15 @@ const transition = {
   animate: { transform: "translateY(0px)" },
   exit: { transform: "translateY(128px)" },
 };
+
+const EndState = forwardRef<HTMLDivElement>((_, ref) => {
+  return (
+    <motion.div ref={ref} className={stack({ alignItems: "center", gap: 16 })} {...transition}>
+      <EndStateContent />
+    </motion.div>
+  );
+});
+EndState.displayName = "EndState";
 
 const ViewOnly = forwardRef<HTMLDivElement>((_, ref) => {
   const { connected } = useWallet();
@@ -101,12 +112,3 @@ const DrawTools = forwardRef<HTMLDivElement>((_, ref) => {
   );
 });
 DrawTools.displayName = "DrawTools";
-
-const EndState = forwardRef<HTMLDivElement>((_, ref) => {
-  return (
-    <motion.div ref={ref} className={stack({ alignItems: "center", gap: 16 })} {...transition}>
-      END GAME
-    </motion.div>
-  );
-});
-EndState.displayName = "EndState";
