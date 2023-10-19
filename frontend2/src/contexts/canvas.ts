@@ -15,6 +15,8 @@ import { TupleIndices } from "@/utils/types";
 
 import { useAptosNetworkState } from "./wallet";
 
+export const isMintComplete = Boolean(process.env.NEXT_PUBLIC_MINT_COMPLETE);
+
 export type CanvasCommand = "clearChangedPixels" | "undoLastChange" | "resetView";
 
 export const [emitCanvasCommand, useCanvasCommandListener] =
@@ -40,6 +42,7 @@ export interface OptimisticUpdate {
 }
 
 export interface CanvasState {
+  isEventComplete: boolean;
   canDrawUnlimited: boolean;
   isInitialized: boolean;
   isViewOnly: boolean;
@@ -56,6 +59,7 @@ export interface CanvasState {
 }
 
 export const useCanvasState = create<CanvasState>((set, get) => ({
+  isEventComplete: false,
   canDrawUnlimited: false,
   isInitialized: false,
   isViewOnly: true,

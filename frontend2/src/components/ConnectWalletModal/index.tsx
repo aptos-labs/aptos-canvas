@@ -16,20 +16,20 @@ const CONNECT_TOAST_ID = "connect-wallet";
 
 export function ConnectWalletButton() {
   const isCanvasInitialized = useCanvasState((s) => s.isInitialized);
+  const isEventComplete = useCanvasState((s) => s.isEventComplete);
   const { disconnect, account, connected } = useWallet();
 
   useCanDrawUnlimited(account?.address);
 
   useEffect(
     function manageConnectWalletToast() {
-      if (!isCanvasInitialized) return;
-      if (connected) return;
+      if (!isCanvasInitialized || isEventComplete || connected) return;
 
       toast({
         id: CONNECT_TOAST_ID,
         variant: "info",
         content: (
-          <span className={css({ textStyle: "body.md.medium" })}>
+          <span>
             <button
               onClick={openConnectWalletModal}
               className={css({ color: "interactive.primary", cursor: "pointer" })}
@@ -46,7 +46,7 @@ export function ConnectWalletButton() {
         removeToast(CONNECT_TOAST_ID);
       };
     },
-    [connected, isCanvasInitialized],
+    [connected, isCanvasInitialized, isEventComplete],
   );
 
   return connected ? (

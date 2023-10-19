@@ -43,8 +43,6 @@ const viewModeControls: ControlsMap = {
   Zoom: ["Hold the Ctrl key and scroll up or down", "Pinch to zoom on a trackpad"],
   Pan: ["Click on the canvas and drag it around"],
   "Reset View": ["Press the R key"],
-  "Set Line Color": ["Press a key 1 through 8"],
-  "Set Line Width": ["Hold Shift and press a key 1 through 8"],
 };
 
 const drawModeControls: ControlsMap = {

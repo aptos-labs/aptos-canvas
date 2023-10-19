@@ -1,0 +1,12 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index e7da0f7e7e540615f672055d1e34c5794591227f..9c32bf3964c2c58abf05b3f9bc4d4513c5d69b2b 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -40,6 +40,7 @@ declare type AccountInfo = {
+     publicKey: string | string[];
+     minKeysRequired?: number;
+     ansName?: string | null;
++    dappWalletId?: boolean | null;
+ };
+ interface AptosWalletErrorResult {
+     code: number;

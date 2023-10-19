@@ -10,6 +10,7 @@ import { ABI } from "@/constants/abi";
 import { APP_CONFIG } from "@/constants/config";
 import { aggregatePixelsChanged, emitCanvasCommand, useCanvasState } from "@/contexts/canvas";
 import { useAptosNetworkState } from "@/contexts/wallet";
+import { parseError } from "@/utils/parseError";
 
 import { Button } from "../Button";
 import { EyeIcon } from "../Icons/EyeIcon";
@@ -112,7 +113,7 @@ export function CanvasActions() {
         toast({
           id: "add-failure",
           variant: "error",
-          content: `Wallet Error: ${e}.`,
+          content: `Wallet Error: ${parseError(e)}.`,
         });
       } else {
         toast({

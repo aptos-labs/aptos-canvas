@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@aptos-labs/wallet-adapter-core@2.5.1':
+    hash: bztqgn4yl4txs2c2z47sgvfecq
+    path: patches/@aptos-labs__wallet-adapter-core@2.5.1.patch
   '@types/fabric@5.3.4':
     hash: pnuuxcwmzuwll5ajd4rgc52xmm
     path: patches/@types__fabric@5.3.4.patch
@@ -23,8 +26,8 @@ dependencies:
     specifier: ^9.7.1
     version: 9.7.1(next@13.5.4)(webpack@5.88.2)
   '@identity-connect/wallet-adapter-plugin':
-    specifier: ^1.0.11
-    version: 1.0.11
+    specifier: ^1.1.1
+    version: 1.1.1
   '@martianwallet/aptos-wallet-adapter':
     specifier: ^0.0.4
     version: 0.0.4
@@ -188,7 +191,7 @@ packages:
       - debug
     dev: false
 
-  /@aptos-labs/wallet-adapter-core@2.5.1:
+  /@aptos-labs/wallet-adapter-core@2.5.1(patch_hash=bztqgn4yl4txs2c2z47sgvfecq):
     resolution: {integrity: sha512-ny6CD47ivpnVV22reyN6LouDMVY9eccY3F3HscqfhAK+IqFm4C1C4BTFCoMQwPe9/yht2E/B6VuZBRIsYf7NvQ==}
     dependencies:
       aptos: 1.20.0
@@ -198,11 +201,12 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
+    patched: true
 
   /@aptos-labs/wallet-adapter-react@1.3.2:
     resolution: {integrity: sha512-aZ1tfzD5Gp56zpjhgBWHgWUd45FN6V6/NiZ9ClFuCJE+gEw/3R6ezGwjuXAMEEKdFarBSY3qMQDXzInLa+lFDg==}
     dependencies:
-      '@aptos-labs/wallet-adapter-core': 2.5.1
+      '@aptos-labs/wallet-adapter-core': 2.5.1(patch_hash=bztqgn4yl4txs2c2z47sgvfecq)
       react: 18.2.0
     transitivePeerDependencies:
       - debug
@@ -2050,8 +2054,8 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
-  /@identity-connect/api@0.3.0:
-    resolution: {integrity: sha512-2kmZJ1cPQsVV6n9+TuwHN4wZB3bNdMXvlMncl8yd+/n61SVu7by/JKUDVhwTBylFx4oX0BzyBP/xmEQ90xPWXQ==}
+  /@identity-connect/api@0.4.0:
+    resolution: {integrity: sha512-kkw+1JF1kGgEi2qoFCy2rv7EMzfJ8B6EPd6rTZehlH7KUmUSk7sq4vY8UzMWlrWVq53M+rmZysg7JDwdlOdFqA==}
     dependencies:
       '@identity-connect/crypto': 0.1.3
       aptos: 1.20.0
@@ -2070,23 +2074,33 @@ packages:
       - debug
     dev: false
 
-  /@identity-connect/dapp-sdk@0.3.11:
-    resolution: {integrity: sha512-epEWAwuJL8npjtfM3g+lje8yJFeQtlIEu/Q60qMYv5F/TO7WzCt0hOQf0vYFvi/BkTULtlowjidJDRsclRE19w==}
+  /@identity-connect/dapp-sdk@0.4.1:
+    resolution: {integrity: sha512-lL6YDf3f6oGxvk/PF14NkYdC9Kz1DsTQFVPgGJX4lDneRF7cyhLvVcj7scIHH1RJDbpxTzrKXap+ciprctBTqw==}
     dependencies:
-      '@identity-connect/api': 0.3.0
+      '@identity-connect/api': 0.4.0
       '@identity-connect/crypto': 0.1.3
+      '@identity-connect/wallet-api': 0.0.3
       aptos: 1.20.0
       axios: 1.5.1
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@identity-connect/wallet-adapter-plugin@1.0.11:
-    resolution: {integrity: sha512-IX012tTms1NLIMmSiMMjMnIDGlJQqoxxVjHOaZpimkRWK8FiLs/qRNDz98vcRc/lp6i1zeQhKmaLM4udO964lQ==}
+  /@identity-connect/wallet-adapter-plugin@1.1.1:
+    resolution: {integrity: sha512-Z2aWjpx+Z7Kc56j/Nsxe143d7oTWGF3X0Er4jrOlpA+7nlGmvlj7GoO+ykEMDc5Niinb/cYjF1sHKbzLIIZwfQ==}
     dependencies:
-      '@aptos-labs/wallet-adapter-core': 2.5.1
-      '@identity-connect/api': 0.3.0
-      '@identity-connect/dapp-sdk': 0.3.11
+      '@aptos-labs/wallet-adapter-core': 2.5.1(patch_hash=bztqgn4yl4txs2c2z47sgvfecq)
+      '@identity-connect/api': 0.4.0
+      '@identity-connect/dapp-sdk': 0.4.1
+      '@identity-connect/wallet-api': 0.0.3
+      aptos: 1.20.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@identity-connect/wallet-api@0.0.3:
+    resolution: {integrity: sha512-hxvawSNQPcQG1P/v6cqsqq/KYsnwOAblFQI3ZSDNb+P6LcV2/yZtSRXHOPRhi3+krIhIGt/UuU+4glkDgKuXHQ==}
+    dependencies:
       aptos: 1.20.0
     transitivePeerDependencies:
       - debug
@@ -8109,7 +8123,7 @@ packages:
   /petra-plugin-wallet-adapter@0.3.0:
     resolution: {integrity: sha512-snhhP/qKXLg4foKsDVvy0Jus3H7o46L75aDCXiiSAonty2CnZe1+4cpB8azc7khaMgig+xj9gZbZXKmKtB+HqA==}
     dependencies:
-      '@aptos-labs/wallet-adapter-core': 2.5.1
+      '@aptos-labs/wallet-adapter-core': 2.5.1(patch_hash=bztqgn4yl4txs2c2z47sgvfecq)
       aptos: 1.20.0
     transitivePeerDependencies:
       - debug
