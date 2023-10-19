@@ -2,7 +2,7 @@
 
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { motion } from "framer-motion";
-import { cva, type RecipeVariantProps } from "styled-system/css";
+import { css, cva, type RecipeVariantProps } from "styled-system/css";
 import { flex } from "styled-system/patterns";
 
 import { CheckboxCircleIcon } from "../Icons/CheckboxCircleIcon";
@@ -30,7 +30,7 @@ export function Toast(props: ToastProps) {
       >
         <ToastPrimitive.Description
           className={flex({
-            textStyle: "body.md.regular",
+            textStyle: "body.md.medium",
             textAlign: props.variant === "info" ? "center" : "left",
             justify: props.variant === "info" ? "center" : "flex-start",
             align: "center",
@@ -40,7 +40,7 @@ export function Toast(props: ToastProps) {
           })}
         >
           {icon}
-          {props.content}
+          <span className={css({ wordWrap: "break-word", minW: 0 })}>{props.content}</span>
         </ToastPrimitive.Description>
       </motion.div>
     </ToastPrimitive.Root>

@@ -16,6 +16,8 @@ export function Countdown() {
   const [secondsLeft, setSecondsLeft] = useState<number>();
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_PAUSE_EVENT) return;
+
     setSecondsLeft(getSecondsLeft());
 
     // Update counter once a minute since we're only displaying down to the minute
