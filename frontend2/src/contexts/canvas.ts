@@ -147,11 +147,14 @@ export function usePollCanvasConfig() {
 
       const pixelLimit = parseInt(canvas.config.max_number_of_pixels_per_draw);
       const coolDownSeconds = parseInt(canvas.config.per_account_timeout_s);
+      const extraCooldownSeconds = parseInt(process.env.EXTRA_COOLDOWN_SECONDS ?? "0", 10);
 
       useCanvasState.setState({
         isDrawingEnabled: canvas.config.draw_enabled_for_non_admin,
         pixelLimit: Number.isNaN(pixelLimit) ? MAX_PIXELS_PER_TXN : pixelLimit,
-        coolDownSeconds: Number.isNaN(coolDownSeconds) ? COOLDOWN_SECONDS : coolDownSeconds,
+        coolDownSeconds:
+          (Number.isNaN(coolDownSeconds) ? COOLDOWN_SECONDS : coolDownSeconds) +
+          extraCooldownSeconds,
       });
     };
 
