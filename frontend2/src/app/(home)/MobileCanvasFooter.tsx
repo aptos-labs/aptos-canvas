@@ -3,6 +3,7 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { forwardRef } from "react";
 import { css } from "styled-system/css";
 import { flex, stack } from "styled-system/patterns";
 
@@ -17,12 +18,20 @@ import { useCanvasState } from "@/contexts/canvas";
 
 export function MobileCanvasFooter() {
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
-  // const isDrawModeDisabled = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
+  const hasGeneralDrawingEnded = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
+  const isMintComplete = Boolean(process.env.NEXT_PUBLIC_MINT_COMPLETE);
+  const showEndState = hasGeneralDrawingEnded || isMintComplete;
 
   return (
     <div className={css({ md: { display: "none" } })}>
       <AnimatePresence initial={false} mode="popLayout">
-        {isViewOnly ? <ViewOnly key="viewOnly" /> : <DrawTools key="drawTools" />}
+        {showEndState ? (
+          <EndState key="endState" />
+        ) : isViewOnly ? (
+          <ViewOnly key="viewOnly" />
+        ) : (
+          <DrawTools key="drawTools" />
+        )}
       </AnimatePresence>
     </div>
   );
@@ -34,11 +43,11 @@ const transition = {
   exit: { transform: "translateY(128px)" },
 };
 
-function ViewOnly() {
+const ViewOnly = forwardRef<HTMLDivElement>((_, ref) => {
   const { connected } = useWallet();
 
   return (
-    <motion.div className={stack({ alignItems: "center", gap: 16 })} {...transition}>
+    <motion.div ref={ref} className={stack({ alignItems: "center", gap: 16 })} {...transition}>
       <div
         className={flex({
           textStyle: "body.sm.regular",
@@ -80,13 +89,24 @@ function ViewOnly() {
       </div>
     </motion.div>
   );
-}
+});
+ViewOnly.displayName = "ViewOnly";
 
-function DrawTools() {
+const DrawTools = forwardRef<HTMLDivElement>((_, ref) => {
   return (
-    <motion.div className={stack({ alignItems: "center", gap: 16 })} {...transition}>
+    <motion.div ref={ref} className={stack({ alignItems: "center", gap: 16 })} {...transition}>
       <StrokeColorSelector direction="row" className={css({ py: 8 })} />
       <CanvasActions />
     </motion.div>
   );
-}
+});
+DrawTools.displayName = "DrawTools";
+
+const EndState = forwardRef<HTMLDivElement>((_, ref) => {
+  return (
+    <motion.div ref={ref} className={stack({ alignItems: "center", gap: 16 })} {...transition}>
+      END GAME
+    </motion.div>
+  );
+});
+EndState.displayName = "EndState";

@@ -15,7 +15,8 @@ export function DrawModeToggle() {
   const { connected } = useWallet();
   const isViewOnly = useCanvasState((s) => s.isViewOnly);
   const setViewOnly = useCanvasState((s) => s.setViewOnly);
-  const isDrawModeDisabled = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
+  const hasGeneralDrawingEnded = useCanvasState((s) => s.isEventComplete && !s.canDrawUnlimited);
+  const isMintComplete = Boolean(process.env.NEXT_PUBLIC_MINT_COMPLETE);
 
   return (
     <div className={stack({ gap: 16, align: "center" })}>
@@ -30,7 +31,7 @@ export function DrawModeToggle() {
           }
           setViewOnly(!isViewOnly);
         }}
-        disabled={isDrawModeDisabled}
+        disabled={hasGeneralDrawingEnded || isMintComplete}
       >
         {isViewOnly ? <EditBoxIcon /> : <EyeIcon />}
       </Button>
