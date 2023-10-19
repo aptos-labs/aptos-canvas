@@ -8,6 +8,7 @@ import { flex } from "styled-system/patterns";
 
 import { CanvasOverlay } from "@/components/CanvasOverlay";
 import { Skeleton } from "@/components/Skeleton";
+import { toast } from "@/components/Toast";
 import { PIXELS_PER_SIDE } from "@/constants/canvas";
 import { APP_CONFIG } from "@/constants/config";
 import { useAptosNetworkState } from "@/contexts/wallet";
@@ -47,6 +48,22 @@ export function CanvasContainer() {
   }, [network]);
 
   const [isCursorInBounds, setIsCursorInBounds] = useState(false);
+
+  useEffect(() => {
+    // This will only be set if need to pause the event in case of an emergency
+    if (process.env.NEXT_PUBLIC_PAUSE_EVENT) {
+      toast({
+        id: "drawing-disabled",
+        variant: "warning",
+        content: "Drawing is temporarily paused",
+        duration: null,
+      });
+
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 60_000);
+    }
+  }, []);
 
   return (
     <div
