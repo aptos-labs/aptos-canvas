@@ -42,8 +42,8 @@ pub struct MmapPixelStorageConfig {
 #[derive(Debug)]
 pub struct MmapPixelStorage {
     config: MmapPixelStorageConfig,
-    // just do everything in memory, this is a one off
-    mmaps: Arc<Mutex<HashMap<Address, Vec<u8>>>>,
+    mmaps: Arc<Mutex<HashMap<Address, MmapMut>>>,
+    //     mmaps: Arc<HashMap<Address, Mutex<HashMap<Address, MmapMut>>>>,
 }
 
 impl MmapPixelStorage {
@@ -53,10 +53,52 @@ impl MmapPixelStorage {
             mmaps: Arc::new(Mutex::new(HashMap::new())),
         }
     }
+
+    fn get_filename(&self, user_address: &Address) -> PathBuf {
+        Path::new(&self.config.storage_directory)
+            .join(format!("0x{}.canvas", user_address.to_canonical_string()))
+    }
 }
 
 #[async_trait::async_trait]
 impl PixelStorageTrait for MmapPixelStorage {
+    /// Create a canvas as a file on disk. We use a custom format where each pixel is
+    /// stored as 3 bytes (r, g, b) and the width and height are stored at the end of
+    /// the file as 8 bytes each.
+    async fn create_canvas(&self, intent: CreateCanvasIntent) -> Result<()> {
+        let filename = self.get_filename(&intent.user_address);
+        info!("Creating canvas file: {:?}", filename.display());
+        let mut file = File::create(&filename)?;
+
+        let width = intent.width as u64;
+        let height = intent.height as u64;
+
+        // Calculate the total number of pixels
+        let num_pixels = width * height;
+
+        // Build all the data into a single vector.
+        let mut data = Vec::with_capacity(num_pixels as usize * 3);
+        for _ in 0..num_pixels {
+            // We don't use the hardcoded colors at our level, we convert
+            // them into proper rgb colors.
+            let color = RgbColor::from(&intent.default_color);
+            data.push(color.r);
+            data.push(color.g);
+            data.push(color.b);
+        }
+
+        // Put the width and height at the end of the file.
+        data.extend(width.to_le_bytes());
+        data.extend(height.to_le_bytes());
+
+        // Write the data to the file.
+        file.write_all(&data)?;
+
+        info!("Created canvas file: {:?}", filename.display());
+
+        Ok(())
+    }
+
     async fn write_pixels(&self, intents: Vec<WritePixelIntent>) -> Result<()> {
         let canvas_address_filter =
             Address::from_str("0x5d45bb2a6f391440ba10444c7734559bd5ef9053930e3ef53d05be332518522b")
@@ -83,10 +125,39 @@ impl PixelStorageTrait for MmapPixelStorage {
             // Get an existing mmap for the canvas file or initialize a new one.
             let mut mmaps = self.mmaps.lock().await;
 
+            if !mmaps.contains_key(&user_address) {
+                match self
+                    .create_canvas(CreateCanvasIntent {
+                        user_address,
+                        width: 1000,
+                        height: 1000,
+                        default_color: HardcodedColor::White,
+                    })
+                    .await
+                {
+                    Ok(_) => {},
+                    Err(e) => {
+                        error!("Failed to create canvas {}: {}", user_address, e);
+                        panic!("Failed to create canvas {}: {}", user_address, e);
+                    },
+                }
+            }
+
             let mmap = mmaps.entry(user_address).or_insert_with(|| {
-                // Create a vec with all white pixels. 3 bytes per pixel, all 255.
-                let pixels = [255; 1000 * 1000 * 3].to_vec();
-                pixels
+                let filename = self.get_filename(&user_address);
+                let file = match OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .create(false)
+                    .open(&filename)
+                {
+                    Ok(file) => file,
+                    Err(e) => {
+                        error!("Failed to open file {}: {}", filename.display(), e);
+                        panic!("Failed to open file {}: {}", filename.display(), e);
+                    },
+                };
+                unsafe { MmapMut::map_mut(&file).expect("Failed to mmap file") }
             });
 
             info!(
@@ -120,7 +191,8 @@ impl PixelStorageTrait for MmapPixelStorage {
             let mmap = mmaps.get(user_address).context("Failed to find canvas")?;
 
             // Get the width and height from the end of the file.
-            let (width, height) = (1000, 1000);
+            let (width, height) =
+                read_width_and_height(mmap).context("Failed to read width and height")?;
 
             // Read the data from the file as a vector of RgbColors.
             let mut data = Vec::with_capacity((width * height) as usize);

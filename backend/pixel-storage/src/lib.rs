@@ -9,6 +9,7 @@ use std::{collections::HashMap, fmt::Debug, ops::Add};
 /// Handles creating, updating, and reading canvases.
 #[async_trait::async_trait]
 pub trait PixelStorageTrait: Debug + Send + Sync + 'static {
+    async fn create_canvas(&self, intent: CreateCanvasIntent) -> Result<()>;
     async fn write_pixels(&self, intent: Vec<WritePixelIntent>) -> Result<()>;
     async fn get_canvas_as_png(&self, canvas_address: &Address) -> Result<Vec<u8>>;
     async fn get_canvases_as_pngs(&self) -> Result<HashMap<Address, Vec<u8>>>;
