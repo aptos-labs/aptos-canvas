@@ -39,6 +39,14 @@ export function WalletProvider({ children }: React.PropsWithChildren) {
     networkName: network,
   };
 
+  if (process.env.NEXT_PUBLIC_GRAFFIO_ENV === "staging") {
+    identityConnectWalletConfig.axiosConfig = {
+      baseURL: "https://identity-connect.staging.gcp.aptosdev.com",
+    };
+    identityConnectWalletConfig.frontendBaseURL =
+      "https://identity-connect.staging.gcp.aptosdev.com";
+  }
+
   if (!IC_DAPP_ID) {
     throw new Error("NEXT_PUBLIC_IC_DAPP_ID is not set");
   }
