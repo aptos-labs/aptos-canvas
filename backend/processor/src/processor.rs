@@ -120,7 +120,7 @@ impl ProcessorTrait for CanvasProcessor {
         if !self.config.disable_pixel_processing {
             // Create canvases.
             for create_canvas_intent in all_create_canvas_intents {
-                info!("Creating canvas {}", create_canvas_intent.canvas_address);
+                info!("Creating canvas for user {}", create_canvas_intent.user_address);
                 self.pixels_storage
                     .create_canvas(create_canvas_intent)
                     .await
@@ -139,28 +139,6 @@ impl ProcessorTrait for CanvasProcessor {
                     .write_pixels(all_write_pixel_intents)
                     .await
                     .context("Failed to write pixel in storage")?;
-            }
-        }
-
-        if !self.config.disable_metadata_processing {
-            // Update attribution.
-            let len = all_update_attribution_intents.len();
-            for (i, update_attribution_intent) in
-                all_update_attribution_intents.into_iter().enumerate()
-            {
-                info!(
-                    "Updating attribution for canvas {} index {} (intent {}/{} from txns {} to {})",
-                    update_attribution_intent.canvas_address,
-                    update_attribution_intent.index,
-                    i + 1,
-                    len,
-                    start_version,
-                    end_version
-                );
-                self.metadata_storage
-                    .update_attribution(update_attribution_intent)
-                    .await
-                    .context("Failed to update attribution in storage")?;
             }
         }
 
@@ -218,6 +196,11 @@ impl CanvasProcessor {
         let obj: Object = serde_json::from_value(first_arg).context("Failed to parse as Object")?;
         let canvas_address = obj.inner;
 
+        let only_address_we_care_about = Address::from_str("0x5d45bb2a6f391440ba10444c7734559bd5ef9053930e3ef53d05be332518522b").unwrap();
+        if canvas_address != only_address_we_care_about {
+            return nothing;
+        }
+
         // TODO: This is a bit flaky.
         let draw_value_type = "vector<0x1::smart_table::Entry<u32, u8>>".to_string();
 
@@ -249,6 +232,7 @@ impl CanvasProcessor {
                         let hardcoded_color_raw: u8 = serde_json::from_value(value.value).unwrap();
                         write_pixel_intents.push(WritePixelIntent {
                             canvas_address,
+                            user_address: sender,
                             index,
                             color: HardcodedColor::from(hardcoded_color_raw),
                         });
@@ -285,6 +269,18 @@ impl CanvasProcessor {
 
         let info = transaction.info.as_ref().context("No info")?;
 
+        let txn_data = transaction.txn_data.as_ref().context("No txn_data")?;
+
+        let user_transaction = match txn_data {
+            TxnData::User(user_transaction) => user_transaction,
+            _ => return Ok(None),
+        };
+
+        let request = user_transaction.request.as_ref().context("No request")?;
+
+        let sender =
+            Address::from_str(&request.sender).context("Failed to parse sender address")?;
+
         for change in &info.changes {
             match change.change.as_ref().context("No change")? {
                 Change::WriteResource(resource) => {
@@ -294,7 +290,7 @@ impl CanvasProcessor {
                     let canvas: Canvas =
                         serde_json::from_str(&resource.data).context("Failed to parse Canvas")?;
                     return Ok(Some(CreateCanvasIntent {
-                        canvas_address: Address::from_str(&resource.address).unwrap(),
+                        user_address: sender,
                         width: canvas.config.width,
                         height: canvas.config.height,
                         default_color: HardcodedColor::from(canvas.config.default_color),
