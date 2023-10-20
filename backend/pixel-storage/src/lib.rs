@@ -4,12 +4,11 @@ mod utils;
 use anyhow::Result;
 use aptos_move_graphql_scalars::Address;
 pub use mmap::{MmapPixelStorage, MmapPixelStorageConfig};
-use std::{collections::HashMap, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug, ops::Add};
 
 /// Handles creating, updating, and reading canvases.
 #[async_trait::async_trait]
 pub trait PixelStorageTrait: Debug + Send + Sync + 'static {
-    async fn create_canvas(&self, intent: CreateCanvasIntent) -> Result<()>;
     async fn write_pixels(&self, intent: Vec<WritePixelIntent>) -> Result<()>;
     async fn get_canvas_as_png(&self, canvas_address: &Address) -> Result<Vec<u8>>;
     async fn get_canvases_as_pngs(&self) -> Result<HashMap<Address, Vec<u8>>>;
@@ -96,6 +95,7 @@ impl From<&HardcodedColor> for RgbColor {
 pub struct WritePixelIntent {
     /// The address of the object containing the canvas.
     pub canvas_address: Address,
+    pub user_address: Address,
     pub index: u32,
     pub color: HardcodedColor,
 }
@@ -104,7 +104,7 @@ pub struct WritePixelIntent {
 #[derive(Clone, Debug)]
 pub struct CreateCanvasIntent {
     /// The address of the object containing the canvas.
-    pub canvas_address: Address,
+    pub user_address: Address,
     pub width: u16,
     pub height: u16,
     pub default_color: HardcodedColor,
