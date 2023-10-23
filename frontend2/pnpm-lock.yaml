@@ -26,8 +26,8 @@ dependencies:
     specifier: ^9.7.1
     version: 9.7.1(next@13.5.4)(webpack@5.88.2)
   '@identity-connect/wallet-adapter-plugin':
-    specifier: ^1.1.1
-    version: 1.1.1
+    specifier: ^1.1.2
+    version: 1.1.2
   '@martianwallet/aptos-wallet-adapter':
     specifier: ^0.0.4
     version: 0.0.4
@@ -2074,8 +2074,8 @@ packages:
       - debug
     dev: false
 
-  /@identity-connect/dapp-sdk@0.4.1:
-    resolution: {integrity: sha512-lL6YDf3f6oGxvk/PF14NkYdC9Kz1DsTQFVPgGJX4lDneRF7cyhLvVcj7scIHH1RJDbpxTzrKXap+ciprctBTqw==}
+  /@identity-connect/dapp-sdk@0.4.2:
+    resolution: {integrity: sha512-DzzJCkExeyN+8s63k04W9uklb5Cq2yngwHPPCkPqaAzuLHFg0gVi1u8iq+iSZRW3UQCnMrIoagzEU2siOTgdfw==}
     dependencies:
       '@identity-connect/api': 0.4.0
       '@identity-connect/crypto': 0.1.3
@@ -2086,12 +2086,12 @@ packages:
       - debug
     dev: false
 
-  /@identity-connect/wallet-adapter-plugin@1.1.1:
-    resolution: {integrity: sha512-Z2aWjpx+Z7Kc56j/Nsxe143d7oTWGF3X0Er4jrOlpA+7nlGmvlj7GoO+ykEMDc5Niinb/cYjF1sHKbzLIIZwfQ==}
+  /@identity-connect/wallet-adapter-plugin@1.1.2:
+    resolution: {integrity: sha512-QdWUOgBLxhwy9P96qHNEYwFmfQFZmjVrHti67ccBPjqkXom6zTzcbVpQYJo6+aBQXc8RRIxXWQfPE1Sb43vkFA==}
     dependencies:
       '@aptos-labs/wallet-adapter-core': 2.5.1(patch_hash=bztqgn4yl4txs2c2z47sgvfecq)
       '@identity-connect/api': 0.4.0
-      '@identity-connect/dapp-sdk': 0.4.1
+      '@identity-connect/dapp-sdk': 0.4.2
       '@identity-connect/wallet-api': 0.0.3
       aptos: 1.20.0
     transitivePeerDependencies:
